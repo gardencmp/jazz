@@ -614,51 +614,55 @@ export class CoValueCore {
   }): DecryptedTransaction[] {
     const validTransactions = determineValidTransactions(this);
 
-    const allTransactions: DecryptedTransaction[] = validTransactions
-      .flatMap(({ txID, tx }) => {
-        if (tx.privacy === "trusting") {
-          return {
-            txID,
-            madeAt: tx.madeAt,
-            changes: parseJSON(tx.changes),
-          };
-        } else {
-          if (options?.ignorePrivateTransactions) {
-            return undefined;
-          }
-          const readKey = this.getReadKey(tx.keyUsed);
+    const allTransactions: DecryptedTransaction[] = [];
 
-          if (!readKey) {
-            return undefined;
-          } else {
-            let decrytedChanges = this._decryptionCache[tx.encryptedChanges];
+    for (const { txID, tx } of validTransactions) {
+      if (tx.privacy === "trusting") {
+        allTransactions.push({
+          txID,
+          madeAt: tx.madeAt,
+          changes: parseJSON(tx.changes),
+        });
+        continue;
+      }
 
-            if (!decrytedChanges) {
-              const decryptedString = this.crypto.decryptRawForTransaction(
-                tx.encryptedChanges,
-                readKey,
-                {
-                  in: this.id,
-                  tx: txID,
-                },
-              );
-              decrytedChanges = decryptedString && parseJSON(decryptedString);
-              this._decryptionCache[tx.encryptedChanges] = decrytedChanges;
-            }
+      if (options?.ignorePrivateTransactions) {
+        continue;
+      }
 
-            if (!decrytedChanges) {
-              console.error("Failed to decrypt transaction despite having key");
-              return undefined;
-            }
-            return {
-              txID,
-              madeAt: tx.madeAt,
-              changes: decrytedChanges,
-            };
-          }
-        }
-      })
-      .filter((x): x is Exclude<typeof x, undefined> => !!x);
+      const readKey = this.getReadKey(tx.keyUsed);
+
+      if (!readKey) {
+        continue;
+      }
+
+      let decryptedChanges = this._decryptionCache[tx.encryptedChanges];
+
+      if (!decryptedChanges) {
+        const decryptedString = this.crypto.decryptRawForTransaction(
+          tx.encryptedChanges,
+          readKey,
+          {
+            in: this.id,
+            tx: txID,
+          },
+        );
+        decryptedChanges = decryptedString && parseJSON(decryptedString);
+        this._decryptionCache[tx.encryptedChanges] = decryptedChanges;
+      }
+
+      if (!decryptedChanges) {
+        console.error("Failed to decrypt transaction despite having key");
+        continue;
+      }
+
+      allTransactions.push({
+        txID,
+        madeAt: tx.madeAt,
+        changes: decryptedChanges,
+      });
+    }
+
     allTransactions.sort(
       (a, b) =>
         a.madeAt - b.madeAt ||

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS=--max-old-space-size=8192 next dev",
-    "build": "node genDocs.mjs --build && next build && npx pagefind --site .next --output-path .next/static/chunks/pagefind --glob 'server/**/*.html'",
+    "build": "pnpm run build:generate-docs && next build && npx pagefind --site .next --output-path .next/static/chunks/pagefind --glob 'server/**/*.html'",
+    "build:generate-docs": "node genDocs.mjs --build",
     "start": "next start",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write"
@@ -28,7 +29,7 @@
     "mdast-util-from-markdown": "^2.0.0",
     "mdast-util-mdx": "^3.0.0",
     "micromark-extension-mdxjs": "^3.0.0",
-    "next": "13.5.4",
+    "next": "14.2.15",
     "qrcode": "^1.5.4",
     "react": "^18",
     "react-dom": "^18",

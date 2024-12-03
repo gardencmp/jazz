@@ -1,15 +1,15 @@
 {
   "name": "jazz-react",
-  "version": "0.8.31",
+  "version": "0.8.34",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
     "@scure/bip39": "^1.3.0",
-    "cojson": "workspace:0.8.31",
-    "jazz-browser": "workspace:0.8.31",
-    "jazz-tools": "workspace:0.8.31"
+    "cojson": "workspace:0.8.34",
+    "jazz-browser": "workspace:0.8.34",
+    "jazz-tools": "workspace:0.8.34"
   },
   "devDependencies": {
     "@types/react": "^18.2.19",

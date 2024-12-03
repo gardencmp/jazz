@@ -1,5 +1,17 @@
 # cojson
 
+## 0.8.34
+
+### Patch Changes
+
+- e4f110f: Removed a no more valid error on the known state message sync
+
+## 0.8.32
+
+### Patch Changes
+
+- df42b2b: Catch hard-to-debug errors when trying to get edits at a CoMap key called "constructor"
+
 ## 0.8.31
 
 ### Patch Changes

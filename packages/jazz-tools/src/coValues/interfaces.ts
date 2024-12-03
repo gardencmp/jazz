@@ -228,6 +228,7 @@ export function subscribeToCoValue<V extends CoValue, Depth>(
 
 export function createCoValueObservable<V extends CoValue, Depth>() {
   let currentValue: DeeplyLoaded<V, Depth> | undefined = undefined;
+  let subscriberCount = 0;
 
   function subscribe(
     cls: CoValueClass<V>,
@@ -237,6 +238,8 @@ export function createCoValueObservable<V extends CoValue, Depth>() {
     listener: () => void,
     onUnavailable?: () => void,
   ) {
+    subscriberCount++;
+
     const unsubscribe = subscribeToCoValue(
       cls,
       id,
@@ -249,7 +252,13 @@ export function createCoValueObservable<V extends CoValue, Depth>() {
       onUnavailable,
     );
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      subscriberCount--;
+      if (subscriberCount === 0) {
+        currentValue = undefined;
+      }
+    };
   }
 
   const observable = {

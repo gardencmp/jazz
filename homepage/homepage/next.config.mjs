@@ -12,10 +12,6 @@ const nextConfig = {
   // Configure `pageExtensions`` to include MDX files
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   transpilePackages: ["gcmp-design-system"],
-  // Optionally, add any other Next.js config below
-  experimental: {
-    serverActions: true,
-  },
 };
 
 const withMDX = createMDX({
@@ -34,6 +30,15 @@ const withMDX = createMDX({
 const config = {
   ...withMDX(nextConfig),
   output: "standalone",
+  redirects: async () => {
+    return [
+      {
+        source: "/docs",
+        destination: "/docs/react",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 function highlightPlugin() {

@@ -1,0 +1,144 @@
+---
+title: CoValues in Jazz
+---
+
+import { CodeGroup } from "@/components/forMdx";
+import { CodeGroup, ComingSoon } from "@/components/forMdx";
+
+# CoValues
+
+**CoValues ("Collaborative Values") are the core abstraction of Jazz.** Think of them as bread-and-butter datastructures that you can use to represent everything you need in your app.
+
+As their name suggests, they are inherently collaborative, meaning **multiple users and devices can edit them at the same time.**
+
+- CoValues allow for concurrent edits by always keeping their full edit histories, deriving the "current state" based on the currently locally available history.
+- **Think of CoValues as "super-fast Git for lots of tiny data".**
+- (The fact that this happens in an eventually-consistent way makes them [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type))
+- Having the full history around also means that you often don't need explicit timestamps and author info - you get this for free, just by having different accounts edit a value and then looking at its [edit metadata](/docs/coming-soon).
+
+CoValues mostly model JSON with CoMaps and CoLists, but also offer CoStreams for simple per-user value streams, and also let you represent binary data with BinaryCoStreams.
+
+## Schemas as your app's first step
+
+Under the hood, CoValues are as dynamic and flexible as JSON itself, but the way you use them in Jazz is by defining fixed schemas to describe the shape of data in your app.
+
+- This helps correctness and development speed in general, but is particularly important
+    - when you evolve your app and need migrations
+    - when different clients and server workers collaborate on CoValues and need to make compatible changes
+
+- Luckily, thinking about the shape of your data first is also a really good way to model your app. Even before you know the details of how your app will work, you'll probably know which kinds of objects it will deal with, and how they relate to each other.
+
+Jazz makes it really quick to define and update schemas, since they are simple TypeScript classes:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+export class TodoProject extends CoMap {
+    title = co.string;
+    tasks = co.ref(ListOfTasks);
+}
+```
+</CodeGroup>
+
+Here you can see how we use the `co` definer for declaring collaboratively editable fields, which ensures that schema info is correct at the type level and at runtime.
+
+Classes might look a bit old-fashioned to some, but one nice property they have is that they are both types and values in TypeScript, so we can use them as both (with a single definition & import).
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+import { TodoProject } from "./schema";
+
+const project: TodoProject = TodoProject.create(
+    {
+        title: "New Project",
+        tasks: ListOfTasks.create([], { owner: me }),
+    },
+    { owner: me }
+);
+```
+</CodeGroup>
+
+## CoValue field types
+
+Before we look at the different types of CoValues, let's learn what we can put *into* them.
+
+### Primitive fields
+
+You can define primitive field types using the `co` definer:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+import { co } from "jazz-tools";
+
+export class Person extends CoMap {
+    title = co.string;
+}
+
+export class ListOfColors extends CoList.Of(co.string) {}
+```
+</CodeGroup>
+
+Here's a quick overview of the primitive types you can use:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+co.string;
+co.number;
+co.boolean;
+co.null;
+co.Date;
+co.literal("waiting", "ready");
+```
+</CodeGroup>
+
+Finally, for more complex JSON data, that you *don't want to be collaborative internally* (but only every update as a whole), you can use `co.json<T>()`:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+co.json<{ name: string }>();
+```
+</CodeGroup>
+
+For more detail, see the API Reference for the [`co` Field Definer](/api-reference/jazz-tools#co).
+
+### Refs to other CoValues
+
+To represent complex structured data with Jazz, you form trees or graphs of CoValues that reference each other.
+
+Internally, this is represented by storing the IDs of the referenced CoValues in the corresponding fields, but Jazz abstracts this away, making it look like nested CoValues you can get or assign/insert.
+
+The important caveat here is that **a referenced CoValue might or might not be loaded yet,** but we'll see what exactly that means in [Subscribing and Deep Loading](/docs/coming-soon).
+
+In Schemas, you define Refs using the `co.ref<T>()` definer:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+class Company extends CoMap {
+    members = co.ref(ListOfPeople);
+}
+
+class ListOfPeople extends CoList.Of(co.ref(Person)) {}
+```
+</CodeGroup>
+
+#### Optional Refs
+
+If you want to make a referenced CoValue field optional, you *have to* use `co.optional.ref<T>()`:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+class Person extends CoMap {
+    pet = co.optional.ref(Pet);
+}
+```
+</CodeGroup>
+
+### Computed fields, methods & constructors
+
+<ComingSoon/>

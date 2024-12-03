@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { BreadCrumb } from "../molecules/Breadcrumb";
 import { ThemeToggle } from "../molecules/ThemeToggle";
+import { SocialLinks, SocialLinksProps } from "./SocialLinks";
 
 type NavItemProps = {
   href: string;
@@ -30,6 +31,7 @@ type NavProps = {
   items: NavItemProps[];
   docNav?: ReactNode;
   cta?: ReactNode;
+  socials?: SocialLinksProps;
 };
 
 function NavItem({
@@ -110,7 +112,7 @@ function NavItem({
   );
 }
 
-export function MobileNav({ mainLogo, items, docNav, cta }: NavProps) {
+export function MobileNav({ mainLogo, items, docNav, cta, socials }: NavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -170,13 +172,8 @@ export function MobileNav({ mainLogo, items, docNav, cta }: NavProps) {
             >
               {mainLogo}
             </NavLinkLogo>
-            {items
-              .filter((item) => "icon" in item)
-              .map((item, i) => (
-                <NavLinkLogo key={i} href={item.href} newTab={item.newTab}>
-                  {item.icon}
-                </NavLinkLogo>
-              ))}
+
+            <SocialLinks className="px-2 gap-2" {...socials} />
           </div>
 
           {pathname.startsWith("/docs") && docNav && (
@@ -312,6 +309,8 @@ export function Nav(props: NavProps) {
               className={i == items.length - 1 ? "mr-3" : ""}
             />
           ))}
+
+          <SocialLinks {...props.socials} />
 
           {cta}
         </PopoverGroup>
