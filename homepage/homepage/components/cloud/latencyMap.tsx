@@ -16,10 +16,10 @@ export const LatencyMap = () => {
   const pingColorThresholds = usePingColorThresholds();
 
   return (
-    <div className="relative mb-10 -mx-[3rem] md:-mx-[5rem] sm:-mt-5 rounded-lg">
+    <div className="relative mb-10 sm:-mt-5 -left-4 lg:-left-8 rounded-lg">
       <MapSVG />
       <MapTooltip />
-      <div className="absolute bottom-0 left-12 md:bottom-4 md:left-[5rem] flex flex-col md:gap-1">
+      <div className="absolute bottom-0 left-4 lg:bottom-8 lg:left-8 flex flex-col md:gap-1">
         {pingColorThresholds.map((t, i) => (
           <div
             key={t.ping}
@@ -28,7 +28,7 @@ export const LatencyMap = () => {
             })}
           >
             <div
-              className="size-2 md:size-4 rounded-full"
+              className="size-2 md:size-3 rounded-full"
               style={{ background: t.color }}
             ></div>
             <div className="text-[9px] md:text-xs font-mono">
