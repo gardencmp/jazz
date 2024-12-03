@@ -3,6 +3,7 @@
   import { SharedFile, ListOfSharedFiles } from '$lib/schema';
   import { createInviteLink } from 'jazz-svelte';
   import { FileStream } from 'jazz-tools';
+  import { formatFileSize } from '$lib/utils';
 
   const { me, logOut } = useAccount();
 
@@ -32,7 +33,8 @@
         description: '',
         file: fileStream,
         createdAt: Date.now(),
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
+        size: file.size
       },
       ownership
     );
@@ -86,7 +88,8 @@
           <div>
             <h3 class="font-semibold">{file?.name}</h3>
             <p class="text-sm text-gray-500">
-              Uploaded {new Date(file?.createdAt || 0).toLocaleDateString()}
+              Uploaded {new Date(file?.createdAt || 0).toLocaleDateString()} • 
+              {formatFileSize(file?.size || 0)}
             </p>
           </div>
           <div class="flex gap-2">
