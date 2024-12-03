@@ -1,12 +1,17 @@
 import { createJazzReactApp, useDemoAuth } from "jazz-react";
 import { useEffect, useRef } from "react";
 
-const key = `test-comap@jazz.tools`;
-
 const url = new URL(window.location.href);
-const peer =
+
+const key = `${getUserInfo()}@jazz.tools`;
+
+let peer =
   (url.searchParams.get("peer") as `ws://${string}`) ??
-  `wss://cloud.jazz.tools/`;
+  `wss://cloud.jazz.tools/?key=${key}`;
+
+if (url.searchParams.has("local")) {
+  peer = `ws://localhost:4200/?key=${key}`;
+}
 
 const Jazz = createJazzReactApp();
 
