@@ -4,15 +4,17 @@
   import { createInviteLink } from 'jazz-svelte';
   import { FileStream } from 'jazz-tools';
   import { formatFileSize } from '$lib/utils';
+  import { SvelteSet } from 'svelte/reactivity';
 
   const { me, logOut } = useAccount();
 
   const mySharedFilesId = me?.root?._refs.sharedFiles.id;
-  const sharedFiles = $derived(
-    useCoState(ListOfSharedFiles, mySharedFilesId, [{}])
-  );
-  
+  const sharedFiles = $derived(useCoState(ListOfSharedFiles, mySharedFilesId, [{}]));
+
   let fileInput: HTMLInputElement;
+  const uploadingFiles = new SvelteSet<string>();
+
+  $inspect('uploadingFiles', uploadingFiles);
 
   async function handleFileUpload(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -21,26 +23,33 @@
     if (!files || !files.length || !me?.root?.sharedFiles) return;
 
     const file = files[0];
-    const ownership = { owner: me };
+    uploadingFiles.add(file.name);
 
-    // Create a FileStream from the uploaded file
-    const fileStream = await FileStream.createFromBlob(file, ownership);
+    try {
+      const ownership = { owner: me };
 
-    // Create a new SharedFile instance
-    const sharedFile = SharedFile.create(
-      {
-        name: file.name,
-        description: '',
-        file: fileStream,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        size: file.size
-      },
-      ownership
-    );
+      // Create a FileStream from the uploaded file
+      const fileStream = await FileStream.createFromBlob(file, ownership);
 
-    // Add the file to the user's files list
-    me.root.sharedFiles.push(sharedFile);
+      // Create a new SharedFile instance
+      const sharedFile = SharedFile.create(
+        {
+          name: file.name,
+          description: '',
+          file: fileStream,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          size: file.size
+        },
+        ownership
+      );
+
+      // Add the file to the user's files list
+      me.root.sharedFiles.push(sharedFile);
+    } finally {
+      uploadingFiles.delete(file.name);
+      fileInput.value = ''; // reset input
+    }
   }
 
   async function shareFile(file: SharedFile) {
@@ -81,14 +90,24 @@
   </div>
 
   <div class="grid gap-4">
-    <pre class="text-xs text-gray-500">Debug - Files ID: {mySharedFilesId}</pre>
+    {#each [...uploadingFiles] as fileName}
+      <div class="flex items-center justify-between rounded-lg border bg-gray-50 p-4 shadow-sm">
+        <div>
+          <h3 class="flex items-center gap-2 font-semibold">
+            {fileName}
+            <span class="inline-block animate-spin">⟳</span>
+          </h3>
+          <p class="text-sm text-gray-500">Uploading...</p>
+        </div>
+      </div>
+    {/each}
     {#if sharedFiles.current}
       {#each sharedFiles.current as file (file?.id)}
         <div class="flex items-center justify-between rounded-lg border p-4 shadow-sm">
           <div>
             <h3 class="font-semibold">{file?.name}</h3>
             <p class="text-sm text-gray-500">
-              Uploaded {new Date(file?.createdAt || 0).toLocaleDateString()} • 
+              Uploaded {new Date(file?.createdAt || 0).toLocaleDateString()} •
               {formatFileSize(file?.size || 0)}
             </p>
           </div>
