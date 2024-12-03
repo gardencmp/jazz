@@ -2,7 +2,7 @@
   "name": "jazz-monorepo",
   "private": true,
   "type": "module",
-  "workspaces": ["packages/*", "examples/*", "e2e/*"],
+  "workspaces": ["packages/*", "examples/*"],
   "packageManager": "pnpm@9.1.4",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
