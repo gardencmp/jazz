@@ -4,9 +4,9 @@
   import { createInviteLink } from 'jazz-svelte';
   import { FileStream } from 'jazz-tools';
   import FileItem from '$lib/components/FileItem.svelte';
-  import { slide, fade } from 'svelte/transition';
   import { SvelteMap } from 'svelte/reactivity';
   import { generateTempFileId } from '$lib/utils';
+  import { CloudUpload } from 'lucide-svelte';
 
   const { me, logOut } = useAccount();
 
@@ -111,19 +111,7 @@
         role="button"
         tabindex="0"
       >
-        <svg
-          class="mb-4 h-12 w-12 text-gray-400 group-hover:text-blue-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-          />
-        </svg>
+        <CloudUpload class="mb-2 h-8 w-8 text-gray-400 group-hover:text-blue-600" />
         <h3 class="mb-1 text-lg font-medium text-gray-900">Upload a new file</h3>
         <p class="text-sm text-gray-500">Click to select a file from your computer</p>
         <input
