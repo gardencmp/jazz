@@ -1,17 +1,20 @@
 <script lang="ts">
   import { slide } from 'svelte/transition';
   import { SharedFile } from '$lib/schema';
-  import { type Account, FileStream } from 'jazz-tools';
+  import { FileStream } from 'jazz-tools';
   import { File, FileDown, Trash2, Link2 } from 'lucide-svelte';
   import { useAccount } from '$lib/jazz';
-  import { goto } from '$app/navigation';
   import { toast } from 'svelte-sonner';
   import { formatFileSize } from '$lib/utils';
 
-  const { file, loading = false, onDelete }: {
-    file: SharedFile,
-    loading?: boolean,
-    onDelete: (file: SharedFile) => void
+  const {
+    file,
+    loading = false,
+    onDelete
+  }: {
+    file: SharedFile;
+    loading?: boolean;
+    onDelete: (file: SharedFile) => void;
   } = $props();
 
   const { me } = useAccount();
@@ -25,6 +28,8 @@
 
     try {
       const fileId = file._refs.file.id;
+
+      // Load the file as a blob, can take a while
       const blob = await FileStream.loadAsBlob(fileId, me, {});
       if (!blob) {
         toast.error('Failed to download file');
@@ -55,15 +60,11 @@
       toast.error('Failed to create share link');
     }
   }
-
-  function goToFileDetail() {
-    goto(`/file/${file._owner?.id}/${file.id}`);
-  }
 </script>
 
 <div
   class="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4"
-  transition:slide|local={{ duration: 200 }}
+  transition:slide={{ duration: 200 }}
 >
   <div class="flex items-center space-x-4">
     <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
