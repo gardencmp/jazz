@@ -1,6 +1,6 @@
 import { AgentSecret } from "cojson";
-import { Account } from "../coValues/account";
-import { ID } from "../coValues/interfaces";
+import { Account } from "jazz-tools/src/coValues/account.js";
+import { ID } from "jazz-tools/src/coValues/interfaces.js";
 
 function exportAccountToInspector(localStorageKey = "jazz-logged-in-secret") {
   const localStorageData = JSON.parse(localStorage[localStorageKey]) as {
