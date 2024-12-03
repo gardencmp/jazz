@@ -1,9 +1,11 @@
 "use client";
 
+import { usePingColorThresholds } from "@/components/cloud/usePingColorThresholds";
 import { useEffect } from "react";
-import { pingColorThresholds } from "./latencyMap";
 
 export default function MapTooltip() {
+  const pingColorThresholds = usePingColorThresholds();
+
   useEffect(() => {
     // register callback for hovering, if we're over any circle, show the tooltip based on the data attributes
     const onMouseMove = (e: MouseEvent) => {

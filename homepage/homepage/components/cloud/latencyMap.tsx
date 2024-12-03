@@ -1,14 +1,19 @@
-import React, { memo, useEffect } from "react";
+"use client";
 
+import React, { memo } from "react";
+
+import { usePingColorThresholds } from "@/components/cloud/usePingColorThresholds";
 import * as turf from "@turf/turf";
 import type { FeatureCollection, Point, Position } from "geojson";
+import MapTooltip from "./mapTooltip";
 import land from "./ne_110m_land.json";
 
-import MapTooltip from "./mapTooltip";
 // generated with: globalping ping cloud.jazz.tools from world --limit 500 --packets 16 --json | jq "del(.results[].result.rawOutput)" > pings.json
 import pings from "./pings.json";
 
 export const LatencyMap = () => {
+  const pingColorThresholds = usePingColorThresholds();
+
   return (
     <div className="relative mb-10 -mx-[10rem] -mt-5 rounded-lg">
       <MapSVG />
@@ -29,6 +34,8 @@ export const LatencyMap = () => {
 };
 
 export const MapSVG = memo(({ spacing = 1.5 }: { spacing?: number }) => {
+  const pingColorThresholds = usePingColorThresholds();
+
   // Define the data points with their latitudes, longitudes, and ping times
   const serverLocations = [
     {
@@ -209,36 +216,3 @@ export const MapSVG = memo(({ spacing = 1.5 }: { spacing?: number }) => {
     />
   );
 });
-
-// dark mode
-// export const pingColorThresholds = [
-//   { ping: 5, color: "hsl(248, 50%, 100%)" },
-//   { ping: 10, color: "hsl(248, 50%, 80%)" },
-//   { ping: 15, color: "hsl(248, 50%, 72%)" },
-//   { ping: 25, color: "hsl(248, 50%, 62%)" },
-//   { ping: 35, color: "hsl(248, 50%, 54%)" },
-//   { ping: 45, color: "hsl(248, 50%, 49%)" },
-//   { ping: 55, color: "hsl(248, 50%, 43%)" },
-//   { ping: 65, color: "hsl(248, 50%, 39%)" },
-//   { ping: 100, color: "hsl(248, 50%, 35%)" },
-//   { ping: 150, color: "hsl(248, 50%, 28%)" },
-//   { ping: 200, color: "hsl(248, 50%, 23%)" },
-//   { ping: 300, color: "hsl(248, 50%, 20%)" },
-//   { ping: 1000, color: "hsl(248, 50%, 16%)" },
-// ];
-
-export const pingColorThresholds = [
-  { ping: 5, color: "hsl(260,100%,53%)" },
-  { ping: 10, color: "hsl(258,95%,56%)" },
-  { ping: 15, color: "hsl(256,93%,59%)" },
-  { ping: 25, color: "hsl(252,90%,62%)" },
-  { ping: 35, color: "hsl(250,88%,65%)" },
-  { ping: 45, color: "hsl(245,87%,68%)" },
-  { ping: 55, color: "hsl(240,86%,71%)" },
-  { ping: 65, color: "hsl(238,84%,74%)" },
-  { ping: 100, color: "hsl(235,80%,77%)" },
-  { ping: 150, color: "hsl(232,73%,80%)" },
-  { ping: 200, color: "hsl(230,69%,83%)" },
-  { ping: 300, color: "hsl(230,65%,88%)" },
-  { ping: 1000, color: "hsl(220,60%,92%)" },
-];
