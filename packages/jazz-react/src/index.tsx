@@ -199,45 +199,20 @@ export function createJazzReactApp<Acc extends Account>({
     }
 
     const [observable] = React.useState(() => createCoValueObservable());
-    const [cachedId, setCachedId] = React.useState<ID<V> | undefined>(id);
-    const [resolvedValue, setResolvedValue] = React.useState<
-      DeeplyLoaded<V, D> | undefined
-    >(undefined);
-
-    React.useEffect(() => {
-      if (id !== cachedId) {
-        setResolvedValue(undefined);
-        setCachedId(id);
-      }
-    }, [id, cachedId]);
 
     const value = React.useSyncExternalStore<DeeplyLoaded<V, D> | undefined>(
       React.useCallback(
-        (notify) => {
+        (callback) => {
           if (!id) return () => {};
 
           const agent = "me" in context ? context.me : context.guest;
 
-          const unsubscribe = observable.subscribe(
-            Schema,
-            id,
-            agent,
-            depth,
-            () => {
-              const currentValue = observable.getCurrentValue();
-              setResolvedValue(currentValue);
-              notify();
-            },
-          );
-
-          return () => {
-            unsubscribe();
-          };
+          return observable.subscribe(Schema, id, agent, depth, callback);
         },
         [Schema, id, context],
       ),
-      () => resolvedValue,
-      () => resolvedValue,
+      () => observable.getCurrentValue(),
+      () => observable.getCurrentValue(),
     );
 
     return value;
