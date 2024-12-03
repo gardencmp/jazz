@@ -25,12 +25,11 @@ export const metadata = {
 export default function Cloud() {
   return (
     <div className="space-y-16">
-      <HeroHeader
-        className="container"
-        title="Jazz Cloud"
-        slogan="Real-time sync and storage infrastructure that scales up to millions of users."
-      />
-      <div className="container">
+      <div className="container space-y-12 overflow-x-hidden sm:overflow-x-visible">
+        <HeroHeader
+          title="Jazz Cloud"
+          slogan="Real-time sync and storage infrastructure that scales up to millions of users."
+        />
         <LatencyMap />
         <GappedGrid>
           <GridCard>

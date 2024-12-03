@@ -8,6 +8,7 @@ import type { FeatureCollection, Point, Position } from "geojson";
 import MapTooltip from "./mapTooltip";
 import land from "./ne_110m_land.json";
 
+import { clsx } from "clsx";
 // generated with: globalping ping cloud.jazz.tools from world --limit 500 --packets 16 --json | jq "del(.results[].result.rawOutput)" > pings.json
 import pings from "./pings.json";
 
@@ -15,17 +16,24 @@ export const LatencyMap = () => {
   const pingColorThresholds = usePingColorThresholds();
 
   return (
-    <div className="relative mb-10 xl:-mx-[1rem] -mt-5 rounded-lg">
+    <div className="relative mb-10 -mx-[3rem] md:-mx-[5rem] sm:-mt-5 rounded-lg">
       <MapSVG />
       <MapTooltip />
-      <div className="absolute bottom-4 xl:left-[1rem] flex flex-col gap-1">
-        {pingColorThresholds.map((t) => (
-          <div key={t.ping} className="flex items-center gap-1">
+      <div className="absolute bottom-0 left-12 md:bottom-4 md:left-[5rem] flex flex-col md:gap-1">
+        {pingColorThresholds.map((t, i) => (
+          <div
+            key={t.ping}
+            className={clsx("flex items-center gap-1", {
+              "hidden sm:flex": i % 2 !== 0,
+            })}
+          >
             <div
-              className="w-4 h-4 rounded-full"
+              className="size-2 md:size-4 rounded-full"
               style={{ background: t.color }}
             ></div>
-            <div className="text-xs font-mono">&lt;{t.ping}ms</div>
+            <div className="text-[9px] md:text-xs font-mono">
+              &lt;{t.ping}ms
+            </div>
           </div>
         ))}
       </div>
