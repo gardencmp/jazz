@@ -68,14 +68,14 @@ export class SyncManager {
       firstNewTxIdx,
     );
 
-    collectNewTxs(
+    collectNewTxs({
       newTxsInSession,
       newContentMessages,
       sessionRow,
       signaturesAndIdxs,
       peerKnownState,
       firstNewTxIdx,
-    );
+    });
   }
 
   async sendNewContent(

@@ -1,12 +1,5 @@
 import { Database as DatabaseT } from "better-sqlite3";
-import {
-  CojsonInternalTypes,
-  MAX_RECOMMENDED_TX_SIZE,
-  OutgoingSyncQueue,
-  RawAccountID,
-  SessionID,
-  cojsonInternals,
-} from "cojson";
+import { CojsonInternalTypes, OutgoingSyncQueue, SessionID } from "cojson";
 import RawCoID = CojsonInternalTypes.RawCoID;
 import Signature = CojsonInternalTypes.Signature;
 import Transaction = CojsonInternalTypes.Transaction;
@@ -28,10 +21,16 @@ export type SessionRow = {
 
 export type StoredSessionRow = SessionRow & { rowID: number };
 
-export type TransactionRow = {
+export type RawTransactionRow = {
   ses: number;
   idx: number;
   tx: string;
+};
+
+export type TransactionRow = {
+  ses: number;
+  idx: number;
+  tx: CojsonInternalTypes.Transaction;
 };
 
 export type SignatureAfterRow = {
@@ -65,11 +64,21 @@ export class SQLiteClient {
     sessionRowId: number,
     firstNewTxIdx: number,
   ): Promise<TransactionRow[]> {
-    return this.db
+    const txs = this.db
       .prepare<[number, number]>(
         `SELECT * FROM transactions WHERE ses = ? AND idx >= ?`,
       )
-      .all(sessionRowId, firstNewTxIdx) as TransactionRow[];
+      .all(sessionRowId, firstNewTxIdx) as RawTransactionRow[];
+
+    try {
+      return txs.map((transactionRow) => ({
+        ...transactionRow,
+        tx: JSON.parse(transactionRow.tx) as Transaction,
+      }));
+    } catch (e) {
+      console.warn("Invalid JSON in transaction", e);
+      return [];
+    }
   }
 
   async getSignatures(

@@ -4,6 +4,62 @@ import {
   SessionID,
   cojsonInternals,
 } from "cojson";
+import {
+  SignatureAfterRow,
+  StoredSessionRow,
+  TransactionRow,
+} from "./sqlClient";
+
+export function collectNewTxs({
+  newTxsInSession,
+  newContentMessages,
+  sessionRow,
+  signaturesAndIdxs,
+  peerKnownState,
+  firstNewTxIdx,
+}: {
+  newTxsInSession: TransactionRow[];
+  newContentMessages: CojsonInternalTypes.NewContentMessage[];
+  sessionRow: StoredSessionRow;
+  signaturesAndIdxs: SignatureAfterRow[];
+  peerKnownState: CojsonInternalTypes.CoValueKnownState;
+  firstNewTxIdx: number;
+}) {
+  let idx = firstNewTxIdx;
+
+  for (const tx of newTxsInSession) {
+    let sessionEntry =
+      newContentMessages[newContentMessages.length - 1]!.new[
+        sessionRow.sessionID
+      ];
+    if (!sessionEntry) {
+      sessionEntry = {
+        after: idx,
+        lastSignature: "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
+        newTransactions: [],
+      };
+      newContentMessages[newContentMessages.length - 1]!.new[
+        sessionRow.sessionID
+      ] = sessionEntry;
+    }
+
+    sessionEntry.newTransactions.push(tx.tx);
+
+    if (signaturesAndIdxs[0] && idx === signaturesAndIdxs[0].idx) {
+      sessionEntry.lastSignature = signaturesAndIdxs[0].signature;
+      signaturesAndIdxs.shift();
+      newContentMessages.push({
+        action: "content",
+        id: peerKnownState.id,
+        new: {},
+        priority: cojsonInternals.getPriorityFromHeader(undefined),
+      });
+    } else if (idx === firstNewTxIdx + newTxsInSession.length - 1) {
+      sessionEntry.lastSignature = sessionRow.lastSignature;
+    }
+    idx += 1;
+  }
+}
 
 export function getDependedOnCoValues(
   parsedHeader,

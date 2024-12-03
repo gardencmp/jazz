@@ -8,7 +8,7 @@ import {
 } from "cojson";
 
 import { SQLiteClient, StoredSessionRow } from "./sqlClient";
-import { getDependedOnCoValues } from "./syncUtils";
+import { collectNewTxs, getDependedOnCoValues } from "./syncUtils";
 
 export class SyncManager {
   private readonly toLocalNode: OutgoingSyncQueue;
@@ -88,7 +88,7 @@ export class SyncManager {
       ) {
         const firstNewTxIdx = theirKnown.sessions[sessionRow.sessionID] || 0;
 
-        const newTxInSession = await this.dbClient.getNewTransactionInSession(
+        const newTxsInSession = await this.dbClient.getNewTransactionInSession(
           sessionRow.rowID,
           firstNewTxIdx,
         );
@@ -98,55 +98,14 @@ export class SyncManager {
           firstNewTxIdx,
         );
 
-        let idx = firstNewTxIdx;
-
-        for (const tx of newTxInSession) {
-          let sessionEntry =
-            newContentPieces[newContentPieces.length - 1]!.new[
-              sessionRow.sessionID
-            ];
-          if (!sessionEntry) {
-            sessionEntry = {
-              after: idx,
-              lastSignature:
-                "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
-              newTransactions: [],
-            };
-            newContentPieces[newContentPieces.length - 1]!.new[
-              sessionRow.sessionID
-            ] = sessionEntry;
-          }
-
-          let parsedTx;
-
-          try {
-            parsedTx = JSON.parse(tx.tx);
-          } catch (e) {
-            console.warn(
-              theirKnown.id,
-              "Invalid JSON in transaction",
-              e,
-              tx.tx,
-            );
-            break;
-          }
-
-          sessionEntry.newTransactions.push(parsedTx);
-
-          if (signaturesAndIdxs[0] && idx === signaturesAndIdxs[0].idx) {
-            sessionEntry.lastSignature = signaturesAndIdxs[0].signature;
-            signaturesAndIdxs.shift();
-            newContentPieces.push({
-              action: "content",
-              id: theirKnown.id,
-              new: {},
-              priority,
-            });
-          } else if (idx === firstNewTxIdx + newTxInSession.length - 1) {
-            sessionEntry.lastSignature = sessionRow.lastSignature;
-          }
-          idx += 1;
-        }
+        collectNewTxs({
+          firstNewTxIdx,
+          newTxsInSession,
+          newContentPieces,
+          sessionRow,
+          theirKnown,
+          signaturesAndIdxs,
+        });
       }
     }
 

@@ -12,14 +12,21 @@ import {
   TransactionRow,
 } from "./idbClient";
 
-export function collectNewTxs(
-  newTxsInSession: TransactionRow[],
-  newContentMessages: CojsonInternalTypes.NewContentMessage[],
-  sessionRow: StoredSessionRow,
-  signaturesAndIdxs: SignatureAfterRow[],
-  theirKnown: CojsonInternalTypes.CoValueKnownState,
-  firstNewTxIdx: number,
-) {
+export function collectNewTxs({
+  newTxsInSession,
+  newContentMessages,
+  sessionRow,
+  signaturesAndIdxs,
+  peerKnownState,
+  firstNewTxIdx,
+}: {
+  newTxsInSession: TransactionRow[];
+  newContentMessages: CojsonInternalTypes.NewContentMessage[];
+  sessionRow: StoredSessionRow;
+  signaturesAndIdxs: SignatureAfterRow[];
+  peerKnownState: CojsonInternalTypes.CoValueKnownState;
+  firstNewTxIdx: number;
+}) {
   let idx = firstNewTxIdx;
 
   for (const tx of newTxsInSession) {
@@ -45,7 +52,7 @@ export function collectNewTxs(
       signaturesAndIdxs.shift();
       newContentMessages.push({
         action: "content",
-        id: theirKnown.id,
+        id: peerKnownState.id,
         new: {},
         priority: cojsonInternals.getPriorityFromHeader(undefined),
       });
