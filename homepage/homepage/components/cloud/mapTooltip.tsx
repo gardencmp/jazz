@@ -8,7 +8,6 @@ export default function MapTooltip() {
     // register callback for hovering, if we're over any circle, show the tooltip based on the data attributes
     const onMouseMove = (e: MouseEvent) => {
       const circ = e.target;
-      console.log(circ);
 
       const el = document.querySelector(
         ".map-tooltip",
@@ -34,8 +33,6 @@ export default function MapTooltip() {
         el.style.display = "none";
       }
     };
-
-    console.log("registering");
 
     document.addEventListener("mousemove", onMouseMove);
 

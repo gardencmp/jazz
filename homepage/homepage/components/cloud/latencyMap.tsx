@@ -136,8 +136,6 @@ export const MapSVG = memo(({ spacing = 1.5 }: { spacing?: number }) => {
     landPolygon,
   ) as FeatureCollection<Point>;
 
-  console.log(dotsOnLand.features[0].geometry);
-
   const scaleX = 3;
   const scaleY = 3;
   const offsetX = 600;
