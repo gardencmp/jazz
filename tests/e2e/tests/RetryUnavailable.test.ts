@@ -21,7 +21,7 @@ test.describe("Retry unavailable states", () => {
       timeout: 20_000,
     });
 
-    await setTimeout(400);
+    await setTimeout(1000);
 
     await context.setOffline(false);
 
