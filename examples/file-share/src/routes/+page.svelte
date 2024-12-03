@@ -79,17 +79,8 @@
     </button>
   </div>
 
-  <div class="mb-8">
-    <input
-      type="file"
-      bind:this={fileInput}
-      onchange={handleFileUpload}
-      class="block w-full cursor-pointer rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-900 focus:outline-none"
-    />
-  </div>
-
   <div class="grid gap-4">
-    {#if sharedFiles.current}
+       {#if sharedFiles.current}
       {#each sharedFiles.current as file (file?.id)}
         <div
           class="flex items-center justify-between rounded-lg border p-4 shadow-sm"
@@ -125,12 +116,16 @@
       {#each [...uploadingFiles] as fileName (fileName)}
         <div
           class="flex items-center justify-between rounded-lg border bg-gray-50 p-4 shadow-sm"
-          transition:fade={{ duration: 300 }}
+          in:fade={{ duration: 300 }}
+          out:slide={{ duration: 300 }}
         >
           <div>
             <h3 class="flex items-center gap-2 font-semibold">
               {fileName}
-              <span class="inline-block animate-spin">⟳</span>
+              <svg class="h-5 w-5 animate-spin text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
             </h3>
             <p class="text-sm text-gray-500">Uploading...</p>
           </div>
@@ -139,5 +134,23 @@
     {:else}
       <p class="text-center text-gray-500">No files yet</p>
     {/if}
+
+    <label
+    class="flex cursor-pointer items-center justify-between rounded-lg border p-4 shadow-sm hover:bg-gray-50"
+  >
+    <div>
+      <h3 class="font-semibold">Upload a new file</h3>
+      <p class="text-sm text-gray-500">Click to select a file from your computer</p>
+    </div>
+    <input
+      type="file"
+      bind:this={fileInput}
+      onchange={handleFileUpload}
+      class="hidden"
+    />
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    </svg>
+  </label>
   </div>
 </div>
