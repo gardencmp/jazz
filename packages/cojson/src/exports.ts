@@ -23,8 +23,14 @@ import {
   secretSeedLength,
   shortHashLength,
 } from "./crypto/crypto.js";
-import { isRawCoID, rawCoIDfromBytes, rawCoIDtoBytes } from "./ids.js";
-import { parseJSON } from "./jsonStringify.js";
+import {
+  getGroupDependentKey,
+  getGroupDependentKeyList,
+  isRawCoID,
+  rawCoIDfromBytes,
+  rawCoIDtoBytes,
+} from "./ids.js";
+import { Stringified, parseJSON } from "./jsonStringify.js";
 import { LocalNode } from "./localNode.js";
 import type { Role } from "./permissions.js";
 import { Channel, connectedPeers } from "./streamUtils.js";
@@ -83,6 +89,8 @@ export const cojsonInternals = {
   StreamingHash,
   Channel,
   getPriorityFromHeader,
+  getGroupDependentKeyList,
+  getGroupDependentKey,
 };
 
 export {
@@ -133,6 +141,7 @@ export type {
   DisconnectedError,
   PingTimeoutError,
   CoValueUniqueness,
+  Stringified,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

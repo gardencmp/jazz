@@ -1,5 +1,14 @@
 # cojson
 
+## 0.8.35
+
+### Patch Changes
+
+- 3f15a23: Resolve deadlock in cluster setup with multiple layers of sync & storage servers
+- 46f2ab8: Add emptyKnownState and SessionNewContent to the package exports
+- 8b87117: Implement Group Inheritance
+- a6b6ccf: Upload new coValues when a peer is added
+
 ## 0.8.34
 
 ### Patch Changes

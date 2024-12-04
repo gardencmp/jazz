@@ -142,6 +142,11 @@ export class Group extends CoValueBase implements CoValue {
     return this;
   }
 
+  removeMember(member: Everyone | Account) {
+    this._raw.removeMember(member === "everyone" ? member : member._raw);
+    return this;
+  }
+
   get members() {
     return this._raw
       .keys()
@@ -170,6 +175,11 @@ export class Group extends CoValueBase implements CoValue {
           },
         };
       });
+  }
+
+  extend(parent: Group) {
+    this._raw.extend(parent._raw);
+    return this;
   }
 
   /** @category Subscription & Loading */
