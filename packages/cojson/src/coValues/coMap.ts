@@ -11,7 +11,8 @@ type MapOp<K extends string, V extends JsonValue | undefined> = {
   txID: TransactionID;
   madeAt: number;
   changeIdx: number;
-} & MapOpPayload<K, V>;
+  change: MapOpPayload<K, V>;
+};
 // TODO: add after TransactionID[] for conflicts/ordering
 
 export type MapOpPayload<K extends string, V extends JsonValue | undefined> =
@@ -39,9 +40,17 @@ export class RawCoMapView<
   /** @category 6. Meta */
   core: CoValueCore;
   /** @internal */
-  ops: {
+  latest: {
+    [Key in keyof Shape & string]?: MapOp<Key, Shape[Key]>;
+  };
+  /** @internal */
+  latestTxMadeAt: number;
+  /** @internal */
+  cachedOps?: {
     [Key in keyof Shape & string]?: MapOp<Key, Shape[Key]>[];
   };
+  /** @internal */
+  options?: { ignorePrivateTransactions: boolean; atTime?: number };
   /** @internal */
   atTimeFilter?: number = undefined;
   /** @category 6. Meta */
@@ -50,33 +59,88 @@ export class RawCoMapView<
   /** @internal */
   constructor(
     core: CoValueCore,
-    options?: { ignorePrivateTransactions: true },
+    options?: { ignorePrivateTransactions: boolean; atTime?: number },
   ) {
     this.id = core.id as CoID<this>;
     this.core = core;
-    this.ops = {};
+    this.latest = {};
+    const latest = this.latest;
+    this.latestTxMadeAt = 0;
+    this.options = options;
 
-    for (const { txID, changes, madeAt } of core.getValidSortedTransactions(
-      options,
-    )) {
+    const validTransactions = core.getValidSortedTransactions(options);
+
+    for (let i = validTransactions.length - 1; i >= 0; i--) {
+      const { txID, changes, madeAt } = validTransactions[i]!;
+
+      if (options?.atTime && madeAt > options.atTime) {
+        continue;
+      }
+
+      if (madeAt > this.latestTxMadeAt) {
+        this.latestTxMadeAt = madeAt;
+      }
+
       for (let changeIdx = 0; changeIdx < changes.length; changeIdx++) {
         const change = changes[changeIdx] as MapOpPayload<
           keyof Shape & string,
           Shape[keyof Shape & string]
         >;
-        let entries = this.ops[change.key];
+        let entry = latest[change.key];
+        if (!entry) {
+          entry = {
+            txID,
+            madeAt,
+            changeIdx,
+            change,
+          };
+          latest[change.key] = entry;
+        } else if (madeAt > entry.madeAt) {
+          entry.txID = txID;
+          entry.madeAt = madeAt;
+          entry.changeIdx = changeIdx;
+          entry.change = change;
+        }
+      }
+    }
+  }
+
+  private getOps() {
+    if (this.cachedOps) {
+      return this.cachedOps;
+    }
+
+    const ops: {
+      [Key in keyof Shape & string]?: MapOp<Key, Shape[Key]>[];
+    } = {};
+
+    for (const {
+      txID,
+      changes,
+      madeAt,
+    } of this.core.getValidSortedTransactions(this.options)) {
+      for (let changeIdx = 0; changeIdx < changes.length; changeIdx++) {
+        const change = changes[changeIdx] as MapOpPayload<
+          keyof Shape & string,
+          Shape[keyof Shape & string]
+        >;
+        let entries = ops[change.key];
         if (!entries) {
           entries = [];
-          this.ops[change.key] = entries;
+          ops[change.key] = entries;
         }
         entries.push({
           txID,
           madeAt,
           changeIdx,
-          ...change,
+          change,
         });
       }
     }
+
+    this.cachedOps = ops;
+
+    return ops;
   }
 
   /** @category 6. Meta */
@@ -91,13 +155,17 @@ export class RawCoMapView<
 
   /** @category 4. Time travel */
   atTime(time: number): this {
-    const clone = Object.create(this) as this;
-    clone.id = this.id;
-    clone.type = this.type;
-    clone.core = this.core;
-    clone.ops = this.ops;
-    clone.atTimeFilter = time;
-    return clone;
+    if (time >= this.latestTxMadeAt) {
+      return this;
+    } else {
+      const clone = new RawCoMapView(this.core, {
+        ignorePrivateTransactions:
+          this.options?.ignorePrivateTransactions ?? false,
+        atTime: time,
+      });
+      Object.setPrototypeOf(clone, this);
+      return clone as this;
+    }
   }
 
   /** @internal */
@@ -109,9 +177,11 @@ export class RawCoMapView<
     }
 
     if (this.atTimeFilter) {
-      return this.ops[key]?.filter((op) => op.madeAt <= this.atTimeFilter!);
+      return this.getOps()[key]?.filter(
+        (op) => op.madeAt <= this.atTimeFilter!,
+      );
     } else {
-      return this.ops[key];
+      return this.getOps()[key];
     }
   }
 
@@ -120,18 +190,18 @@ export class RawCoMapView<
    *
    * @category 1. Reading */
   keys<K extends keyof Shape & string = keyof Shape & string>(): K[] {
-    return (Object.keys(this.ops) as K[]).filter((key) => {
-      const ops = this.ops[key];
-      if (!ops) {
+    return (Object.keys(this.latest) as K[]).filter((key) => {
+      const latest = this.latest[key];
+      if (!latest) {
         return undefined;
       }
 
       const includeUntil = this.atTimeFilter;
       const lastEntry = includeUntil
-        ? ops.findLast((entry) => entry.madeAt <= includeUntil)
-        : ops[ops.length - 1]!;
+        ? this.getOps()[key]?.findLast((entry) => entry.madeAt <= includeUntil)
+        : latest!;
 
-      if (lastEntry?.op === "del") {
+      if (lastEntry?.change.op === "del") {
         return false;
       } else {
         return true;
@@ -145,20 +215,22 @@ export class RawCoMapView<
    * @category 1. Reading
    **/
   get<K extends keyof Shape & string>(key: K): Shape[K] | undefined {
-    const ops = this.ops[key];
-    if (!ops) {
+    const latest = this.latest[key];
+    if (!latest) {
       return undefined;
     }
 
     const includeUntil = this.atTimeFilter;
     const lastEntry = includeUntil
-      ? ops.findLast((entry) => entry.madeAt <= includeUntil)
-      : ops[ops.length - 1]!;
+      ? this.timeFilteredOps(key)?.findLast(
+          (entry) => entry.madeAt <= includeUntil,
+        )
+      : latest;
 
-    if (lastEntry?.op === "del") {
+    if (lastEntry?.change.op === "del") {
       return undefined;
     } else {
-      return lastEntry?.value;
+      return lastEntry?.change.value;
     }
   }
 
@@ -216,7 +288,7 @@ export class RawCoMapView<
       by: accountOrAgentIDfromSessionID(entry.txID.sessionID),
       tx: entry.txID,
       at: new Date(entry.madeAt),
-      value: entry.op === "del" ? undefined : entry.value,
+      value: entry.change.op === "del" ? undefined : entry.change.value,
     };
   }
 
@@ -294,7 +366,7 @@ export class RawCoMap<
 
     const after = new RawCoMap(this.core) as this;
 
-    this.ops = after.ops;
+    this.latest = after.latest;
   }
 
   /** Delete the given key (setting it to undefined).
@@ -321,6 +393,6 @@ export class RawCoMap<
 
     const after = new RawCoMap(this.core) as this;
 
-    this.ops = after.ops;
+    this.latest = after.latest;
   }
 }
