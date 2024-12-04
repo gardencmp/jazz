@@ -4,7 +4,15 @@ import { RawAccount, RawAccountID, RawProfile } from "./coValues/account.js";
 import { MapOpPayload } from "./coValues/coMap.js";
 import { EVERYONE, Everyone, RawGroup } from "./coValues/group.js";
 import { KeyID } from "./crypto/crypto.js";
-import { AgentID, RawCoID, SessionID, TransactionID } from "./ids.js";
+import {
+  AgentID,
+  ParentGroupReference,
+  RawCoID,
+  SessionID,
+  TransactionID,
+  getParentGroupId,
+  isParentGroupReference,
+} from "./ids.js";
 import { parseJSON } from "./jsonStringify.js";
 import { JsonValue } from "./jsonValue.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
@@ -24,6 +32,9 @@ export type Role =
   | "writerInvite"
   | "readerInvite";
 
+type ValidTransactionsResult = { txID: TransactionID; tx: Transaction };
+type MemberState = { [agent: RawAccountID | AgentID]: Role; [EVERYONE]?: Role };
+
 export function determineValidTransactions(
   coValue: CoValueCore,
 ): { txID: TransactionID; tx: Transaction }[] {
@@ -33,7 +44,8 @@ export function determineValidTransactions(
       throw new Error("Group must have initialAdmin");
     }
 
-    return determineValidTransactionsForGroup(coValue, initialAdmin);
+    return determineValidTransactionsForGroup(coValue, initialAdmin)
+      .validTransactions;
   } else if (coValue.header.ruleset.type === "ownedByGroup") {
     const groupContent = expectGroup(
       coValue.node
@@ -96,10 +108,54 @@ export function determineValidTransactions(
   }
 }
 
+function isHigherRole(a: Role, b: Role | undefined) {
+  if (a === undefined) return false;
+  if (b === undefined) return true;
+  if (b === "admin") return false;
+  if (a === "admin") return true;
+
+  return a === "writer" && b === "reader";
+}
+
+function resolveMemberStateFromParentReference(
+  coValue: CoValueCore,
+  memberState: MemberState,
+  parentReference: ParentGroupReference,
+) {
+  const parentGroup = coValue.node.expectCoValueLoaded(
+    getParentGroupId(parentReference),
+    "Expected parent group to be loaded",
+  );
+
+  if (parentGroup.header.ruleset.type !== "group") {
+    return;
+  }
+
+  const initialAdmin = parentGroup.header.ruleset.initialAdmin;
+
+  if (!initialAdmin) {
+    throw new Error("Group must have initialAdmin");
+  }
+
+  const { memberState: parentGroupMemberState } =
+    determineValidTransactionsForGroup(parentGroup, initialAdmin);
+
+  for (const agent of Object.keys(parentGroupMemberState) as Array<
+    keyof MemberState
+  >) {
+    const parentRole = parentGroupMemberState[agent];
+    const currentRole = memberState[agent];
+
+    if (parentRole && isHigherRole(parentRole, currentRole)) {
+      memberState[agent] = parentRole;
+    }
+  }
+}
+
 function determineValidTransactionsForGroup(
   coValue: CoValueCore,
   initialAdmin: RawAccountID | AgentID,
-): { txID: TransactionID; tx: Transaction }[] {
+): { validTransactions: ValidTransactionsResult[]; memberState: MemberState } {
   const allTransactionsSorted = [...coValue.sessionLogs.entries()].flatMap(
     ([sessionID, sessionLog]) => {
       return sessionLog.transactions.map((tx, txIndex) => ({
@@ -118,12 +174,8 @@ function determineValidTransactionsForGroup(
     return a.tx.madeAt - b.tx.madeAt;
   });
 
-  const memberState: {
-    [agent: RawAccountID | AgentID]: Role;
-    [EVERYONE]?: Role;
-  } = {};
-
-  const validTransactions: { txID: TransactionID; tx: Transaction }[] = [];
+  const memberState: MemberState = {};
+  const validTransactions: ValidTransactionsResult[] = [];
 
   for (const { sessionID, txIndex, tx } of allTransactionsSorted) {
     // console.log("before", { memberState, validTransactions });
@@ -217,6 +269,7 @@ function determineValidTransactionsForGroup(
         console.warn("Only admins can set parent extensions");
         continue;
       }
+      resolveMemberStateFromParentReference(coValue, memberState, change.key);
       validTransactions.push({ txID: { sessionID, txIndex }, tx });
       continue;
     } else if (isChildExtension(change.key)) {
@@ -302,7 +355,7 @@ function determineValidTransactionsForGroup(
     // console.log("after", { memberState, validTransactions });
   }
 
-  return validTransactions;
+  return { validTransactions, memberState };
 }
 
 function agentInAccountOrMemberInGroup(

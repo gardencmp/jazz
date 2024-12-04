@@ -798,7 +798,6 @@ export class CoValueCore {
       }
 
       // try to find revelation to parent group read keys
-
       for (const co of content.keys()) {
         if (isParentGroupReference(co)) {
           const parentGroupID = getParentGroupId(co);
