@@ -12,7 +12,8 @@
       "**/ios/**",
       "**/android/**",
       "packages/jazz-svelte/**",
-      "examples/*svelte*/**"
+      "examples/*svelte*/**",
+      "examples/file-share/**"
     ]
   },
   "formatter": {
