@@ -399,13 +399,15 @@ export default function Page() {
         slogan="Find an example app with code most similar to what you want to build"
       />
 
+      <div className="grid gap-8 mb-12 lg:gap-12">
+        <h2 className="sr-only">Example apps with demo and code</h2>
+        {demos.map(
+          (demo) =>
+            demo.showDemo && <ExampleDemo key={demo.slug} example={demo} />,
+        )}
+      </div>
+
       <div className="grid gap-12 lg:gap-20">
-        <GappedGrid>
-          {demos.map(
-            (demo) =>
-              demo.showDemo && <ExampleDemo key={demo.slug} example={demo} />,
-          )}
-        </GappedGrid>
         {categories.map((category) => (
           <div key={category.name}>
             <div className="flex items-center gap-3 mb-5">
