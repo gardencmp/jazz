@@ -23,11 +23,15 @@ await rm("./codeSamples", { recursive: true, force: true });
         await Promise.all(
           (
             await readdir(path.join("../../", dir))
-          ).map(async (f) =>
-            (f.endsWith(".ts") && f !== "vite-env.d.ts") || f.endsWith(".tsx")
-              ? [f, await readFile(path.join("../../", dir, f), "utf8")]
-              : undefined,
-          ),
+          ).map(async (f) => {
+            if (f.endsWith(".json") || f === "vite-env.d.ts") return undefined;
+
+            if (f.endsWith(".ts") || f.endsWith(".tsx")) {
+              return [f, await readFile(path.join("../../", dir, f), "utf8")];
+            }
+
+            return undefined;
+          }),
         )
       ).filter((entry) => entry !== undefined),
     );
