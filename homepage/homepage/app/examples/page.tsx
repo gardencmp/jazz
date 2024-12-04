@@ -222,6 +222,25 @@ const reactExamples: Example[] = [
     ),
   },
   {
+    name: "Password manager",
+    slug: "password-manager",
+    description: "A secure password manager, using Passkey for authentication.",
+    tech: [tech.react],
+    features: [features.passkey],
+    demoUrl: "https://passwords-demo.jazz.tools",
+    illustration: <PasswordManagerIllustration />,
+  },
+  {
+    name: "Music player",
+    slug: "music-player",
+    description:
+      "Upload your favorite songs, and share them with your friends.",
+    tech: [tech.react],
+    features: [features.fileUpload],
+    demoUrl: "https://music-demo.jazz.tools",
+    illustration: <MusicIllustration />,
+  },
+  {
     name: "Clerk",
     slug: "clerk",
     description: "A React app that uses Clerk for authentication",
@@ -249,25 +268,6 @@ const reactExamples: Example[] = [
         </div>
       </div>
     ),
-  },
-  {
-    name: "Password manager",
-    slug: "password-manager",
-    description: "A secure password manager, using Passkey for authentication.",
-    tech: [tech.react],
-    features: [features.passkey],
-    demoUrl: "https://passwords-demo.jazz.tools",
-    illustration: <PasswordManagerIllustration />,
-  },
-  {
-    name: "Music player",
-    slug: "music-player",
-    description:
-      "Upload your favorite songs, and share them with your friends.",
-    tech: [tech.react],
-    features: [features.fileUpload],
-    demoUrl: "https://music-demo.jazz.tools",
-    illustration: <MusicIllustration />,
   },
 ];
 
