@@ -1320,7 +1320,7 @@ importers:
         version: 5.3.3
     devDependencies:
       '@types/ws':
-        specifier: ^8.5.5
+        specifier: ^8.5.10
         version: 8.5.10
 
   packages/coverage: {}
@@ -1564,7 +1564,7 @@ importers:
         version: 8.17.0
     devDependencies:
       '@types/ws':
-        specifier: ^8.5.5
+        specifier: ^8.5.10
         version: 8.5.10
       typescript:
         specifier: ^5.3.3
