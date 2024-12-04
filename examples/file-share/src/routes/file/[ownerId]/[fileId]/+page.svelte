@@ -1,14 +1,17 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { useAccount, useCoState } from '$lib/jazz';
+  import { useAccountOrGuest, useCoState } from '$lib/jazz';
   import { SharedFile } from '$lib/schema';
   import { File, Link2, FileDown } from 'lucide-svelte';
   import { FileStream, type ID } from 'jazz-tools';
   import { formatFileSize } from '$lib/utils';
   import { toast } from 'svelte-sonner';
 
-  const { me } = useAccount();
+  const { me } = useAccountOrGuest();
   const fileId = $page.params.fileId;
+  const ownerId = $page.params.ownerId;
+
+  $inspect('me',me)
 
   const file = $state(useCoState(SharedFile, fileId as ID<SharedFile>, {}));
 
@@ -51,61 +54,53 @@
       toast.success('Share link copied to clipboard');
     } catch (error) {
       console.error('Error sharing file:', error);
-      toast.error('Failed to create share link');
+      toast.error('Failed to copy share link');
     }
   }
+
+  $inspect('file',file)
 </script>
 
-{#if !hasAccess}
-  <div class="flex min-h-[50vh] flex-col items-center justify-center gap-4">
-    <File class="h-16 w-16 text-gray-400" />
-    <h2 class="text-xl font-semibold text-gray-700">File Not Found</h2>
-    <p class="text-gray-600">This file could not be found or you may not have access to it.</p>
-  </div>
-{:else if file.current}
-  {#if file.current.file}
-    <div class="container mx-auto max-w-4xl px-4 py-8">
-      <div class="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-        <div class="mb-6 flex items-center space-x-4">
-          <div
-            class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 text-blue-600"
-          >
-            <File size={24} />
-          </div>
-          <div>
-            <h1 class="text-xl font-semibold text-gray-900">{file.current.name}</h1>
-            <p class="text-sm text-gray-500">
-              {#if file.current._owner?.profile?.name}
-                {isOwner ? 'Owned by you' : `Shared by ${file.current._owner.profile.name}`} •
-              {/if}
-              {formatFileSize(file.current.size)}
-            </p>
-          </div>
+{#if file.current}
+  <div class="container mx-auto p-4 max-w-3xl">
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <File class="w-6 h-6" />
+          <h1 class="text-2xl font-semibold">{file.current.name}</h1>
         </div>
-
-        <div class="flex space-x-4">
-          <button
-            onclick={downloadFile}
-            class="inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          >
-            <FileDown size={20} />
-            <span>Download</span>
-          </button>
+        <div class="flex gap-2">
           {#if isOwner}
             <button
               onclick={shareFile}
-              class="inline-flex items-center space-x-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50"
+              class="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
             >
-              <Link2 size={20} />
-              <span>Share</span>
+              <Link2 class="w-4 h-4" />
+              Share
+            </button>
+          {/if}
+          {#if hasAccess}
+            <button
+              onclick={downloadFile}
+              class="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            >
+              <FileDown class="w-4 h-4" />
+              Download
             </button>
           {/if}
         </div>
       </div>
+      {#if file.current._refs.file}
+        <p class="text-gray-600">Size: {formatFileSize(file.current.size)}</p>
+      {:else}
+        <p class="text-red-600">You don't have access to this file.</p>
+      {/if}
     </div>
-  {:else}
-    <div class="container mx-auto max-w-4xl px-4 py-8">
-      <div class="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">Loading file...</div>
+  </div>
+{:else}
+  <div class="container mx-auto p-4 max-w-3xl">
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <p class="text-gray-600">Loading file...</p>
     </div>
-  {/if}
+  </div>
 {/if}

@@ -1,4 +1,4 @@
-import { Account, CoList, CoMap, FileStream, Profile, co} from 'jazz-tools';
+import { Account, CoList, CoMap, FileStream, Profile, co, Group } from 'jazz-tools';
 
 export class SharedFile extends CoMap {
   name = co.string;
@@ -16,6 +16,7 @@ export class ListOfSharedFiles extends CoList.Of(co.ref(SharedFile)) {}
 
 export class FileShareAccountRoot extends CoMap {
   sharedFiles = co.ref(ListOfSharedFiles);
+  publicGroup = co.ref(Group);
 }
 
 export class FileShareAccount extends Account {
@@ -27,22 +28,52 @@ export class FileShareAccount extends Account {
    */
   async migrate(this: FileShareAccount, creationProps?: { name: string }) {
     super.migrate(creationProps);
-    
-    await this._refs.root?.load(); // Why isn't root loaded already?
-    
+
+    await this._refs.root?.load();
+
     // Initialize root if it doesn't exist
     if (!this.root) {
+      // Create a group that will own all shared files
+      const publicGroup = Group.create({ owner: this });
+      // Give read access to everyone
+      publicGroup.addMember("everyone", "reader");
+
       this.root = FileShareAccountRoot.create(
         {
-          sharedFiles: ListOfSharedFiles.create([], { owner: this })
+          sharedFiles: ListOfSharedFiles.create([], { owner: publicGroup }),
+          publicGroup
         },
         { owner: this }
       );
     }
 
-    // Ensure sharedFiles exists even if root was already created
-    if (!this.root?._refs.sharedFiles) {
-      this.root.sharedFiles = ListOfSharedFiles.create([], { owner: this });
+    console.log('root',this.root);
+
+    // Ensure the group exists and has everyone as reader
+    if (!this.root.publicGroup) {
+      const publicGroup = Group.create({ owner: this });
+      publicGroup.addMember("everyone", "reader");
+      this.root.publicGroup = publicGroup;
     }
   }
+
+  // async createSharedFile(name: string, file: FileStream): Promise<SharedFile> {
+  //   if (!this.root?.publicGroup) {
+  //     throw new Error("Public group not initialized");
+  //   }
+
+  //   const sharedFile = SharedFile.create(
+  //     {
+  //       name,
+  //       file,
+  //       createdAt: new Date(),
+  //       uploadedAt: new Date(),
+  //       size: file.size
+  //     },
+  //     { owner: this.root.publicGroup }
+  //   );
+
+  //   await this.root.sharedFiles.push(sharedFile);
+  //   return sharedFile;
+  // }
 }

@@ -16,10 +16,13 @@
 
 <Toaster richColors />
 
-<div class="fixed bottom-4 right-4">
-  <PasskeyAuthBasicUI state={auth.state} />
-</div>
-
+{#if auth.state.state === 'ready'}
+  <div class="fixed inset-0 flex items-center justify-center bg-gray-50/80">
+    <div class="rounded-lg bg-white p-8 shadow-lg">
+      <PasskeyAuthBasicUI state={auth.state} />
+    </div>
+  </div>
+{/if}
 {#if auth.current}
   <Provider auth={auth.current} peer="wss://cloud.jazz.tools/?key=file-share-example@gcmp.io">
     <div class="min-h-screen bg-gray-100">
