@@ -1,25 +1,20 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { useAccountOrGuest, useCoState } from '$lib/jazz';
+  import { useAccount, useCoState } from '$lib/jazz';
   import { SharedFile } from '$lib/schema';
-  import { File, Link2, FileDown } from 'lucide-svelte';
-  import { FileStream, type ID } from 'jazz-tools';
-  import { formatFileSize } from '$lib/utils';
+  import { File, FileDown, Link2 } from 'lucide-svelte';
+  import type { ID } from 'jazz-tools';
+  import { FileStream } from 'jazz-tools';
   import { toast } from 'svelte-sonner';
 
-  const { me } = useAccountOrGuest();
+  const { me } = useAccount();
   const fileId = $page.params.fileId;
-  const ownerId = $page.params.ownerId;
-
-  $inspect('me', me);
 
   const file = $state(useCoState(SharedFile, fileId as ID<SharedFile>, {}));
-
-  const isUploader = $derived(me?.id === file.current?.uploader?.id);
-  const hasAccess = $derived(!!file.current?._refs.file);
+  const isAdmin = $derived(me && file.current?._owner?.myRole() === 'admin');
 
   async function downloadFile() {
-    if (!file.current || !file.current._refs.file?.id || !me) {
+    if (!file.current?._refs.file?.id || !me) {
       toast.error('Failed to download file');
       return;
     }
@@ -47,9 +42,8 @@
   }
 
   async function shareFile() {
-    if (!file.current || !isUploader) return;
     try {
-      const fileUrl = `${window.location.origin}/file/${file.current._owner?.id}/${file.current.id}`;
+      const fileUrl = `${window.location.origin}/file/${file.current?.id}`;
       await navigator.clipboard.writeText(fileUrl);
       toast.success('Share link copied to clipboard');
     } catch (error) {
@@ -57,8 +51,6 @@
       toast.error('Failed to copy share link');
     }
   }
-
-  $inspect('file', file);
 </script>
 
 <svelte:head>
@@ -74,7 +66,7 @@
           <h1 class="text-2xl font-semibold">{file.current.name}</h1>
         </div>
         <div class="flex gap-2">
-          {#if isUploader}
+          {#if isAdmin}
             <button
               onclick={shareFile}
               class="flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200"
@@ -83,7 +75,7 @@
               Share
             </button>
           {/if}
-          {#if hasAccess}
+          {#if file.current._refs.file}
             <button
               onclick={downloadFile}
               class="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
@@ -94,11 +86,12 @@
           {/if}
         </div>
       </div>
-      {#if file.current._refs.file}
-        <p class="text-gray-600">Size: {formatFileSize(file.current.size)}</p>
-      {:else}
-        <p class="text-red-600">You don't have access to this file.</p>
-      {/if}
+
+      <p class="text-gray-600">
+        {isAdmin ? 'You own this file' : 'Shared with you'} • Uploaded {new Date(
+          file.current.createdAt || 0
+        ).toLocaleDateString()}
+      </p>
     </div>
   </div>
 {:else}

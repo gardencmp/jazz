@@ -52,7 +52,7 @@
 
   async function shareFile() {
     try {
-      const fileUrl = `${window.location.origin}/file/${file._owner?.id}/${file.id}`;
+      const fileUrl = `${window.location.origin}/file/${file.id}`;
       await navigator.clipboard.writeText(fileUrl);
       toast.success('Share link copied to clipboard');
     } catch (error) {
@@ -71,7 +71,7 @@
       <File class="h-6 w-6" />
     </div>
     <div>
-      <a href="/file/{file._owner?.id}/{file.id}" class="hover:text-blue-600 hover:underline">
+      <a href="/file/{file.id}" class="hover:text-blue-600 hover:underline">
         <h3 class="font-medium text-gray-900">{file.name}</h3>
       </a>
       <p class="text-sm text-gray-500">
