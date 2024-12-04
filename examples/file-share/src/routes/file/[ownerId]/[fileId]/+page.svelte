@@ -61,6 +61,10 @@
   $inspect('file', file);
 </script>
 
+<svelte:head>
+  <title>{file.current?.name} | File Share</title>
+</svelte:head>
+
 {#if file.current}
   <div class="container mx-auto max-w-3xl p-4">
     <div class="rounded-lg bg-white p-6 shadow-md">
