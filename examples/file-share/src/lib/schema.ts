@@ -35,7 +35,7 @@ export class FileShareAccount extends Account {
     if (!this.root) {
       // Create a group that will own all shared files
       const publicGroup = Group.create({ owner: this });
-      // Give read access to everyone
+      publicGroup.addMember(this, "admin");
       publicGroup.addMember("everyone", "reader");
 
       this.root = FileShareAccountRoot.create(
@@ -52,28 +52,9 @@ export class FileShareAccount extends Account {
     // Ensure the group exists and has everyone as reader
     if (!this.root.publicGroup) {
       const publicGroup = Group.create({ owner: this });
+      publicGroup.addMember(this, "admin");
       publicGroup.addMember("everyone", "reader");
       this.root.publicGroup = publicGroup;
     }
   }
-
-  // async createSharedFile(name: string, file: FileStream): Promise<SharedFile> {
-  //   if (!this.root?.publicGroup) {
-  //     throw new Error("Public group not initialized");
-  //   }
-
-  //   const sharedFile = SharedFile.create(
-  //     {
-  //       name,
-  //       file,
-  //       createdAt: new Date(),
-  //       uploadedAt: new Date(),
-  //       size: file.size
-  //     },
-  //     { owner: this.root.publicGroup }
-  //   );
-
-  //   await this.root.sharedFiles.push(sharedFile);
-  //   return sharedFile;
-  // }
 }

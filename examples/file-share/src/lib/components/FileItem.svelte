@@ -18,7 +18,7 @@
   } = $props();
 
   const { me } = useAccount();
-  const isOwner = $derived(me?.id === file._owner?.id);
+  const isAdmin = $derived(me && file._owner?.myRole() === "admin");
 
   async function downloadFile() {
     if (!file._refs.file?.id || !me) {
@@ -75,9 +75,7 @@
         <h3 class="font-medium text-gray-900">{file.name}</h3>
       </a>
       <p class="text-sm text-gray-500">
-        {#if file._owner?.profile?.name}
-          {isOwner ? 'Owned by you' : `Shared by ${file._owner.profile.name}`} •
-        {/if}
+          {isAdmin ? 'Owned by you' : ''} •
         Uploaded {new Date(file.createdAt || 0).toLocaleDateString()} •
         {formatFileSize(file.size || 0)}
       </p>
@@ -96,7 +94,7 @@
         <FileDown class="h-5 w-5" />
       </button>
 
-      {#if isOwner}
+      {#if isAdmin}
         <button
           onclick={shareFile}
           class="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"

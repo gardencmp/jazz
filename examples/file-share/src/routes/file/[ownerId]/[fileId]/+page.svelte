@@ -15,7 +15,7 @@
 
   const file = $state(useCoState(SharedFile, fileId as ID<SharedFile>, {}));
 
-  const isOwner = $derived(me?.id === file.current?._owner?.id);
+  const isUploader = $derived(me?.id === file.current?.uploader?.id);
   const hasAccess = $derived(!!file.current?._refs.file);
 
   async function downloadFile() {
@@ -47,7 +47,7 @@
   }
 
   async function shareFile() {
-    if (!file.current || !isOwner) return;
+    if (!file.current || !isUploader) return;
     try {
       const fileUrl = `${window.location.origin}/file/${file.current._owner?.id}/${file.current.id}`;
       await navigator.clipboard.writeText(fileUrl);
@@ -70,7 +70,7 @@
           <h1 class="text-2xl font-semibold">{file.current.name}</h1>
         </div>
         <div class="flex gap-2">
-          {#if isOwner}
+          {#if isUploader}
             <button
               onclick={shareFile}
               class="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
