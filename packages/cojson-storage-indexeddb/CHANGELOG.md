@@ -1,5 +1,17 @@
 # cojson-storage-indexeddb
 
+## 0.8.35
+
+### Patch Changes
+
+- 8b87117: Implement Group Inheritance
+- 46f2ab8: Optimize the communication with the sync manager
+- Updated dependencies [3f15a23]
+- Updated dependencies [46f2ab8]
+- Updated dependencies [8b87117]
+- Updated dependencies [a6b6ccf]
+  - cojson@0.8.35
+
 ## 0.8.34
 
 ### Patch Changes

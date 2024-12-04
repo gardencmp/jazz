@@ -1,6 +1,6 @@
 {
   "name": "jazz-svelte",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run package",
@@ -14,8 +14,14 @@
     "format-and-lint": "pnpm run format && pnpm run lint",
     "format-and-lint:fix": "pnpm run format --write && pnpm run lint --fix"
   },
-  "files": ["dist", "!dist/**/*.test.*", "!dist/**/*.spec.*"],
-  "sideEffects": ["**/*.css"],
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "svelte": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "type": "module",
