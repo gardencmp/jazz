@@ -26,13 +26,13 @@ export async function uploadMusicTracks(
   account: MusicaAccount,
   files: Iterable<File>,
 ) {
-  // The ownership object defines the user that owns the created coValues
-  // by setting the ownership with "account" we configure the coValues to be private
-  const ownership = {
-    owner: account,
-  };
-
   for (const file of files) {
+    // The ownership object defines the user that owns the created coValues
+    // We are creating a group for each CoValue in order to be able to share them via Playlist
+    const ownership = {
+      owner: Group.create({ owner: account }),
+    };
+
     const data = await getAudioFileData(file);
 
     // We transform the file blob into a FileStream
@@ -86,16 +86,31 @@ export async function addTrackToPlaylist(
 ) {
   if (!account) return;
 
-  if (playlist.tracks?.some((t) => t?._refs.sourceTrack.id === track.id))
+  const alreadyAdded = playlist.tracks?.some(
+    (t) => t?.id === track.id || t?._refs.sourceTrack?.id === track.id,
+  );
+
+  if (alreadyAdded) return;
+
+  // Check if the track has been created after the Group inheritance was introduced
+  if (track._owner._type === "Group" && playlist._owner._type === "Group") {
+    /**
+     * Extending the track with the Playlist group in order to make the music track
+     * visible to the Playlist user
+     */
+    const trackGroup = track._owner;
+    trackGroup.extend(playlist._owner);
+
+    playlist.tracks?.push(track);
     return;
+  }
 
   /**
    * Since musicTracks are created as private values (see uploadMusicTracks)
    * to make them shareable as part of the playlist we are cloning them
    * and setting the playlist group as owner of the clone
    *
-   * In the future it will be possible to "inherit" the parent group so you
-   * won't need to clone values to have this kind of sharing granularity
+   * Doing this for backwards compatibility for when the Group inheritance wasn't possible
    */
   const ownership = { owner: playlist._owner };
   const blob = await FileStream.loadAsBlob(track._refs.file.id, account);
