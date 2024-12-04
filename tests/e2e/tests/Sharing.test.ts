@@ -182,11 +182,13 @@ test.describe("Sharing", () => {
     page,
     browser,
   }) => {
-    await page.goto("/sharing");
+    await page.goto("/sharing?userName=InitialOwner");
 
     const initialOwnerPage = page;
     const otherAdminPage = await (await browser.newContext()).newPage();
+    otherAdminPage.goto("/?userName=OtherAdmin");
     const readerPage = await (await browser.newContext()).newPage();
+    readerPage.goto("/?userName=Reader");
 
     await initialOwnerPage
       .getByRole("button", { name: "Create the root" })
@@ -266,18 +268,17 @@ test.describe("Sharing", () => {
       "CoValue root ---> CoValue child 1 ---> CoValue child 2 ---> CoValue child 3",
     );
 
-    // FIXME: Uncomment this when we are able to rotate the readKey on unavailable child groups
-    // await initialOwnerPage
-    //   .getByRole("button", { name: "Reveal next level" })
-    //   .click();
+    await initialOwnerPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
 
-    // await initialOwnerPage
-    //   .getByRole("button", { name: "Reveal next level" })
-    //   .click();
+    await initialOwnerPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
 
-    // // The new childs should be revealed to the initial owner
-    // await expect(initialOwnerPage.getByTestId("values")).toContainText(
-    //   "CoValue root ---> CoValue child 1 ---> CoValue child 2 ---> CoValue child 3",
-    // );
+    // The new childs should be revealed to the initial owner
+    await expect(initialOwnerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2 ---> CoValue child 3",
+    );
   });
 });

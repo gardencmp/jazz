@@ -169,7 +169,7 @@ test("An admin should be able to rotate the readKey on child groups even if it w
   expect(mapOnNode1.get("test")).toEqual("Available to node1");
 });
 
-test.skip("An admin should be able to rotate the readKey on child groups even if it was unavailable when kicking out a member from a parent group (2)", async () => {
+test("An admin should be able to rotate the readKey on child groups even if it was unavailable when kicking out a member from a parent group (grandChild)", async () => {
   const { node1, node2, node3, node1ToNode2Peer } = createThreeConnectedNodes(
     "server",
     "server",
@@ -188,8 +188,8 @@ test.skip("An admin should be able to rotate the readKey on child groups even if
   // by inheriting the admin role from the initial group
   const childGroup = node2.createGroup();
   childGroup.extend(groupOnNode2);
-  const map = childGroup.createMap();
-  map.set("test", "Initial value");
+  const grandChildGroup = node2.createGroup();
+  grandChildGroup.extend(childGroup);
 
   // The node1 account removes the reader from the group
   // In this case we want to ensure that node1 is still able to read new coValues
@@ -197,11 +197,10 @@ test.skip("An admin should be able to rotate the readKey on child groups even if
   await group.removeMember(node3.account);
   await node1.syncManager.waitForUploadIntoPeer(node1ToNode2Peer.id, group.id);
 
+  const map = childGroup.createMap();
   map.set("test", "Available to node1");
 
   const mapOnNode1 = await loadCoValueOrFail(node1, map.id);
 
-  await waitFor(() => {
-    expect(mapOnNode1.get("test")).toEqual("Available to node1");
-  });
+  expect(mapOnNode1.get("test")).toEqual("Available to node1");
 });
