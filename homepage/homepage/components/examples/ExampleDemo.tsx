@@ -12,7 +12,7 @@ export function ExampleDemo({ example }: { example: Example }) {
       gap="none"
       className="border bg-stone-50 shadow-sm rounded-lg dark:bg-stone-950 overflow-hidden"
     >
-      <div className="p-3 col-span-full flex gap-2 justify-between items-baseline border-b">
+      <div className="p-3 col-span-full flex flex-col gap-2 justify-between items-baseline border-b sm:flex-row">
         <div className="flex flex-col gap-2 items-baseline sm:flex-row">
           <h2 className="font-medium text-stone-900 dark:text-white leading-none">
             {name}
@@ -27,8 +27,14 @@ export function ExampleDemo({ example }: { example: Example }) {
           <CodeExampleTabs tabs={example.codeSamples}></CodeExampleTabs>
         )}
       </div>
-      <div className="col-span-full md:col-span-2 lg:col-span-3 h-[25rem] lg:h-[30rem]">
-        <iframe width="100%" height="100%" src={demoUrl} title={name} />
+      <div className="col-span-full md:p-8 md:col-span-2 lg:col-span-3 h-[25rem] lg:h-[30rem] lg:p-12">
+        <iframe
+          width="100%"
+          height="100%"
+          className="md:rounded-lg md:shadow-lg"
+          src={demoUrl}
+          title={name}
+        />
       </div>
     </GappedGrid>
   );

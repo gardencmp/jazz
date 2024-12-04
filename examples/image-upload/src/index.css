@@ -70,10 +70,11 @@ nav {
 }
 
 .container {
-  max-width: 100%;
-  width: 500px;
-  margin: 0 auto;
-  padding: 0 1rem;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
+  max-width: 800px;
 }
 
 label {
