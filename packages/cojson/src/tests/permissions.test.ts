@@ -4,6 +4,7 @@ import { ControlledAgent } from "../coValues/account.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 import {
+  createTwoConnectedNodes,
   groupWithTwoAdmins,
   groupWithTwoAdminsHighLevel,
   newGroup,
@@ -1798,6 +1799,40 @@ test("Admins can set child extensions", () => {
 
   group.set(`child_${childGroup.id}`, "extend", "trusting");
   expect(group.get(`child_${childGroup.id}`)).toEqual("extend");
+});
+
+test("Admins can set child extensions when the admin role is inherited", async () => {
+  const { node1, node2 } = createTwoConnectedNodes("server", "server");
+
+  const node2Account = node2.account;
+  const group = node1.createGroup();
+
+  group.addMember(node2Account, "admin");
+
+  const groupOnNode2 = await node2.load(group.id);
+
+  if (groupOnNode2 === "unavailable") {
+    throw new Error("Group not found on node2");
+  }
+
+  const childGroup = node2.createGroup();
+  childGroup.extend(groupOnNode2);
+
+  const childGroupOnNode1 = await node1.load(childGroup.id);
+
+  if (childGroupOnNode1 === "unavailable") {
+    throw new Error("Child group not found on node1");
+  }
+
+  const grandChildGroup = node2.createGroup();
+  grandChildGroup.extend(childGroupOnNode1);
+
+  expect(childGroupOnNode1.get(`child_${grandChildGroup.id}`)).toEqual(
+    "extend",
+  );
+  expect(grandChildGroup.get(`parent_${childGroupOnNode1.id}`)).toEqual(
+    "extend",
+  );
 });
 
 test("Writers, readers and invitees can not set child extensions", () => {

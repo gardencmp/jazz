@@ -3,6 +3,8 @@ import { ControlledAgent } from "../coValues/account.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { SessionID } from "../ids.js";
 import { LocalNode } from "../localNode.js";
+import { connectedPeers } from "../streamUtils.js";
+import { Peer } from "../sync.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 
 const Crypto = await WasmCrypto.create();
@@ -21,6 +23,35 @@ export function randomAnonymousAccountAndSessionID(): [
 export function createTestNode() {
   const [admin, session] = randomAnonymousAccountAndSessionID();
   return new LocalNode(admin, session, Crypto);
+}
+
+export function createTwoConnectedNodes(
+  node1Role: Peer["role"],
+  node2Role: Peer["role"],
+) {
+  // Setup nodes
+  const node1 = createTestNode();
+  const node2 = createTestNode();
+
+  // Connect nodes initially
+  const [node1ToNode2Peer, node2ToNode1Peer] = connectedPeers(
+    "node1ToNode2",
+    "node2ToNode1",
+    {
+      peer1role: node2Role,
+      peer2role: node1Role,
+    },
+  );
+
+  node1.syncManager.addPeer(node2ToNode1Peer);
+  node2.syncManager.addPeer(node1ToNode2Peer);
+
+  return {
+    node1,
+    node2,
+    node1ToNode2Peer,
+    node2ToNode1Peer,
+  };
 }
 
 export function newGroup() {
@@ -58,7 +89,7 @@ export function groupWithTwoAdmins() {
   }
 
   expect(group.get(otherAdmin.id)).toEqual("admin");
-  return { groupCore, admin, otherAdmin, node };
+  return { group, groupCore, admin, otherAdmin, node };
 }
 
 export function newGroupHighLevel() {
