@@ -11,7 +11,6 @@ import {
   SessionID,
   TransactionID,
   getParentGroupId,
-  isParentGroupReference,
 } from "./ids.js";
 import { parseJSON } from "./jsonStringify.js";
 import { JsonValue } from "./jsonValue.js";
