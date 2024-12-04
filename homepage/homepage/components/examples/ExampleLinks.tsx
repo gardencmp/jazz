@@ -7,12 +7,12 @@ export function ExampleLinks({ example }: { example: Example }) {
 
   return (
     <div className="flex gap-2">
-      <Button href={githubUrl} variant="secondary" size="sm">
+      <Button href={githubUrl} newTab variant="secondary" size="sm">
         View code
       </Button>
 
       {demoUrl && (
-        <Button href={demoUrl} variant="secondary" size="sm">
+        <Button href={demoUrl} newTab variant="secondary" size="sm">
           View demo
         </Button>
       )}

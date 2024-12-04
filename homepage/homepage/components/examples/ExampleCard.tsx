@@ -18,9 +18,9 @@ export function ExampleCard({
       )}
 
       <div className="flex-1 space-y-2 mb-2">
-        <h2 className="font-medium text-stone-900 dark:text-white leading-none">
+        <h3 className="font-medium text-stone-900 dark:text-white leading-none">
           {name}
-        </h2>
+        </h3>
 
         <ExampleTags example={example} />
 
