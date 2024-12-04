@@ -1415,7 +1415,7 @@ importers:
         version: 8.15.1
     devDependencies:
       '@types/ws':
-        specifier: ^8.5.5
+        specifier: ^8.5.10
         version: 8.5.10
       typescript:
         specifier: ^5.3.3
