@@ -5,7 +5,7 @@ test.describe("Sharing", () => {
   test("should share simple coValues", async ({ page, browser }) => {
     await page.goto("/sharing");
 
-    await page.getByRole("button", { name: "Create a new list!" }).click();
+    await page.getByRole("button", { name: "Create the root" }).click();
 
     const id = await page.getByTestId("id").textContent();
     const inviteLink = await page
@@ -27,10 +27,12 @@ test.describe("Sharing", () => {
   }) => {
     await page.goto("/sharing");
 
-    await page.getByRole("button", { name: "Create a new list!" }).click();
-    await page.getByRole("button", { name: "Add a new value!" }).click();
+    await page.getByRole("button", { name: "Create the root" }).click();
+    await page.getByRole("button", { name: "Add a child" }).click();
 
-    await expect(page.getByTestId("values")).toHaveText("CoValue entry 0");
+    await expect(page.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1",
+    );
 
     const id = await page.getByTestId("id").textContent();
     const inviteLink = await page
@@ -47,14 +49,19 @@ test.describe("Sharing", () => {
 
     // The user should not have access to the internal values
     // because they are part of a different group
-    await expect(newUserPage.getByTestId("values")).toHaveText("");
+    await expect(newUserPage.getByTestId("values")).toContainText(
+      "CoValue root",
+    );
+    await expect(newUserPage.getByTestId("values")).not.toContainText(
+      "CoValue root ---> CoValue child 1",
+    );
 
     // Extend the coMaps group with the coList group
-    await page.getByRole("button", { name: "Share the co-maps!" }).click();
+    await page.getByRole("button", { name: "Share the children" }).click();
 
     // The user should now have access to the internal values
-    await expect(newUserPage.getByTestId("values")).toHaveText(
-      "CoValue entry 0",
+    await expect(newUserPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1",
     );
   });
 
@@ -64,7 +71,7 @@ test.describe("Sharing", () => {
   }) => {
     await page.goto("/sharing");
 
-    await page.getByRole("button", { name: "Create a new list!" }).click();
+    await page.getByRole("button", { name: "Create the root" }).click();
 
     const id = await page.getByTestId("id").textContent();
     const inviteLink = await page
@@ -79,13 +86,21 @@ test.describe("Sharing", () => {
       timeout: 20_000,
     });
 
-    await newUserPage.getByRole("button", { name: "Add a new value!" }).click();
+    await newUserPage.getByRole("button", { name: "Add a child" }).click();
+    await newUserPage.getByRole("button", { name: "Add a child" }).click();
     await newUserPage
-      .getByRole("button", { name: "Share the co-maps!" })
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
+    await newUserPage
+      .getByRole("button", { name: "Share the children" })
       .click();
 
+    await page.getByRole("button", { name: "Reveal next level" }).click();
+
     // The user should now have access to the internal values
-    await expect(page.getByTestId("values")).toHaveText("CoValue entry 0");
+    await expect(page.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2",
+    );
   });
 
   test("admin role is required to extend a group", async ({
@@ -94,7 +109,7 @@ test.describe("Sharing", () => {
   }) => {
     await page.goto("/sharing");
 
-    await page.getByRole("button", { name: "Create a new list!" }).click();
+    await page.getByRole("button", { name: "Create the root" }).click();
 
     const id = await page.getByTestId("id").textContent();
     const inviteLink = await page
@@ -109,13 +124,16 @@ test.describe("Sharing", () => {
       timeout: 20_000,
     });
 
-    await newUserPage.getByRole("button", { name: "Add a new value!" }).click();
+    await newUserPage.getByRole("button", { name: "Add a child" }).click();
     await newUserPage
-      .getByRole("button", { name: "Share the co-maps!" })
+      .getByRole("button", { name: "Share the children" })
       .click();
 
     // The group extension should fail
-    await expect(page.getByTestId("values")).toHaveText("");
+    await expect(page.getByTestId("values")).toContainText("CoValue root");
+    await expect(page.getByTestId("values")).not.toContainText(
+      "CoValue root ---> CoValue child 1",
+    );
   });
 
   test("should not reveal new values after revoking access", async ({
@@ -124,12 +142,9 @@ test.describe("Sharing", () => {
   }) => {
     await page.goto("/sharing");
 
-    await page.getByRole("button", { name: "Create a new list!" }).click();
-    await page.getByRole("button", { name: "Add a new value!" }).click();
-
-    await expect(page.getByTestId("values")).toHaveText("CoValue entry 0");
-
-    await page.getByRole("button", { name: "Share the co-maps!" }).click();
+    await page.getByRole("button", { name: "Create the root" }).click();
+    await page.getByRole("button", { name: "Add a child" }).click();
+    await page.getByRole("button", { name: "Share the children" }).click();
 
     const id = await page.getByTestId("id").textContent();
     const inviteLink = await page
@@ -144,16 +159,123 @@ test.describe("Sharing", () => {
       timeout: 20_000,
     });
 
-    await page.getByRole("button", { name: "Revoke access!" }).click();
-    await page.getByRole("button", { name: "Add a new value!" }).click();
+    await page.getByRole("button", { name: "Revoke access" }).click();
+    await page.getByRole("button", { name: "Add a child" }).click();
+    await page.getByRole("button", { name: "Reveal next level" }).click();
+    await page.getByRole("button", { name: "Share the children" }).click();
+    await newUserPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
 
-    await expect(page.getByTestId("values")).toHaveText(
-      "CoValue entry 0, CoValue entry 1",
+    await expect(page.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2",
+    );
+    await expect(newUserPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1",
+    );
+    await expect(newUserPage.getByTestId("values")).not.toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2",
+    );
+  });
+
+  test("should load the missing childs when rotating keys", async ({
+    page,
+    browser,
+  }) => {
+    await page.goto("/sharing");
+
+    const initialOwnerPage = page;
+    const otherAdminPage = await (await browser.newContext()).newPage();
+    const readerPage = await (await browser.newContext()).newPage();
+
+    await initialOwnerPage
+      .getByRole("button", { name: "Create the root" })
+      .click();
+
+    const adminInviteLink = await page
+      .getByTestId("invite-link-admin")
+      .textContent();
+    const readerInviteLink = await page
+      .getByTestId("invite-link-reader")
+      .textContent();
+
+    await otherAdminPage.goto(adminInviteLink!);
+    await readerPage.goto(readerInviteLink!);
+
+    await initialOwnerPage.getByRole("button", { name: "Add a child" }).click();
+    await initialOwnerPage
+      .getByRole("button", { name: "Share the children" })
+      .click();
+
+    await expect(initialOwnerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1",
+    );
+    await expect(otherAdminPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1",
+    );
+    await expect(readerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1",
     );
 
-    // The user should not have access to the new value
-    await expect(newUserPage.getByTestId("values")).toHaveText(
-      "CoValue entry 0",
+    await otherAdminPage.getByRole("button", { name: "Add a child" }).click();
+    await otherAdminPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
+    await otherAdminPage
+      .getByRole("button", { name: "Share the children" })
+      .click();
+
+    await readerPage.getByRole("button", { name: "Reveal next level" }).click();
+
+    await expect(initialOwnerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> Level hidden",
+    );
+    await expect(otherAdminPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2",
+    );
+    await expect(readerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2",
+    );
+
+    // At this point, the initial owner should not know about the "CoValue child 2"
+    // group, and to make things work it should load it before rotating the keys
+    await initialOwnerPage
+      .getByRole("button", { name: "Revoke access" })
+      .click();
+
+    // We add a new child from the other admin by extending "CoValue child 2" group
+    // if the key has been rotated this new value should not be revealed to the reader
+    await otherAdminPage.getByRole("button", { name: "Add a child" }).click();
+    await otherAdminPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
+    await otherAdminPage
+      .getByRole("button", { name: "Share the children" })
+      .click();
+
+    await readerPage.getByRole("button", { name: "Reveal next level" }).click();
+
+    await expect(readerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2",
+    );
+    await expect(readerPage.getByTestId("values")).not.toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2 ---> CoValue child 3",
+    );
+    await expect(otherAdminPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2 ---> CoValue child 3",
+    );
+
+    await initialOwnerPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
+
+    await initialOwnerPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
+
+    // The new childs should be revealed to the initial owner
+    await expect(initialOwnerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2 ---> CoValue child 3",
     );
   });
 });

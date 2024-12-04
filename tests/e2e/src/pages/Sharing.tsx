@@ -1,73 +1,59 @@
 import { createInviteLink } from "jazz-react";
-import { CoList, CoMap, Group, ID, co } from "jazz-tools";
+import { CoMap, Group, ID, co } from "jazz-tools";
 import { useState } from "react";
 import { useAcceptInvite, useAccount, useCoState } from "../jazz";
 
 class SharedCoMap extends CoMap {
   value = co.string;
+  child = co.optional.ref(SharedCoMap);
 }
-
-class SharedCoList extends CoList.Of(co.ref(SharedCoMap)) {}
 
 export function Sharing() {
   const { me } = useAccount();
-  const [id, setId] = useState<ID<SharedCoList> | undefined>(undefined);
+  const [id, setId] = useState<ID<SharedCoMap> | undefined>(undefined);
+  const [revealLevels, setRevealLevels] = useState(1);
   const [inviteLinks, setInviteLinks] = useState<Record<string, string>>({});
-  const coList = useCoState(SharedCoList, id, [{}]);
+  const coMap = useCoState(SharedCoMap, id, {});
 
-  const createCoList = () => {
+  const createCoMap = () => {
     if (!me || id) return;
 
     const group = Group.create({ owner: me });
 
-    const coList = SharedCoList.create([], { owner: group });
-
-    setInviteLinks({
-      writer: createInviteLink(coList, "writer"),
-      reader: createInviteLink(coList, "reader"),
-      admin: createInviteLink(coList, "admin"),
-    });
-
-    setId(coList.id);
-  };
-
-  const addCoMap = () => {
-    if (!me || !coList) return;
-
-    const group = Group.create({ owner: me });
-
     const coMap = SharedCoMap.create(
-      { value: "CoValue entry " + coList.length },
+      {
+        value: "CoValue root",
+      },
       { owner: group },
     );
-    coList.push(coMap);
-  };
 
-  const shareCoMaps = () => {
-    if (!coList) return;
+    setInviteLinks({
+      writer: createInviteLink(coMap, "writer"),
+      reader: createInviteLink(coMap, "reader"),
+      admin: createInviteLink(coMap, "admin"),
+    });
 
-    const coListGroup = coList._owner as Group;
-
-    for (const coMap of coList) {
-      const coMapGroup = coMap._owner as Group;
-      coMapGroup.extend(coListGroup);
-    }
+    setId(coMap.id);
   };
 
   const revokeAccess = () => {
-    if (!coList) return;
+    if (!coMap) return;
 
-    const coListGroup = coList._owner as Group;
+    const coMapGroup = coMap._owner as Group;
 
-    for (const member of coListGroup.members) {
-      if (member.account && member.account.id !== me.id) {
-        coListGroup.removeMember(member.account);
+    for (const member of coMapGroup.members) {
+      if (
+        member.account &&
+        member.role !== "admin" &&
+        member.account.id !== me.id
+      ) {
+        coMapGroup.removeMember(member.account);
       }
     }
   };
 
   useAcceptInvite({
-    invitedObjectSchema: SharedCoList,
+    invitedObjectSchema: SharedCoMap,
     onAccept: (id) => {
       setId(id);
     },
@@ -76,21 +62,94 @@ export function Sharing() {
   return (
     <div>
       <h1>Sharing</h1>
-      <p data-testid="id">{coList?.id}</p>
+      <p data-testid="id">{coMap?.id}</p>
       {Object.entries(inviteLinks).map(([role, inviteLink]) => (
-        <p key={role} data-testid={`invite-link-${role}`}>
-          {inviteLink}
-        </p>
+        <div key={role} style={{ display: "flex", gap: 5 }}>
+          <p style={{ fontWeight: "bold" }}>{role} invitation:</p>
+          <p data-testid={`invite-link-${role}`}>{inviteLink}</p>
+        </div>
       ))}
       <pre data-testid="values">
-        {coList?.map((coMap) => coMap.value).join(", ")}
+        {coMap?.value && (
+          <SharedCoMapWithChildren
+            id={coMap.id}
+            level={0}
+            revealLevels={revealLevels}
+          />
+        )}
       </pre>
-      {!id && <button onClick={createCoList}>Create a new list!</button>}
-      {coList && <button onClick={addCoMap}>Add a new value!</button>}
-      {coList && <button onClick={revokeAccess}>Revoke access!</button>}
-      {Boolean(coList?.length) && (
-        <button onClick={shareCoMaps}>Share the co-maps!</button>
-      )}
+      {!id && <button onClick={createCoMap}>Create the root</button>}
+      {coMap && <button onClick={revokeAccess}>Revoke access</button>}
+      <button onClick={() => setRevealLevels(revealLevels + 1)}>
+        Reveal next level
+      </button>
     </div>
+  );
+}
+
+function SharedCoMapWithChildren(props: {
+  id: ID<SharedCoMap>;
+  level: number;
+  revealLevels: number;
+}) {
+  const coMap = useCoState(SharedCoMap, props.id, {});
+  const { me } = useAccount();
+  const nextLevel = props.level + 1;
+
+  const addChild = () => {
+    if (!me || !coMap) return;
+
+    const group = Group.create({ owner: me });
+
+    const child = SharedCoMap.create(
+      { value: "CoValue child " + nextLevel },
+      { owner: group },
+    );
+    coMap.child = child;
+  };
+
+  const extendParentGroup = async () => {
+    if (!coMap || !coMap.child) return;
+
+    let node: SharedCoMap | undefined = coMap;
+
+    while (node?._refs.child?.id) {
+      const parentGroup = node._owner as Group;
+      node = await SharedCoMap.load(node._refs.child.id, me, {});
+
+      if (node) {
+        const childGroup = node._owner as Group;
+        childGroup.extend(parentGroup);
+      }
+    }
+  };
+
+  const shouldRenderChild = props.level < props.revealLevels;
+
+  if (!coMap?.value) return null;
+
+  return (
+    <>
+      {coMap.value}
+      {coMap._refs.child ? (
+        shouldRenderChild ? (
+          <>
+            {" ---> "}
+            <SharedCoMapWithChildren
+              id={coMap._refs.child.id}
+              level={nextLevel}
+              revealLevels={props.revealLevels}
+            />
+          </>
+        ) : (
+          " ---> Level hidden"
+        )
+      ) : (
+        <button onClick={addChild}>Add a child</button>
+      )}
+      {props.level === 0 && (
+        <button onClick={extendParentGroup}>Share the children</button>
+      )}
+    </>
   );
 }
