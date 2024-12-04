@@ -1,23 +1,13 @@
-const Crypto = await WasmCrypto.create();
-import { connectedPeers } from "cojson/src/streamUtils.js";
 import { describe, expect, it, onTestFinished, vi } from "vitest";
+import { Account, CoFeed, CoList, CoMap, co } from "../index.web.js";
 import {
-  Account,
-  CoFeed,
-  CoList,
-  CoMap,
-  WasmCrypto,
-  co,
-  createJazzContext,
-  fixedCredentialsAuth,
-  isControlledAccount,
-} from "../index.web.js";
-import {
+  type DepthsIn,
   FileStream,
   Group,
-  randomSessionProvider,
+  createCoValueObservable,
   subscribeToCoValue,
 } from "../internal.js";
+import { setupAccount, waitFor } from "./utils.js";
 
 class ChatRoom extends CoMap {
   messages = co.ref(MessagesList);
@@ -32,34 +22,6 @@ class Message extends CoMap {
 
 class MessagesList extends CoList.Of(co.ref(Message)) {}
 class ReactionsStream extends CoFeed.Of(co.string) {}
-
-async function setupAccount() {
-  const me = await Account.create({
-    creationProps: { name: "Hermes Puggington" },
-    crypto: Crypto,
-  });
-
-  const [initialAsPeer, secondPeer] = connectedPeers("initial", "second", {
-    peer1role: "server",
-    peer2role: "client",
-  });
-
-  if (!isControlledAccount(me)) {
-    throw "me is not a controlled account";
-  }
-  me._raw.core.node.syncManager.addPeer(secondPeer);
-  const { account: meOnSecondPeer } = await createJazzContext({
-    auth: fixedCredentialsAuth({
-      accountID: me.id,
-      secret: me._raw.agentSecret,
-    }),
-    sessionProvider: randomSessionProvider,
-    peersToLoadFrom: [initialAsPeer],
-    crypto: Crypto,
-  });
-
-  return { me, meOnSecondPeer };
-}
 
 function createChatRoom(me: Account | Group, name: string) {
   return ChatRoom.create(
@@ -332,30 +294,69 @@ describe("subscribeToCoValue", () => {
   });
 });
 
-function waitFor(callback: () => boolean | void) {
-  return new Promise<void>((resolve, reject) => {
-    const checkPassed = () => {
-      try {
-        return { ok: callback(), error: null };
-      } catch (error) {
-        return { ok: false, error };
-      }
-    };
+describe("createCoValueObservable", () => {
+  class TestMap extends CoMap {
+    color = co.string;
+  }
 
-    let retries = 0;
+  function createTestMap(me: Account | Group) {
+    return TestMap.create({ color: "red" }, { owner: me });
+  }
 
-    const interval = setInterval(() => {
-      const { ok, error } = checkPassed();
+  it("should return undefined when there are no subscribers", async () => {
+    const observable = createCoValueObservable();
 
-      if (ok !== false) {
-        clearInterval(interval);
-        resolve();
-      }
-
-      if (++retries > 10) {
-        clearInterval(interval);
-        reject(error);
-      }
-    }, 100);
+    expect(observable.getCurrentValue()).toBeUndefined();
   });
-}
+
+  it("should update currentValue when subscribed", async () => {
+    const { me, meOnSecondPeer } = await setupAccount();
+    const testMap = createTestMap(me);
+    const observable = createCoValueObservable<TestMap, DepthsIn<TestMap>>();
+    const mockListener = vi.fn();
+
+    const unsubscribe = observable.subscribe(
+      TestMap,
+      testMap.id,
+      meOnSecondPeer,
+      {},
+      () => {
+        mockListener();
+      },
+    );
+
+    testMap.color = "blue";
+
+    await waitFor(() => mockListener.mock.calls.length > 0);
+
+    expect(observable.getCurrentValue()).toMatchObject({
+      id: testMap.id,
+      color: "blue",
+    });
+
+    unsubscribe();
+  });
+
+  it("should reset to undefined after unsubscribe", async () => {
+    const { me, meOnSecondPeer } = await setupAccount();
+    const testMap = createTestMap(me);
+    const observable = createCoValueObservable<TestMap, DepthsIn<TestMap>>();
+    const mockListener = vi.fn();
+
+    const unsubscribe = observable.subscribe(
+      TestMap,
+      testMap.id,
+      meOnSecondPeer,
+      {},
+      () => {
+        mockListener();
+      },
+    );
+
+    await waitFor(() => mockListener.mock.calls.length > 0);
+    expect(observable.getCurrentValue()).toBeDefined();
+
+    unsubscribe();
+    expect(observable.getCurrentValue()).toBeUndefined();
+  });
+});

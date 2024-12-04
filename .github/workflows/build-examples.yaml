@@ -17,6 +17,7 @@ jobs:
           "music-player",
           "password-manager",
           "pets",
+          "reactions",
           "todo",
           "onboarding",
         ]

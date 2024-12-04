@@ -1,32 +1,27 @@
-# Jazz Music Player Example
+# Music player example with Jazz and React
 
 Live version: https://music-demo.jazz.tools
 
 ## Installing & running the example locally
 
-(this requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
+(This requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
 
-Start by checking out `jazz`
-
+Start by downloading the [jazz repository](https://github.com/garden-co/jazz):
 ```bash
-git clone https://github.com/gardencmp/jazz.git
-cd jazz/examples/music-player
-pnpm pack --pack-destination /tmp
-mkdir -p ~/jazz-examples/music-player # or any other directory
-tar -xf /tmp/jazz-example-music-player-* --strip-components 1 -C ~/jazz-examples/music-player
-cd ~/jazz-examples/music-player
+npx degit gardencmp/jazz jazz
 ```
 
-This ensures you have the example app without git history and independent of the Jazz multi-package monorepo.
-
-Install dependencies:
-
+Go to the music-player example directory:
 ```bash
-pnpm install
+cd jazz/examples/music-player
+```
+
+Install and build dependencies:
+```bash
+pnpm i && npx turbo build
 ```
 
 Start the dev server:
-
 ```bash
 pnpm dev
 ```

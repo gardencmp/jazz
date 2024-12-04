@@ -1,35 +1,31 @@
-# Jazz Rate-My-Pet List Example
+# Rate My Pets example with Jazz and React
 
 Live version: https://pets-demo.jazz.tools/
 
 ## Installing & running the example locally
 
-(this requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
+(This requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
 
-Start by checking out `jazz`
-
+Start by downloading the [jazz repository](https://github.com/garden-co/jazz):
 ```bash
-git clone https://github.com/gardencmp/jazz.git
-cd jazz/examples/pets
-pnpm pack --pack-destination /tmp
-mkdir -p ~/jazz-examples/pets # or any other directory
-tar -xf /tmp/jazz-example-pets-* --strip-components 1 -C ~/jazz-examples/pets
-cd ~/jazz-examples/pets
+npx degit gardencmp/jazz jazz
 ```
 
-This ensures that you have the example app without git history and independent of the Jazz multi-package monorepo.
-
-Install dependencies:
-
+Go to the pets example directory:
 ```bash
-pnpm install
+cd jazz/examples/pets
+```
+
+Install and build dependencies:
+```bash
+pnpm i && npx turbo build
 ```
 
 Start the dev server:
-
 ```bash
 pnpm dev
 ```
+
 
 ## Questions / problems / feedback
 

@@ -59,8 +59,8 @@ export class RawCoMapView<
     for (const { txID, changes, madeAt } of core.getValidSortedTransactions(
       options,
     )) {
-      for (const [changeIdx, changeUntyped] of changes.entries()) {
-        const change = changeUntyped as MapOpPayload<
+      for (let changeIdx = 0; changeIdx < changes.length; changeIdx++) {
+        const change = changes[changeIdx] as MapOpPayload<
           keyof Shape & string,
           Shape[keyof Shape & string]
         >;
@@ -73,10 +73,7 @@ export class RawCoMapView<
           txID,
           madeAt,
           changeIdx,
-          ...(change as MapOpPayload<
-            keyof Shape & string,
-            Shape[keyof Shape & string]
-          >),
+          ...change,
         });
       }
     }

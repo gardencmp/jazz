@@ -1,32 +1,27 @@
-# Jazz Todo List Example
+# Todo list example with Jazz and React
 
 Live version: https://todo-demo.jazz.tools/
 
 ## Installing & running the example locally
 
-(this requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
+(This requires `pnpm` to be installed, see [https://pnpm.io/installation](https://pnpm.io/installation))
 
-Start by checking out `jazz`
-
+Start by downloading the [jazz repository](https://github.com/garden-co/jazz):
 ```bash
-git clone https://github.com/gardencmp/jazz.git
-cd jazz/examples/todo
-pnpm pack --pack-destination /tmp
-mkdir -p ~/jazz-examples/todo # or any other directory
-tar -xf /tmp/jazz-example-todo-* --strip-components 1 -C ~/jazz-examples/todo
-cd ~/jazz-examples/todo
+npx degit gardencmp/jazz jazz
 ```
 
-This ensures that you have the example app without git history and independent of the Jazz multi-package monorepo.
-
-Install dependencies:
-
+Go to the todo example directory:
 ```bash
-pnpm install
+cd jazz/examples/todo
+```
+
+Install and build dependencies:
+```bash
+pnpm i && npx turbo build
 ```
 
 Start the dev server:
-
 ```bash
 pnpm dev
 ```
