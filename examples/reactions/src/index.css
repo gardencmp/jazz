@@ -5,13 +5,27 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #000;
+  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --border-color: #404040;
+  --border-color: #2f2e2d;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+button {
+  cursor: pointer;
 }
 
 button.btn {
@@ -43,29 +57,27 @@ button.btn {
   border-color: var(--border-color);
 }
 
-html,
-body,
-#root {
-  height: 100%;
+header,
+main {
+  padding: 0.5rem 0;
+}
+
+header {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2rem;
 }
 
 nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 2rem;
 }
 
 .container {
-  max-width: 500px;
+  max-width: 100%;
+  width: 500px;
   margin: 0 auto;
   padding: 0 1rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100%;
 }
 
 h1,

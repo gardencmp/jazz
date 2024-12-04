@@ -487,7 +487,7 @@ function ExampleDemo({ example }: { example: Example }) {
       <div className="p-3 col-span-full border-b">
         <Example example={{ ...example, illustration: null }} />
       </div>
-      <div className="h-[40rem] border-r overflow-auto col-span-3">
+      <div className="h-[30rem] border-r overflow-auto col-span-3">
         {example.codeSamples && (
           <CodeExampleTabs tabs={example.codeSamples}></CodeExampleTabs>
         )}
