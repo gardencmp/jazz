@@ -371,21 +371,25 @@ const demos = [
 const categories = [
   {
     name: "React",
+    id: "react",
     logo: ReactLogo,
     examples: reactExamples,
   },
   {
     name: "Next.js",
+    id: "next",
     logo: NextjsLogo,
     examples: nextExamples,
   },
   {
     name: "React Native",
+    id: "react-native",
     logo: ReactNativeLogo,
     examples: rnExamples,
   },
   {
     name: "Vue",
+    id: "vue",
     logo: VueLogo,
     examples: vueExamples,
   },
@@ -412,7 +416,9 @@ export default function Page() {
           <div key={category.name}>
             <div className="flex items-center gap-3 mb-5">
               <category.logo className="h-8 w-8" />
-              <H2 className="!mb-0">{category.name}</H2>
+              <H2 id={category.id} className="!mb-0">
+                {category.name}
+              </H2>
             </div>
 
             <GappedGrid>
