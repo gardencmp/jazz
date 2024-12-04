@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS=--max-old-space-size=8192 next dev",
+    "build": "pnpm run build:generate-docs && next build && npx pagefind --site .next --output-path .next/static/chunks/pagefind --glob 'server/**/*.html'",
     "build:generate-docs": "node genDocs.mjs --build",
-    "build": "pnpm run build:generate-docs && next build",
     "start": "next start",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write"
@@ -23,6 +23,7 @@
     "@vercel/analytics": "^1.3.1",
     "@vercel/speed-insights": "^1.0.12",
     "clsx": "^2.1.1",
+    "cmdk": "^1.0.4",
     "gcmp-design-system": "workspace:*",
     "lucide-react": "^0.436.0",
     "mdast-util-from-markdown": "^2.0.0",
@@ -32,7 +33,10 @@
     "qrcode": "^1.5.4",
     "react": "^18",
     "react-dom": "^18",
+    "react-singleton-hook": "^4.0.1",
     "rehype-slug": "^6.0.0",
+    "remark-frontmatter": "^5.0.0",
+    "remark-mdx-frontmatter": "^5.0.0",
     "shiki": "^0.14.6",
     "shiki-twoslash": "^3.1.2",
     "tailwind-merge": "^1.14.0",

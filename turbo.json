@@ -2,6 +2,9 @@
   "$schema": "https://turbo.build/schema.json",
   "remoteCache": {},
   "tasks": {
+    "jazz-nodejs#build": {
+      "dependsOn": ["cojson-transport-ws#build"]
+    },
     "build": {
       "env": ["RESEND_API_KEY", "RESEND_AUDIENCE_ID"],
       "dependsOn": ["^build"],

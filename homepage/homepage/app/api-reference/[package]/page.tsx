@@ -17,7 +17,7 @@ export default function Page({ params }: Props) {
 export async function generateMetadata({ params }: Props) {
   const packageName = params.package;
   return {
-    title: `${packageName} - jazz`,
+    title: `${packageName} - API Reference`,
     description: `API reference for ${packageName}.`,
   };
 }

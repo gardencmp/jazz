@@ -18,4 +18,4 @@ Greetings, brave explorer! 🌟 You've caught us in our early stages - this pack
 
 ---
 
-> **Note**: You've been warned, but we're glad you're here! Let's build something amazing together. 🚀
+> **Note**: You've been warned, but we're glad you're here! Let's build something amazing together.  🚀

@@ -293,7 +293,10 @@ export function Nav(props: NavProps) {
   const { mainLogo, items, docNav, cta } = props;
   return (
     <>
-      <div className="w-full border-b py-2 sticky top-0 z-50 bg-white dark:bg-stone-950 hidden md:block">
+      <div
+        className="w-full border-b py-2 sticky top-0 z-50 bg-white dark:bg-stone-950 hidden md:block"
+        data-pagefind-ignore="all"
+      >
         <PopoverGroup className="flex flex-wrap items-center max-sm:justify-between md:gap-2 container w-full">
           <Link href="/" className="flex items-center">
             {mainLogo}

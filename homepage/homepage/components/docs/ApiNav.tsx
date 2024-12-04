@@ -1,17 +1,17 @@
-import { SideNav } from "@/components/SideNav";
 import { SideNavHeader } from "@/components/SideNavHeader";
 import { SideNavItem } from "@/components/SideNavItem";
-import { docNavigationItems } from "@/lib/docNavigationItems";
 import { packages } from "@/lib/packages";
 import { clsx } from "clsx";
 import { ChevronRight, PackageIcon } from "lucide-react";
 import Link from "next/link";
-import { twMerge } from "tailwind-merge";
 import { requestProject } from "./requestProject";
 
 export function ApiNav({ className }: { className?: string }) {
   return (
-    <div className={clsx(className, "text-sm space-y-5")}>
+    <div
+      className={clsx(className, "text-sm space-y-5")}
+      data-pagefind-ignore="all"
+    >
       <SideNavHeader href="/api-reference">API Reference</SideNavHeader>
       <ul className="space-y-5">
         {packages.map(({ name }) => (

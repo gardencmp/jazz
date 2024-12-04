@@ -9,6 +9,12 @@ import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/Gapp
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { CloudUploadIcon, FingerprintIcon, ImageIcon } from "lucide-react";
 
+export const metadata = {
+  title: "Example Apps | Jazz",
+  description:
+    "Find an example app with code most similar to what you want to build with Jazz - including React, Next.js, and React Native examples.",
+};
+
 type Example = {
   name: string;
   slug: string;
