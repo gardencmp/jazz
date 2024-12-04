@@ -93,7 +93,7 @@ export class RawCoMapView<
             change,
           };
           latest[change.key] = entry;
-        } else if (madeAt > entry.madeAt) {
+        } else if (madeAt >= entry.madeAt) {
           entry.txID = txID;
           entry.madeAt = madeAt;
           entry.changeIdx = changeIdx;
@@ -364,7 +364,9 @@ export class RawCoMap<
 
     const after = new RawCoMap(this.core) as this;
 
+    this.latestTxMadeAt = after.latestTxMadeAt;
     this.latest = after.latest;
+    this.cachedOps = undefined;
   }
 
   /** Delete the given key (setting it to undefined).
@@ -391,6 +393,8 @@ export class RawCoMap<
 
     const after = new RawCoMap(this.core) as this;
 
+    this.latestTxMadeAt = after.latestTxMadeAt;
     this.latest = after.latest;
+    this.cachedOps = undefined;
   }
 }
