@@ -47,6 +47,7 @@ describe("IDB sync manager", () => {
   IDBClient.prototype.getCoValueSessions = vi.fn();
   IDBClient.prototype.addSessionUpdate = vi.fn();
   IDBClient.prototype.addTransaction = vi.fn();
+  IDBClient.prototype.unitOfWork = vi.fn((callback) => Promise.all(callback()));
 
   beforeEach(async () => {
     const idbClient = new IDBClient() as unknown as Mocked<IDBClient>;

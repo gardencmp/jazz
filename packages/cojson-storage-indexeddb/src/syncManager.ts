@@ -221,6 +221,7 @@ export class SyncManager {
     };
 
     let invalidAssumptions = false;
+    this.dbClient.getCoValue("co_zsaSAsas222");
 
     await this.dbClient.unitOfWork(() =>
       (Object.keys(msg.new) as SessionID[]).map((sessionID) => {
@@ -232,7 +233,13 @@ export class SyncManager {
         if ((sessionRow?.lastIdx || 0) < (msg.new[sessionID]?.after || 0)) {
           invalidAssumptions = true;
         } else {
-          return this.putNewTxs(msg, sessionID, sessionRow, storedCoValueRowID);
+          return this.putNewTxs.call(
+            this,
+            msg,
+            sessionID,
+            sessionRow,
+            storedCoValueRowID,
+          );
         }
       }),
     );
