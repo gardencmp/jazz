@@ -4,9 +4,14 @@ import RawCoID = CojsonInternalTypes.RawCoID;
 import Signature = CojsonInternalTypes.Signature;
 import Transaction = CojsonInternalTypes.Transaction;
 
-export type CoValueRow = {
+export type RawCoValueRow = {
   id: CojsonInternalTypes.RawCoID;
   header: string;
+};
+
+export type CoValueRow = {
+  id: CojsonInternalTypes.RawCoID;
+  header: CojsonInternalTypes.CoValueHeader;
 };
 
 export type StoredCoValueRow = CoValueRow & { rowID: number };
@@ -49,9 +54,24 @@ export class SQLiteClient {
   }
 
   async getCoValue(coValueId: RawCoID): Promise<StoredCoValueRow | undefined> {
-    return this.db
+    const coValueRow = this.db
       .prepare(`SELECT * FROM coValues WHERE id = ?`)
-      .get(coValueId) as StoredCoValueRow;
+      .get(coValueId) as RawCoValueRow & { rowID: number };
+
+    if (!coValueRow) return;
+
+    try {
+      const parsedHeader = (coValueRow?.header &&
+        JSON.parse(coValueRow.header)) as CojsonInternalTypes.CoValueHeader;
+
+      return {
+        ...coValueRow,
+        header: parsedHeader,
+      };
+    } catch (e) {
+      console.warn(coValueId, "Invalid JSON in header", e, coValueRow?.header);
+      return;
+    }
   }
 
   async getCoValueSessions(coValueRowId: number): Promise<StoredSessionRow[]> {
@@ -102,7 +122,13 @@ export class SQLiteClient {
       .run(msg.id, JSON.stringify(msg.header)).lastInsertRowid as number;
   }
 
-  async addSessionUpdate(sessionUpdate: SessionRow): Promise<number> {
+  async addSessionUpdate({
+    sessionUpdate,
+    sessionRow,
+  }: {
+    sessionUpdate: SessionRow;
+    sessionRow?: StoredSessionRow;
+  }): Promise<number> {
     return (
       this.db
         .prepare<[number, string, number, string, number | undefined]>(
@@ -142,5 +168,9 @@ export class SQLiteClient {
         `INSERT INTO signatureAfter (ses, idx, signature) VALUES (?, ?, ?)`,
       )
       .run(sessionRowID, idx, signature);
+  }
+
+  async unitOfWork(operationsCallback: () => any[]) {
+    this.db.transaction(operationsCallback)();
   }
 }

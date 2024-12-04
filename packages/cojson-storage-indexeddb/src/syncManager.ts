@@ -60,11 +60,12 @@ export class SyncManager {
 
     const firstNewTxIdx = peerKnownState.sessions[sessionRow.sessionID] || 0;
     const signaturesAndIdxs = await this.dbClient.getSignatures(
-      sessionRow,
+      sessionRow.rowID,
       firstNewTxIdx,
     );
+
     const newTxsInSession = await this.dbClient.getNewTransactionInSession(
-      sessionRow,
+      sessionRow.rowID,
       firstNewTxIdx,
     );
 
@@ -218,9 +219,10 @@ export class SyncManager {
       header: true,
       sessions: {},
     };
+
     let invalidAssumptions = false;
 
-    await Promise.all(
+    await this.dbClient.unitOfWork(() =>
       (Object.keys(msg.new) as SessionID[]).map((sessionID) => {
         const sessionRow = allOurSessions[sessionID];
         if (sessionRow) {
@@ -282,16 +284,16 @@ export class SyncManager {
 
     const sessionUpdate = {
       coValue: storedCoValueRowID,
-      sessionID: sessionID,
+      sessionID,
       lastIdx: newLastIdx,
       lastSignature: msg.new[sessionID]!.lastSignature,
       bytesSinceLastSignature: newBytesSinceLastSignature,
     };
 
-    const sessionRowID: number = await this.dbClient.addSessionUpdate(
-      sessionRow,
+    const sessionRowID: number = await this.dbClient.addSessionUpdate({
       sessionUpdate,
-    );
+      sessionRow,
+    });
 
     if (shouldWriteSignature) {
       await this.dbClient.addSignatureAfter({

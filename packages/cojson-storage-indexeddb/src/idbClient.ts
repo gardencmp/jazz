@@ -148,29 +148,29 @@ export class IDBClient {
   }
 
   async getNewTransactionInSession(
-    sessionRow: StoredSessionRow,
+    sessionRowId: number,
     firstNewTxIdx: number,
   ): Promise<TransactionRow[]> {
     return this.makeRequest<TransactionRow[]>(({ transactions }) =>
       transactions.getAll(
         IDBKeyRange.bound(
-          [sessionRow.rowID, firstNewTxIdx],
-          [sessionRow.rowID, Infinity],
+          [sessionRowId, firstNewTxIdx],
+          [sessionRowId, Infinity],
         ),
       ),
     );
   }
 
   async getSignatures(
-    sessionRow: StoredSessionRow,
+    sessionRowId: number,
     firstNewTxIdx: number,
   ): Promise<SignatureAfterRow[]> {
     return this.makeRequest<SignatureAfterRow[]>(
       ({ signatureAfter }: { signatureAfter: IDBObjectStore }) =>
         signatureAfter.getAll(
           IDBKeyRange.bound(
-            [sessionRow.rowID, firstNewTxIdx],
-            [sessionRow.rowID, Infinity],
+            [sessionRowId, firstNewTxIdx],
+            [sessionRowId, Infinity],
           ),
         ),
     );
@@ -191,10 +191,13 @@ export class IDBClient {
     )) as number;
   }
 
-  async addSessionUpdate(
-    sessionRow: StoredSessionRow | undefined,
-    sessionUpdate: SessionRow,
-  ): Promise<number> {
+  async addSessionUpdate({
+    sessionUpdate,
+    sessionRow,
+  }: {
+    sessionUpdate: SessionRow;
+    sessionRow?: StoredSessionRow;
+  }): Promise<number> {
     return this.makeRequest<number>(({ sessions }) =>
       sessions.put(
         sessionRow?.rowID
@@ -233,5 +236,13 @@ export class IDBClient {
         signature,
       } satisfies SignatureAfterRow),
     );
+  }
+
+  async unitOfWork(operationsCallback: () => any[]) {
+    const results = await Promise.all(operationsCallback());
+    const errors = results.filter((result) => result instanceof Error);
+    if (errors.length > 0) {
+      console.error("Errors in unit of work", errors);
+    }
   }
 }

@@ -6,6 +6,7 @@ import {
 } from "cojson";
 import {
   SignatureAfterRow,
+  StoredCoValueRow,
   StoredSessionRow,
   TransactionRow,
 } from "./sqlClient";
@@ -61,33 +62,21 @@ export function collectNewTxs({
   }
 }
 
-export function getDependedOnCoValues(
-  parsedHeader,
-  newContentPieces: CojsonInternalTypes.NewContentMessage[],
-  theirKnown: CojsonInternalTypes.CoValueKnownState,
-) {
-  return parsedHeader?.ruleset.type === "group"
-    ? newContentPieces
+export function getDependedOnCoValues({
+  coValueRow,
+  newContentMessages,
+}: {
+  coValueRow: StoredCoValueRow;
+  newContentMessages: CojsonInternalTypes.NewContentMessage[];
+}) {
+  return coValueRow.header.ruleset.type === "group"
+    ? newContentMessages
         .flatMap((piece) => Object.values(piece.new))
         .flatMap((sessionEntry) =>
           sessionEntry.newTransactions.flatMap((tx) => {
             if (tx.privacy !== "trusting") return [];
-            // TODO: avoid parsing here?
-            let parsedChanges;
-
-            try {
-              parsedChanges = cojsonInternals.parseJSON(tx.changes);
-            } catch (e) {
-              console.warn(
-                theirKnown.id,
-                "Invalid JSON in transaction",
-                e,
-                tx.changes,
-              );
-              return [];
-            }
-
-            return parsedChanges
+            return cojsonInternals
+              .parseJSON(tx.changes)
               .map(
                 (change) =>
                   change &&
@@ -103,11 +92,11 @@ export function getDependedOnCoValues(
               );
           }),
         )
-    : parsedHeader?.ruleset.type === "ownedByGroup"
+    : coValueRow.header.ruleset.type === "ownedByGroup"
       ? [
-          parsedHeader?.ruleset.group,
+          coValueRow.header.ruleset.group,
           ...new Set(
-            newContentPieces.flatMap((piece) =>
+            newContentMessages.flatMap((piece) =>
               Object.keys(piece.new)
                 .map((sessionID) =>
                   cojsonInternals.accountOrAgentIDfromSessionID(
@@ -117,7 +106,7 @@ export function getDependedOnCoValues(
                 .filter(
                   (accountID): accountID is RawAccountID =>
                     cojsonInternals.isAccountID(accountID) &&
-                    accountID !== theirKnown.id,
+                    accountID !== coValueRow.id,
                 ),
             ),
           ),
