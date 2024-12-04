@@ -14,8 +14,14 @@
     "format-and-lint": "pnpm run format && pnpm run lint",
     "format-and-lint:fix": "pnpm run format --write && pnpm run lint --fix"
   },
-  "files": ["dist", "!dist/**/*.test.*", "!dist/**/*.spec.*"],
-  "sideEffects": ["**/*.css"],
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.spec.*"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "svelte": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "type": "module",
@@ -48,6 +54,7 @@
     "vite": "^5.0.11"
   },
   "dependencies": {
+    "@sveltejs/adapter-vercel": "^5.5.0",
     "jazz-browser": "workspace:*",
     "jazz-tools": "workspace:*"
   }
