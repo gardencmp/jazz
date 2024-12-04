@@ -71,6 +71,7 @@ await rm("./codeSamples", { recursive: true, force: true });
               },
               types: [
                 "../../../examples/image-upload/node_modules/vite/client",
+                "../../../examples/reactions/node_modules/vite/client",
               ],
             },
           });
