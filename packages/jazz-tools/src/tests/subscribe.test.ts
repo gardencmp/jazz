@@ -1,6 +1,12 @@
 import { describe, expect, it, onTestFinished, vi } from "vitest";
 import { Account, CoFeed, CoList, CoMap, co } from "../index.web.js";
-import { FileStream, Group, subscribeToCoValue } from "../internal.js";
+import {
+  type DepthsIn,
+  FileStream,
+  Group,
+  createCoValueObservable,
+  subscribeToCoValue,
+} from "../internal.js";
 import { setupAccount, waitFor } from "./utils.js";
 
 class ChatRoom extends CoMap {
@@ -285,5 +291,72 @@ describe("subscribeToCoValue", () => {
     expect(lastValue.messages).toBe(initialValue.messages);
     expect(lastValue.messages[0]).toBe(initialValue.messages[0]);
     expect(lastValue.messages[1]).toBe(initialValue.messages[1]);
+  });
+});
+
+describe("createCoValueObservable", () => {
+  class TestMap extends CoMap {
+    color = co.string;
+  }
+
+  function createTestMap(me: Account | Group) {
+    return TestMap.create({ color: "red" }, { owner: me });
+  }
+
+  it("should return undefined when there are no subscribers", async () => {
+    const observable = createCoValueObservable();
+
+    expect(observable.getCurrentValue()).toBeUndefined();
+  });
+
+  it("should update currentValue when subscribed", async () => {
+    const { me, meOnSecondPeer } = await setupAccount();
+    const testMap = createTestMap(me);
+    const observable = createCoValueObservable<TestMap, DepthsIn<TestMap>>();
+    const mockListener = vi.fn();
+
+    const unsubscribe = observable.subscribe(
+      TestMap,
+      testMap.id,
+      meOnSecondPeer,
+      {},
+      () => {
+        mockListener();
+      },
+    );
+
+    testMap.color = "blue";
+
+    await waitFor(() => mockListener.mock.calls.length > 0);
+
+    expect(observable.getCurrentValue()).toMatchObject({
+      id: testMap.id,
+      color: "blue",
+    });
+
+    unsubscribe();
+  });
+
+  it("should reset to undefined after unsubscribe", async () => {
+    const { me, meOnSecondPeer } = await setupAccount();
+    const testMap = createTestMap(me);
+    const observable = createCoValueObservable<TestMap, DepthsIn<TestMap>>();
+    const mockListener = vi.fn();
+
+    const unsubscribe = observable.subscribe(
+      TestMap,
+      testMap.id,
+      meOnSecondPeer,
+      {},
+      () => {
+        mockListener();
+      },
+    );
+
+    await waitFor(() => mockListener.mock.calls.length > 0);
+    expect(observable.getCurrentValue()).toBeDefined();
+
+    unsubscribe();
+    expect(observable.getCurrentValue()).toBeUndefined();
   });
 });
