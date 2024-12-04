@@ -3,8 +3,6 @@ import { NextjsLogo } from "@/components/icons/NextjsLogo";
 import { ReactLogo } from "@/components/icons/ReactLogo";
 import { ReactNativeLogo } from "@/components/icons/ReactNativeLogo";
 import { VueLogo } from "@/components/icons/VueLogo";
-import { clsx } from "clsx";
-import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
@@ -18,36 +16,9 @@ import {
   Schema_ts as ReactionsSchema,
   ReactionsScreen_tsx,
 } from "@/codeSamples/examples/reactions/src";
-import { CodeExampleTabs } from "@/components/CodeExampleTabs";
-
-type Example = {
-  name: string;
-  slug: string;
-  description?: string;
-  illustration?: React.ReactNode;
-  tech?: string[];
-  features?: string[];
-  demoUrl?: string;
-  showDemo?: boolean;
-  imageUrl?: string;
-  codeSamples?: { name: string; content: React.ReactNode }[];
-};
-
-const tech = {
-  react: "React",
-  nextjs: "Next.js",
-  reactNative: "React Native",
-  vue: "Vue",
-};
-
-const features = {
-  fileUpload: "File upload",
-  imageUpload: "Image upload",
-  passkey: "Passkey auth",
-  clerk: "Clerk auth",
-  inviteLink: "Invite link",
-  coFeed: "CoFeed",
-};
+import { ExampleCard } from "@/components/examples/ExampleCard";
+import { ExampleDemo } from "@/components/examples/ExampleDemo";
+import { Example, features, tech } from "@/lib/example";
 
 const MockButton = ({ children }: { children: React.ReactNode }) => (
   <p className="bg-blue-100 text-blue-800 py-1 p-2 rounded-full font-medium text-center text-xs">
@@ -420,85 +391,6 @@ const categories = [
   },
 ];
 
-function Example({
-  example,
-  className,
-}: { example: Example; className?: string }) {
-  const { name, slug, tech, features, description, demoUrl, illustration } =
-    example;
-  const githubUrl = `https://github.com/gardencmp/jazz/tree/main/examples/${slug}`;
-
-  return (
-    <div className={clsx(className, "col-span-2 flex flex-col")}>
-      {illustration && (
-        <div className="mb-3 aspect-[16/9] overflow-hidden w-full rounded-md bg-white border dark:bg-stone-925 sm:aspect-[2/1] md:aspect-[3/2]">
-          {illustration}
-        </div>
-      )}
-
-      <div className="flex-1 space-y-2 mb-2">
-        <h2 className="font-medium text-stone-900 dark:text-white leading-none">
-          {name}
-        </h2>
-        <div className="flex gap-1">
-          {tech?.map((tech) => (
-            <p
-              className="bg-green-50 border border-green-500 text-green-600 rounded-full py-0.5 px-2 text-xs dark:bg-green-800 dark:text-green-200 dark:border-green-700"
-              key={tech}
-            >
-              {tech}
-            </p>
-          ))}
-          {features?.map((feature) => (
-            <p
-              className="bg-pink-50 border border-pink-500 text-pink-600 rounded-full py-0.5 px-2 text-xs dark:bg-pink-800 dark:text-pink-200 dark:border-pink-700"
-              key={feature}
-            >
-              {feature}
-            </p>
-          ))}
-        </div>
-        <p className="text-sm">{description}</p>
-      </div>
-      <div className="flex gap-2">
-        <Button href={githubUrl} variant="secondary" size="sm">
-          View code
-        </Button>
-        {demoUrl && (
-          <Button href={demoUrl} variant="secondary" size="sm">
-            View demo
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ExampleDemo({ example }: { example: Example }) {
-  const { name, slug, tech, features, description, demoUrl, illustration } =
-    example;
-  const githubUrl = `https://github.com/gardencmp/jazz/tree/main/examples/${slug}`;
-
-  return (
-    <GappedGrid
-      gap="none"
-      className="col-span-full my-12 border bg-stone-50 shadow-sm rounded-lg dark:bg-stone-950 overflow-hidden"
-    >
-      <div className="p-3 col-span-full border-b">
-        <Example example={{ ...example, illustration: null }} />
-      </div>
-      <div className="h-[30rem] border-r overflow-auto col-span-3">
-        {example.codeSamples && (
-          <CodeExampleTabs tabs={example.codeSamples}></CodeExampleTabs>
-        )}
-      </div>
-      <div className="col-span-3">
-        <iframe width="100%" height="100%" src={demoUrl} title={name} />
-      </div>
-    </GappedGrid>
-  );
-}
-
 export default function Page() {
   return (
     <div className="container flex flex-col gap-6 pb-10 lg:pb-20">
@@ -526,7 +418,7 @@ export default function Page() {
                 example.showDemo ? (
                   <ExampleDemo key={example.slug} example={example} />
                 ) : (
-                  <Example
+                  <ExampleCard
                     className="border bg-stone-50 shadow-sm p-3 rounded-lg dark:bg-stone-950"
                     key={example.slug}
                     example={example}

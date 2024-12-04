@@ -1,7 +1,7 @@
 import {
   CodeExampleTabs as CodeExampleTabsClient,
   CodeExampleTabsProps,
-} from "@/components/CodeExampleTabs";
+} from "@/components/examples/CodeExampleTabs";
 
 import {
   ContentByFramework as ContentByFrameworkClient,
