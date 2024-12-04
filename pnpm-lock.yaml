@@ -1572,9 +1572,6 @@ importers:
 
   packages/jazz-svelte:
     dependencies:
-      '@sveltejs/adapter-vercel':
-        specifier: ^5.5.0
-        version: 5.5.0(@sveltejs/kit@2.9.0(@sveltejs/vite-plugin-svelte@4.0.1(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(terser@5.33.0)))(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(terser@5.33.0)))(rollup@4.24.0)
       jazz-browser:
         specifier: workspace:*
         version: link:../jazz-browser
@@ -1585,6 +1582,9 @@ importers:
       '@sveltejs/adapter-auto':
         specifier: ^3.0.0
         version: 3.3.1(@sveltejs/kit@2.9.0(@sveltejs/vite-plugin-svelte@4.0.1(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(terser@5.33.0)))(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(terser@5.33.0)))
+      '@sveltejs/adapter-vercel':
+        specifier: ^5.5.0
+        version: 5.5.0(@sveltejs/kit@2.9.0(@sveltejs/vite-plugin-svelte@4.0.1(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(terser@5.33.0)))(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(terser@5.33.0)))(rollup@4.24.0)
       '@sveltejs/kit':
         specifier: ^2.9.0
         version: 2.9.0(@sveltejs/vite-plugin-svelte@4.0.1(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(terser@5.33.0)))(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(terser@5.33.0))

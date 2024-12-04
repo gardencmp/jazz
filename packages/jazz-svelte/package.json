@@ -51,10 +51,10 @@
     "svelte-check": "^4.0.0",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.0.0",
-    "vite": "^5.0.11"
+    "vite": "^5.0.11",
+    "@sveltejs/adapter-vercel": "^5.5.0"
   },
   "dependencies": {
-    "@sveltejs/adapter-vercel": "^5.5.0",
     "jazz-browser": "workspace:*",
     "jazz-tools": "workspace:*"
   }
