@@ -281,4 +281,116 @@ test.describe("Sharing", () => {
       "CoValue root ---> CoValue child 1 ---> CoValue child 2 ---> CoValue child 3",
     );
   });
+
+  test("should kick out access from child groups even if they are not available when rotating keys", async ({
+    page,
+    browser,
+    context,
+  }) => {
+    await page.goto("/sharing?userName=InitialOwner");
+
+    const initialOwnerPage = page;
+    const otherAdminPage = await (await browser.newContext()).newPage();
+    otherAdminPage.goto("/?userName=OtherAdmin");
+    const readerPage = await (await browser.newContext()).newPage();
+    readerPage.goto("/?userName=Reader");
+
+    await initialOwnerPage
+      .getByRole("button", { name: "Create the root" })
+      .click();
+
+    const adminInviteLink = await page
+      .getByTestId("invite-link-admin")
+      .textContent();
+    const readerInviteLink = await page
+      .getByTestId("invite-link-reader")
+      .textContent();
+
+    await otherAdminPage.goto(adminInviteLink!);
+    await readerPage.goto(readerInviteLink!);
+
+    await initialOwnerPage.getByRole("button", { name: "Add a child" }).click();
+    await initialOwnerPage
+      .getByRole("button", { name: "Share the children" })
+      .click();
+
+    await expect(initialOwnerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1",
+    );
+    await expect(otherAdminPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1",
+    );
+    await expect(readerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1",
+    );
+
+    await context.setOffline(true);
+
+    await otherAdminPage.getByRole("button", { name: "Add a child" }).click();
+    await otherAdminPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
+    await otherAdminPage
+      .getByRole("button", { name: "Share the children" })
+      .click();
+
+    await readerPage.getByRole("button", { name: "Reveal next level" }).click();
+
+    await expect(otherAdminPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2",
+    );
+    await expect(readerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2",
+    );
+
+    // At this point, the initial owner should not know about the "CoValue child 2"
+    // group, and to make things work it should load it before rotating the keys
+    await initialOwnerPage
+      .getByRole("button", { name: "Revoke access" })
+      .click();
+
+    await initialOwnerPage.waitForTimeout(1000);
+
+    await context.setOffline(false);
+
+    await initialOwnerPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
+
+    await expect(initialOwnerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2",
+    );
+
+    await initialOwnerPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
+
+    // We add a new child from the other admin by extending "CoValue child 2" group
+    // if the key has been rotated this new value should not be revealed to the reader
+    await initialOwnerPage.getByRole("button", { name: "Add a child" }).click();
+
+    await initialOwnerPage
+      .getByRole("button", { name: "Share the children" })
+      .click();
+
+    await readerPage.getByRole("button", { name: "Reveal next level" }).click();
+
+    await expect(readerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2",
+    );
+    // The new child should not be revealed to the reader because it has been kicked out
+    await expect(readerPage.getByTestId("values")).not.toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2 ---> CoValue child 3",
+    );
+    await otherAdminPage
+      .getByRole("button", { name: "Reveal next level" })
+      .click();
+
+    await expect(otherAdminPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2 ---> CoValue child 3",
+    );
+    await expect(initialOwnerPage.getByTestId("values")).toContainText(
+      "CoValue root ---> CoValue child 1 ---> CoValue child 2 ---> CoValue child 3",
+    );
+  });
 });
