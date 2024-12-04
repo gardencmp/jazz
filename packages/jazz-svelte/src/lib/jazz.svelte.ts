@@ -77,15 +77,29 @@ export function createJazzApp<Acc extends Account = Account>({
         "useAccount can't be used in a JazzProvider with auth === 'guest' - consider using useAccountOrGuest()"
       );
     }
+
+    // If no depth is specified, return the context's me directly
+    if (depth === undefined) {
+      return {
+        get me() {
+          return (ctx.current as BrowserContext<Acc>).me;
+        },
+        logOut() {
+          return ctx.current?.logOut();
+        }
+      };
+    }
+
+    // If depth is specified, use useCoState to get the deeply loaded version
     const me = useCoState<Acc, D>(
       ctx.current.me.constructor as CoValueClass<Acc>,
       (ctx.current as BrowserContext<Acc>).me.id,
       depth
     );
+
     return {
       get me() {
-        if (!ctx.current || !('me' in ctx.current)) return;
-        return depth === undefined ? me.current || ctx.current.me : me.current;
+        return me.current;
       },
       logOut() {
         return ctx.current?.logOut();
