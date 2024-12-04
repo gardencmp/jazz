@@ -18,7 +18,7 @@
   } = $props();
 
   const { me } = useAccount();
-  const isAdmin = $derived(me && file._owner?.myRole() === "admin");
+  const isAdmin = $derived(me && file._owner?.myRole() === 'admin');
 
   async function downloadFile() {
     if (!file._refs.file?.id || !me) {
@@ -75,8 +75,9 @@
         <h3 class="font-medium text-gray-900">{file.name}</h3>
       </a>
       <p class="text-sm text-gray-500">
-          {isAdmin ? 'Owned by you' : ''} •
-        Uploaded {new Date(file.createdAt || 0).toLocaleDateString()} •
+        {isAdmin ? 'Owned by you' : ''} • Uploaded {new Date(
+          file.createdAt || 0
+        ).toLocaleDateString()} •
         {formatFileSize(file.size || 0)}
       </p>
     </div>

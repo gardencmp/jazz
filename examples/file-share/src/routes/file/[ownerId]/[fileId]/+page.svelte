@@ -11,7 +11,7 @@
   const fileId = $page.params.fileId;
   const ownerId = $page.params.ownerId;
 
-  $inspect('me',me)
+  $inspect('me', me);
 
   const file = $state(useCoState(SharedFile, fileId as ID<SharedFile>, {}));
 
@@ -58,33 +58,33 @@
     }
   }
 
-  $inspect('file',file)
+  $inspect('file', file);
 </script>
 
 {#if file.current}
-  <div class="container mx-auto p-4 max-w-3xl">
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <div class="flex items-center justify-between mb-6">
+  <div class="container mx-auto max-w-3xl p-4">
+    <div class="rounded-lg bg-white p-6 shadow-md">
+      <div class="mb-6 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <File class="w-6 h-6" />
+          <File class="h-6 w-6" />
           <h1 class="text-2xl font-semibold">{file.current.name}</h1>
         </div>
         <div class="flex gap-2">
           {#if isUploader}
             <button
               onclick={shareFile}
-              class="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              class="flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2 text-gray-700 hover:bg-gray-200"
             >
-              <Link2 class="w-4 h-4" />
+              <Link2 class="h-4 w-4" />
               Share
             </button>
           {/if}
           {#if hasAccess}
             <button
               onclick={downloadFile}
-              class="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+              class="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
-              <FileDown class="w-4 h-4" />
+              <FileDown class="h-4 w-4" />
               Download
             </button>
           {/if}
@@ -98,8 +98,8 @@
     </div>
   </div>
 {:else}
-  <div class="container mx-auto p-4 max-w-3xl">
-    <div class="bg-white rounded-lg shadow-md p-6">
+  <div class="container mx-auto max-w-3xl p-4">
+    <div class="rounded-lg bg-white p-6 shadow-md">
       <p class="text-gray-600">Loading file...</p>
     </div>
   </div>

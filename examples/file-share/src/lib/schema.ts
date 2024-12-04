@@ -35,8 +35,8 @@ export class FileShareAccount extends Account {
     if (!this.root) {
       // Create a group that will own all shared files
       const publicGroup = Group.create({ owner: this });
-      publicGroup.addMember(this, "admin");
-      publicGroup.addMember("everyone", "reader");
+      publicGroup.addMember(this, 'admin');
+      publicGroup.addMember('everyone', 'reader');
 
       this.root = FileShareAccountRoot.create(
         {
@@ -47,13 +47,13 @@ export class FileShareAccount extends Account {
       );
     }
 
-    console.log('root',this.root);
+    console.log('root', this.root);
 
     // Ensure the group exists and has everyone as reader
     if (!this.root.publicGroup) {
       const publicGroup = Group.create({ owner: this });
-      publicGroup.addMember(this, "admin");
-      publicGroup.addMember("everyone", "reader");
+      publicGroup.addMember(this, 'admin');
+      publicGroup.addMember('everyone', 'reader');
       this.root.publicGroup = publicGroup;
     }
   }
