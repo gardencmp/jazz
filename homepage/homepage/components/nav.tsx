@@ -28,18 +28,6 @@ export function JazzNav() {
             },
             {
               icon: (
-                <BoxIcon
-                  className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
-                  strokeWidth={1.5}
-                />
-              ),
-              title: "API reference",
-              href: "/api-reference",
-              description:
-                "API references for packages like jazz-tools, jazz-react, and more.",
-            },
-            {
-              icon: (
                 <CodeIcon
                   className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
                   strokeWidth={1.5}
@@ -49,6 +37,18 @@ export function JazzNav() {
               href: "/examples",
               description:
                 "Demo and source code for example apps built with Jazz.",
+            },
+            {
+              icon: (
+                <BoxIcon
+                  className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
+                  strokeWidth={1.5}
+                />
+              ),
+              title: "API reference",
+              href: "/api-reference",
+              description:
+                "API references for packages like jazz-tools, jazz-react, and more.",
             },
           ],
         },
