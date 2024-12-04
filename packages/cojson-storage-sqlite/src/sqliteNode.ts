@@ -5,12 +5,12 @@ import {
   Peer,
   cojsonInternals,
 } from "cojson";
-import { SQLiteClient, TransactionRow } from "./sqlClient";
-import { SyncManager } from "./syncManager";
+import { SQLiteClient, TransactionRow } from "./sqliteClient.js";
+import { SyncManager } from "./syncManager.js";
 
 export class SQLiteNode {
-  private syncManager: SyncManager;
-  private dbClient: SQLiteClient;
+  private readonly syncManager: SyncManager;
+  private readonly dbClient: SQLiteClient;
 
   constructor(
     db: DatabaseT,

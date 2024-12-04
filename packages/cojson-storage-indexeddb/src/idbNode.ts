@@ -4,8 +4,8 @@ import {
   Peer,
   cojsonInternals,
 } from "cojson";
-import { IDBClient } from "./idbClient";
-import { SyncManager } from "./syncManager";
+import { IDBClient } from "./idbClient.js";
+import { SyncManager } from "./syncManager.js";
 
 export class IDBNode {
   private dbClient: IDBClient;

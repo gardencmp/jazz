@@ -9,7 +9,7 @@ import {
   StoredCoValueRow,
   StoredSessionRow,
   TransactionRow,
-} from "./sqlClient";
+} from "./sqliteClient.js";
 
 export function collectNewTxs({
   newTxsInSession,

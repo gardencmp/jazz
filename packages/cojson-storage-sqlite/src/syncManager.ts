@@ -7,8 +7,8 @@ import {
   cojsonInternals,
   emptyKnownState,
 } from "cojson";
-import { SQLiteClient, StoredSessionRow } from "./sqlClient";
-import { collectNewTxs, getDependedOnCoValues } from "./syncUtils";
+import { SQLiteClient, StoredSessionRow } from "./sqliteClient.js";
+import { collectNewTxs, getDependedOnCoValues } from "./syncUtils.js";
 import NewContentMessage = CojsonInternalTypes.NewContentMessage;
 import KnownStateMessage = CojsonInternalTypes.KnownStateMessage;
 import RawCoID = CojsonInternalTypes.RawCoID;
@@ -234,7 +234,13 @@ export class SyncManager {
         if ((sessionRow?.lastIdx || 0) < (msg.new[sessionID]?.after || 0)) {
           invalidAssumptions = true;
         } else {
-          return this.putNewTxs(msg, sessionID, sessionRow, storedCoValueRowID);
+          return this.putNewTxs.call(
+            this,
+            msg,
+            sessionID,
+            sessionRow,
+            storedCoValueRowID,
+          );
         }
       }),
     );

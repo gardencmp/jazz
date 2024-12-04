@@ -1,1 +1,1 @@
-export { IDBNode, IDBNode as IDBStorage } from "./idbNode";
+export { IDBNode, IDBNode as IDBStorage } from "./idbNode.js";

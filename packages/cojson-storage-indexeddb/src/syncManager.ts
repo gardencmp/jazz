@@ -7,8 +7,8 @@ import {
   cojsonInternals,
   emptyKnownState,
 } from "cojson";
-import { IDBClient, StoredSessionRow } from "./idbClient";
-import { collectNewTxs, getDependedOnCoValues } from "./syncUtils";
+import { IDBClient, StoredSessionRow } from "./idbClient.js";
+import { collectNewTxs, getDependedOnCoValues } from "./syncUtils.js";
 import NewContentMessage = CojsonInternalTypes.NewContentMessage;
 import KnownStateMessage = CojsonInternalTypes.KnownStateMessage;
 import RawCoID = CojsonInternalTypes.RawCoID;
@@ -221,7 +221,6 @@ export class SyncManager {
     };
 
     let invalidAssumptions = false;
-    this.dbClient.getCoValue("co_zsaSAsas222");
 
     await this.dbClient.unitOfWork(() =>
       (Object.keys(msg.new) as SessionID[]).map((sessionID) => {
