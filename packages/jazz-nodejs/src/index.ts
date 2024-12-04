@@ -24,7 +24,7 @@ export async function startWorker<Acc extends Account>({
 }): Promise<{ worker: Acc; done: () => void }> {
   const wsPeer: Peer = createWebSocketPeer({
     id: "upstream",
-    // @ts-ignore types mismatch
+    // @ts-expect-error types mismatch
     websocket: new WebSocket(peer),
     role: "server",
   });
@@ -60,7 +60,7 @@ export async function startWorker<Acc extends Account>({
 
       const wsPeer: Peer = createWebSocketPeer({
         id: "upstream",
-        // @ts-ignore types mismatch
+        // @ts-expect-error types mismatch
         websocket: new WebSocket(peer),
         role: "server",
       });
