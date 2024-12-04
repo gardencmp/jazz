@@ -28,7 +28,7 @@
     const input = event.target as HTMLInputElement;
     const files = input.files;
 
-    if (!files || !files.length || !me?.root?.sharedFiles) return;
+    if (!files || !files.length || !me?.root?.sharedFiles || !me.root.publicGroup) return;
 
     const file = files[0];
     const fileName = file.name;
@@ -45,7 +45,7 @@
     uploadingFiles.set(fileId, tempFile);
 
     try {
-      const ownership = { owner: me };
+      const ownership = { owner: me.root.publicGroup };
 
       // Create a FileStream from the uploaded file
       const fileStream = await FileStream.createFromBlob(file, ownership);
