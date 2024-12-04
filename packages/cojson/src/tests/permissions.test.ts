@@ -4,6 +4,7 @@ import { ControlledAgent } from "../coValues/account.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 import {
+  createTwoConnectedNodes,
   groupWithTwoAdmins,
   groupWithTwoAdminsHighLevel,
   newGroup,
@@ -1033,7 +1034,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
   ).toEqual("bar2");
 });
 
-test("Admins can set group read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions (high level)", () => {
+test("Admins can set group read rey, make a private transaction in an owned object, rotate the read key, add two readers, rotate the read key again to kick out one reader, make another private transaction in the owned object, and only the remaining reader can read both transactions (high level)", async () => {
   const { node, group } = newGroupHighLevel();
 
   const childObject = group.createMap();
@@ -1057,7 +1058,7 @@ test("Admins can set group read rey, make a private transaction in an owned obje
   childObject.set("foo2", "bar2", "private");
   expect(childObject.get("foo2")).toEqual("bar2");
 
-  group.removeMember(reader);
+  await group.removeMember(reader);
 
   expect(childObject.core.getCurrentReadKey()).not.toEqual(secondReadKey);
 
@@ -1707,4 +1708,786 @@ test("Can give write permissions to 'everyone' (high-level)", async () => {
   console.log("Before anon set");
   childContent2.set("foo", "bar2", "private");
   expect(childContent2.get("foo")).toEqual("bar2");
+});
+
+test("Admins can set parent extensions", () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+  expect(group.get(`parent_${parentGroup.id}`)).toEqual("extend");
+});
+
+test("Writers, readers and invitees can not set parent extensions", () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  const writer = node.createAccount();
+  const reader = node.createAccount();
+  const adminInvite = node.createAccount();
+  const writerInvite = node.createAccount();
+  const readerInvite = node.createAccount();
+
+  group.addMember(writer, "writer");
+  group.addMember(reader, "reader");
+  group.addMember(adminInvite, "adminInvite");
+  group.addMember(writerInvite, "writerInvite");
+  group.addMember(readerInvite, "readerInvite");
+
+  const groupAsWriter = expectGroup(
+    group.core
+      .testWithDifferentAccount(writer, Crypto.newRandomSessionID(writer.id))
+      .getCurrentContent(),
+  );
+
+  groupAsWriter.set(`parent_${parentGroup.id}`, "extend", "trusting");
+  expect(groupAsWriter.get(`parent_${parentGroup.id}`)).toBeUndefined();
+
+  const groupAsReader = expectGroup(
+    group.core
+      .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
+      .getCurrentContent(),
+  );
+
+  groupAsReader.set(`parent_${parentGroup.id}`, "extend", "trusting");
+  expect(groupAsReader.get(`parent_${parentGroup.id}`)).toBeUndefined();
+
+  const groupAsAdminInvite = expectGroup(
+    group.core
+      .testWithDifferentAccount(
+        adminInvite,
+        Crypto.newRandomSessionID(adminInvite.currentAgentID()._unsafeUnwrap()),
+      )
+      .getCurrentContent(),
+  );
+
+  groupAsAdminInvite.set(`parent_${parentGroup.id}`, "extend", "trusting");
+  expect(groupAsAdminInvite.get(`parent_${parentGroup.id}`)).toBeUndefined();
+
+  const groupAsWriterInvite = expectGroup(
+    group.core
+      .testWithDifferentAccount(
+        writerInvite,
+        Crypto.newRandomSessionID(
+          writerInvite.currentAgentID()._unsafeUnwrap(),
+        ),
+      )
+      .getCurrentContent(),
+  );
+
+  groupAsWriterInvite.set(`parent_${parentGroup.id}`, "extend", "trusting");
+  expect(groupAsWriterInvite.get(`parent_${parentGroup.id}`)).toBeUndefined();
+
+  const groupAsReaderInvite = expectGroup(
+    group.core
+      .testWithDifferentAccount(
+        readerInvite,
+        Crypto.newRandomSessionID(
+          readerInvite.currentAgentID()._unsafeUnwrap(),
+        ),
+      )
+      .getCurrentContent(),
+  );
+
+  groupAsReaderInvite.set(`parent_${parentGroup.id}`, "extend", "trusting");
+  expect(groupAsReaderInvite.get(`parent_${parentGroup.id}`)).toBeUndefined();
+});
+
+test("Admins can set child extensions", () => {
+  const { group, node } = newGroupHighLevel();
+  const childGroup = node.createGroup();
+
+  group.set(`child_${childGroup.id}`, "extend", "trusting");
+  expect(group.get(`child_${childGroup.id}`)).toEqual("extend");
+});
+
+test("Admins can set child extensions when the admin role is inherited", async () => {
+  const { node1, node2 } = createTwoConnectedNodes("server", "server");
+
+  const node2Account = node2.account;
+  const group = node1.createGroup();
+
+  group.addMember(node2Account, "admin");
+
+  const groupOnNode2 = await node2.load(group.id);
+
+  if (groupOnNode2 === "unavailable") {
+    throw new Error("Group not found on node2");
+  }
+
+  const childGroup = node2.createGroup();
+  childGroup.extend(groupOnNode2);
+
+  const childGroupOnNode1 = await node1.load(childGroup.id);
+
+  if (childGroupOnNode1 === "unavailable") {
+    throw new Error("Child group not found on node1");
+  }
+
+  const grandChildGroup = node2.createGroup();
+  grandChildGroup.extend(childGroupOnNode1);
+
+  expect(childGroupOnNode1.get(`child_${grandChildGroup.id}`)).toEqual(
+    "extend",
+  );
+  expect(grandChildGroup.get(`parent_${childGroupOnNode1.id}`)).toEqual(
+    "extend",
+  );
+});
+
+test("Writers, readers and invitees can not set child extensions", () => {
+  const { group, node } = newGroupHighLevel();
+  const childGroup = node.createGroup();
+
+  const writer = node.createAccount();
+  const reader = node.createAccount();
+  const adminInvite = node.createAccount();
+  const writerInvite = node.createAccount();
+  const readerInvite = node.createAccount();
+
+  group.addMember(writer, "writer");
+  group.addMember(reader, "reader");
+  group.addMember(adminInvite, "adminInvite");
+  group.addMember(writerInvite, "writerInvite");
+  group.addMember(readerInvite, "readerInvite");
+
+  const groupAsWriter = expectGroup(
+    group.core
+      .testWithDifferentAccount(writer, Crypto.newRandomSessionID(writer.id))
+      .getCurrentContent(),
+  );
+
+  groupAsWriter.set(`child_${childGroup.id}`, "extend", "trusting");
+  expect(groupAsWriter.get(`child_${childGroup.id}`)).toBeUndefined();
+
+  const groupAsReader = expectGroup(
+    group.core
+      .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
+      .getCurrentContent(),
+  );
+
+  groupAsReader.set(`child_${childGroup.id}`, "extend", "trusting");
+  expect(groupAsReader.get(`child_${childGroup.id}`)).toBeUndefined();
+
+  const groupAsAdminInvite = expectGroup(
+    group.core
+      .testWithDifferentAccount(
+        adminInvite,
+        Crypto.newRandomSessionID(adminInvite.currentAgentID()._unsafeUnwrap()),
+      )
+      .getCurrentContent(),
+  );
+
+  groupAsAdminInvite.set(`child_${childGroup.id}`, "extend", "trusting");
+  expect(groupAsAdminInvite.get(`child_${childGroup.id}`)).toBeUndefined();
+
+  const groupAsWriterInvite = expectGroup(
+    group.core
+      .testWithDifferentAccount(
+        writerInvite,
+        Crypto.newRandomSessionID(
+          writerInvite.currentAgentID()._unsafeUnwrap(),
+        ),
+      )
+      .getCurrentContent(),
+  );
+
+  groupAsWriterInvite.set(`child_${childGroup.id}`, "extend", "trusting");
+  expect(groupAsWriterInvite.get(`child_${childGroup.id}`)).toBeUndefined();
+
+  const groupAsReaderInvite = expectGroup(
+    group.core
+      .testWithDifferentAccount(
+        readerInvite,
+        Crypto.newRandomSessionID(
+          readerInvite.currentAgentID()._unsafeUnwrap(),
+        ),
+      )
+      .getCurrentContent(),
+  );
+
+  groupAsReaderInvite.set(`child_${childGroup.id}`, "extend", "trusting");
+  expect(groupAsReaderInvite.get(`child_${childGroup.id}`)).toBeUndefined();
+});
+
+test("Member roles are inherited by child groups (except invites)", () => {
+  const { group, node, admin } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+
+  const writer = node.createAccount();
+  const reader = node.createAccount();
+  const adminInvite = node.createAccount();
+  const writerInvite = node.createAccount();
+  const readerInvite = node.createAccount();
+
+  parentGroup.addMember(writer, "writer");
+  parentGroup.addMember(reader, "reader");
+  parentGroup.addMember(adminInvite, "adminInvite");
+  parentGroup.addMember(writerInvite, "writerInvite");
+  parentGroup.addMember(readerInvite, "readerInvite");
+
+  expect(group.roleOfInternal(admin.id)).toEqual({
+    role: "admin",
+    via: undefined,
+  });
+
+  expect(group.roleOfInternal(writer.id)).toEqual({
+    role: "writer",
+    via: parentGroup.id,
+  });
+  expect(group.roleOf(writer.id)).toEqual("writer");
+
+  expect(group.roleOfInternal(reader.id)).toEqual({
+    role: "reader",
+    via: parentGroup.id,
+  });
+  expect(group.roleOf(reader.id)).toEqual("reader");
+
+  expect(group.roleOfInternal(adminInvite.id)).toEqual(undefined);
+  expect(group.roleOf(adminInvite.id)).toEqual(undefined);
+
+  expect(group.roleOfInternal(writerInvite.id)).toEqual(undefined);
+  expect(group.roleOf(writerInvite.id)).toEqual(undefined);
+
+  expect(group.roleOfInternal(readerInvite.id)).toEqual(undefined);
+  expect(group.roleOf(readerInvite.id)).toEqual(undefined);
+});
+
+test("Member roles are inherited by grand-children groups (except invites)", () => {
+  const { group, node, admin } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+  const grandParentGroup = node.createGroup();
+
+  group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+  parentGroup.set(`parent_${grandParentGroup.id}`, "extend", "trusting");
+
+  const writer = node.createAccount();
+  const reader = node.createAccount();
+  const adminInvite = node.createAccount();
+  const writerInvite = node.createAccount();
+  const readerInvite = node.createAccount();
+
+  grandParentGroup.addMember(writer, "writer");
+  grandParentGroup.addMember(reader, "reader");
+  grandParentGroup.addMember(adminInvite, "adminInvite");
+  grandParentGroup.addMember(writerInvite, "writerInvite");
+  grandParentGroup.addMember(readerInvite, "readerInvite");
+
+  expect(group.roleOfInternal(admin.id)).toEqual({
+    role: "admin",
+    via: undefined,
+  });
+
+  expect(group.roleOfInternal(writer.id)).toEqual({
+    role: "writer",
+    via: parentGroup.id,
+  });
+  expect(group.roleOf(writer.id)).toEqual("writer");
+
+  expect(group.roleOfInternal(reader.id)).toEqual({
+    role: "reader",
+    via: parentGroup.id,
+  });
+  expect(group.roleOf(reader.id)).toEqual("reader");
+
+  expect(group.roleOfInternal(adminInvite.id)).toEqual(undefined);
+  expect(group.roleOf(adminInvite.id)).toEqual(undefined);
+
+  expect(group.roleOfInternal(writerInvite.id)).toEqual(undefined);
+  expect(group.roleOf(writerInvite.id)).toEqual(undefined);
+
+  expect(group.roleOfInternal(readerInvite.id)).toEqual(undefined);
+  expect(group.roleOf(readerInvite.id)).toEqual(undefined);
+});
+
+test("Admins can reveal parent read keys to child groups", () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  const parentReadKeyID = parentGroup.get("readKey");
+  if (!parentReadKeyID) {
+    throw new Error("Can't get parent group read key");
+  }
+
+  const readKeyID = group.get("readKey");
+  if (!readKeyID) {
+    throw new Error("Can't get group read key");
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const encrypted = "fake_encrypted_key_secret" as any;
+
+  group.set(`${readKeyID}_for_${parentReadKeyID}`, encrypted, "trusting");
+  expect(group.get(`${readKeyID}_for_${parentReadKeyID}`)).toEqual(encrypted);
+});
+
+test("Writers, readers and invites can't reveal parent read keys to child groups", () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  const parentReadKeyID = parentGroup.get("readKey");
+  if (!parentReadKeyID) {
+    throw new Error("Can't get parent group read key");
+  }
+
+  const readKeyID = group.get("readKey");
+  if (!readKeyID) {
+    throw new Error("Can't get group read key");
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const encrypted = "fake_encrypted_key_secret" as any;
+
+  const writer = node.createAccount();
+  const reader = node.createAccount();
+  const adminInvite = node.createAccount();
+  const writerInvite = node.createAccount();
+  const readerInvite = node.createAccount();
+
+  group.addMember(writer, "writer");
+  group.addMember(reader, "reader");
+  group.addMember(adminInvite, "adminInvite");
+  group.addMember(writerInvite, "writerInvite");
+  group.addMember(readerInvite, "readerInvite");
+
+  const groupAsWriter = expectGroup(
+    group.core
+      .testWithDifferentAccount(writer, Crypto.newRandomSessionID(writer.id))
+      .getCurrentContent(),
+  );
+
+  groupAsWriter.set(
+    `${readKeyID}_for_${parentReadKeyID}`,
+    encrypted,
+    "trusting",
+  );
+  expect(
+    groupAsWriter.get(`${readKeyID}_for_${parentReadKeyID}`),
+  ).toBeUndefined();
+
+  const groupAsReader = expectGroup(
+    group.core
+      .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
+      .getCurrentContent(),
+  );
+
+  groupAsReader.set(
+    `${readKeyID}_for_${parentReadKeyID}`,
+    encrypted,
+    "trusting",
+  );
+  expect(
+    groupAsReader.get(`${readKeyID}_for_${parentReadKeyID}`),
+  ).toBeUndefined();
+
+  const groupAsAdminInvite = expectGroup(
+    group.core
+      .testWithDifferentAccount(
+        adminInvite,
+        Crypto.newRandomSessionID(adminInvite.currentAgentID()._unsafeUnwrap()),
+      )
+      .getCurrentContent(),
+  );
+
+  groupAsAdminInvite.set(
+    `${readKeyID}_for_${parentReadKeyID}`,
+    encrypted,
+    "trusting",
+  );
+  expect(
+    groupAsAdminInvite.get(`${readKeyID}_for_${parentReadKeyID}`),
+  ).toBeUndefined();
+
+  const groupAsWriterInvite = expectGroup(
+    group.core
+      .testWithDifferentAccount(
+        writerInvite,
+        Crypto.newRandomSessionID(
+          writerInvite.currentAgentID()._unsafeUnwrap(),
+        ),
+      )
+      .getCurrentContent(),
+  );
+
+  groupAsWriterInvite.set(
+    `${readKeyID}_for_${parentReadKeyID}`,
+    encrypted,
+    "trusting",
+  );
+  expect(
+    groupAsWriterInvite.get(`${readKeyID}_for_${parentReadKeyID}`),
+  ).toBeUndefined();
+
+  const groupAsReaderInvite = expectGroup(
+    group.core
+      .testWithDifferentAccount(
+        readerInvite,
+        Crypto.newRandomSessionID(
+          readerInvite.currentAgentID()._unsafeUnwrap(),
+        ),
+      )
+      .getCurrentContent(),
+  );
+
+  groupAsReaderInvite.set(
+    `${readKeyID}_for_${parentReadKeyID}`,
+    encrypted,
+    "trusting",
+  );
+  expect(
+    groupAsReaderInvite.get(`${readKeyID}_for_${parentReadKeyID}`),
+  ).toBeUndefined();
+});
+
+test("Writers and readers in a parent group can read from an object owned by a child group", () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+
+  const parentReadKeyID = parentGroup.get("readKey");
+  const parentKey =
+    parentReadKeyID && parentGroup.core.getReadKey(parentReadKeyID);
+  if (!parentReadKeyID || !parentKey) {
+    throw new Error("Can't get parent group read key");
+  }
+
+  const readKeyID = group.get("readKey");
+  const readKey = readKeyID && group.core.getReadKey(readKeyID);
+  if (!readKeyID || !readKey) {
+    throw new Error("Can't get group read key");
+  }
+
+  const encrypted = node.crypto.encryptKeySecret({
+    toEncrypt: {
+      id: readKeyID,
+      secret: readKey,
+    },
+    encrypting: {
+      id: parentReadKeyID,
+      secret: parentKey,
+    },
+  }).encrypted;
+
+  group.set(`${readKeyID}_for_${parentReadKeyID}`, encrypted, "trusting");
+
+  const writer = node.createAccount();
+  const reader = node.createAccount();
+  parentGroup.addMember(writer, "writer");
+  parentGroup.addMember(reader, "reader");
+
+  const childObject = node.createCoValue({
+    type: "comap",
+    ruleset: { type: "ownedByGroup", group: group.id },
+    meta: null,
+    ...Crypto.createdNowUnique(),
+  });
+
+  const childContent = expectMap(childObject.getCurrentContent());
+
+  childContent.set("foo", "bar", "private");
+  expect(childContent.get("foo")).toEqual("bar");
+
+  const childContentAsWriter = expectMap(
+    childObject
+      .testWithDifferentAccount(writer, Crypto.newRandomSessionID(writer.id))
+      .getCurrentContent(),
+  );
+
+  expect(childContentAsWriter.get("foo")).toEqual("bar");
+
+  const childContentAsReader = expectMap(
+    childObject
+      .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
+      .getCurrentContent(),
+  );
+
+  expect(childContentAsReader.get("foo")).toEqual("bar");
+});
+
+test("Writers in a parent group can write to an object owned by a child group", () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+
+  const parentReadKeyID = parentGroup.get("readKey");
+  const parentKey =
+    parentReadKeyID && parentGroup.core.getReadKey(parentReadKeyID);
+  if (!parentReadKeyID || !parentKey) {
+    throw new Error("Can't get parent group read key");
+  }
+
+  const readKeyID = group.get("readKey");
+  const readKey = readKeyID && group.core.getReadKey(readKeyID);
+  if (!readKeyID || !readKey) {
+    throw new Error("Can't get group read key");
+  }
+
+  const encrypted = node.crypto.encryptKeySecret({
+    toEncrypt: {
+      id: readKeyID,
+      secret: readKey,
+    },
+    encrypting: {
+      id: parentReadKeyID,
+      secret: parentKey,
+    },
+  }).encrypted;
+
+  group.set(`${readKeyID}_for_${parentReadKeyID}`, encrypted, "trusting");
+
+  const writer = node.createAccount();
+  parentGroup.addMember(writer, "writer");
+
+  const childObject = node.createCoValue({
+    type: "comap",
+    ruleset: { type: "ownedByGroup", group: group.id },
+    meta: null,
+    ...Crypto.createdNowUnique(),
+  });
+
+  const childContentAsWriter = expectMap(
+    childObject
+      .testWithDifferentAccount(writer, Crypto.newRandomSessionID(writer.id))
+      .getCurrentContent(),
+  );
+
+  childContentAsWriter.set("foo", "bar", "private");
+  expect(childContentAsWriter.get("foo")).toEqual("bar");
+});
+
+test("When rotating the key of a child group, the new child key is exposed to the parent group", () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+
+  const currentReadKeyID = group.get("readKey");
+  if (!currentReadKeyID) {
+    throw new Error("Can't get group read key");
+  }
+
+  group.rotateReadKey();
+
+  const newReadKeyID = group.get("readKey");
+  if (!newReadKeyID) {
+    throw new Error("Can't get new group read key");
+  }
+  expect(newReadKeyID).not.toEqual(currentReadKeyID);
+
+  const parentReadKeyID = parentGroup.get("readKey");
+  if (!parentReadKeyID) {
+    throw new Error("Can't get parent group read key");
+  }
+
+  console.log("Checking", `${newReadKeyID}_for_${parentReadKeyID}`);
+
+  expect(group.get(`${newReadKeyID}_for_${parentReadKeyID}`)).toBeDefined();
+});
+
+test("When rotating the key of a parent group, the keys of all child groups are also rotated", () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  parentGroup.set(`child_${group.id}`, "extend", "trusting");
+  group.set(`parent_${parentGroup.id}`, "extend", "trusting");
+
+  group.rotateReadKey();
+
+  const currentChildReadKeyID = group.get("readKey");
+  if (!currentChildReadKeyID) {
+    throw new Error("Can't get group read key");
+  }
+
+  console.log("child id", group.id);
+  parentGroup.rotateReadKey();
+
+  const newChildReadKeyID = expectGroup(group.core.getCurrentContent()).get(
+    "readKey",
+  );
+  if (!newChildReadKeyID) {
+    throw new Error("Can't get new group read key");
+  }
+
+  expect(newChildReadKeyID).not.toEqual(currentChildReadKeyID);
+});
+
+test("When rotating the key of a grand-parent group, the keys of all child and grand-child groups are also rotated", () => {
+  const { group, node } = newGroupHighLevel();
+  const grandParentGroup = node.createGroup();
+  const parentGroup = node.createGroup();
+
+  grandParentGroup.set(`child_${parentGroup.id}`, "extend", "trusting");
+  parentGroup.set(`child_${group.id}`, "extend", "trusting");
+  parentGroup.set(`parent_${grandParentGroup.id}`, "extend", "trusting");
+  group.set(`parent_${grandParentGroup.id}`, "extend", "trusting");
+
+  const currentGrandParentReadKeyID = grandParentGroup.get("readKey");
+  if (!currentGrandParentReadKeyID) {
+    throw new Error("Can't get grand-parent group read key");
+  }
+
+  const currentParentReadKeyID = parentGroup.get("readKey");
+  if (!currentParentReadKeyID) {
+    throw new Error("Can't get parent group read key");
+  }
+
+  const currentChildReadKeyID = group.get("readKey");
+  if (!currentChildReadKeyID) {
+    throw new Error("Can't get group read key");
+  }
+
+  grandParentGroup.rotateReadKey();
+
+  const newGrandParentReadKeyID = grandParentGroup.get("readKey");
+  if (!newGrandParentReadKeyID) {
+    throw new Error("Can't get new grand-parent group read key");
+  }
+
+  expect(newGrandParentReadKeyID).not.toEqual(currentGrandParentReadKeyID);
+
+  const newParentReadKeyID = expectGroup(
+    parentGroup.core.getCurrentContent(),
+  ).get("readKey");
+  if (!newParentReadKeyID) {
+    throw new Error("Can't get new parent group read key");
+  }
+
+  expect(newParentReadKeyID).not.toEqual(currentParentReadKeyID);
+
+  const newChildReadKeyID = expectGroup(group.core.getCurrentContent()).get(
+    "readKey",
+  );
+  if (!newChildReadKeyID) {
+    throw new Error("Can't get new group read key");
+  }
+
+  expect(newChildReadKeyID).not.toEqual(currentChildReadKeyID);
+});
+
+test("Calling extend on group sets up parent and child references and reveals child key to parent", () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  group.extend(parentGroup);
+
+  expect(group.get(`parent_${parentGroup.id}`)).toEqual("extend");
+  expect(parentGroup.get(`child_${group.id}`)).toEqual("extend");
+
+  const parentReadKeyID = parentGroup.get("readKey");
+  if (!parentReadKeyID) {
+    throw new Error("Can't get parent group read key");
+  }
+
+  const childReadKeyID = group.get("readKey");
+  if (!childReadKeyID) {
+    throw new Error("Can't get group read key");
+  }
+
+  expect(group.get(`${childReadKeyID}_for_${parentReadKeyID}`)).toBeDefined();
+
+  const reader = node.createAccount();
+  parentGroup.addMember(reader, "reader");
+
+  const childObject = node.createCoValue({
+    type: "comap",
+    ruleset: { type: "ownedByGroup", group: group.id },
+    meta: null,
+    ...Crypto.createdNowUnique(),
+  });
+  const childMap = expectMap(childObject.getCurrentContent());
+
+  childMap.set("foo", "bar", "private");
+
+  const childContentAsReader = expectMap(
+    childObject
+      .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
+      .getCurrentContent(),
+  );
+
+  expect(childContentAsReader.get("foo")).toEqual("bar");
+});
+
+test("Calling extend to create grand-child groups parent and child references and reveals child key to parent(s)", () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+  const grandParentGroup = node.createGroup();
+
+  group.extend(parentGroup);
+  parentGroup.extend(grandParentGroup);
+
+  expect(group.get(`parent_${parentGroup.id}`)).toEqual("extend");
+  expect(parentGroup.get(`parent_${grandParentGroup.id}`)).toEqual("extend");
+  expect(parentGroup.get(`child_${group.id}`)).toEqual("extend");
+  expect(grandParentGroup.get(`child_${parentGroup.id}`)).toEqual("extend");
+
+  const reader = node.createAccount();
+  grandParentGroup.addMember(reader, "reader");
+
+  const childObject = node.createCoValue({
+    type: "comap",
+    ruleset: { type: "ownedByGroup", group: group.id },
+    meta: null,
+    ...Crypto.createdNowUnique(),
+  });
+  const childMap = expectMap(childObject.getCurrentContent());
+
+  childMap.set("foo", "bar", "private");
+
+  const childContentAsReader = expectMap(
+    childObject
+      .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
+      .getCurrentContent(),
+  );
+
+  expect(childContentAsReader.get("foo")).toEqual("bar");
+});
+
+test("High-level permissions work correctly when a group is extended", async () => {
+  const { group, node } = newGroupHighLevel();
+  const parentGroup = node.createGroup();
+
+  group.extend(parentGroup);
+
+  const reader = node.createAccount();
+  parentGroup.addMember(reader, "reader");
+
+  const mapCore = node.createCoValue({
+    type: "comap",
+    ruleset: { type: "ownedByGroup", group: group.id },
+    meta: null,
+    ...Crypto.createdNowUnique(),
+  });
+
+  const map = expectMap(mapCore.getCurrentContent());
+
+  map.set("foo", "bar", "private");
+
+  const mapAsReader = expectMap(
+    mapCore
+      .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
+      .getCurrentContent(),
+  );
+
+  expect(mapAsReader.get("foo")).toEqual("bar");
+
+  const groupKeyBeforeRemove = group.core.getCurrentReadKey().id;
+
+  await parentGroup.removeMember(reader);
+
+  const groupKeyAfterRemove = group.core.getCurrentReadKey().id;
+  expect(groupKeyAfterRemove).not.toEqual(groupKeyBeforeRemove);
+
+  map.set("foo", "baz", "private");
+
+  const mapAsReaderAfterRemove = expectMap(
+    mapCore
+      .testWithDifferentAccount(reader, Crypto.newRandomSessionID(reader.id))
+      .getCurrentContent(),
+  );
+
+  expect(mapAsReaderAfterRemove.get("foo")).not.toEqual("baz");
 });

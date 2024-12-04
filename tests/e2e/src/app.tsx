@@ -5,6 +5,7 @@ import { AuthAndJazz } from "./jazz";
 import { FileStreamTest } from "./pages/FileStream";
 import { ResumeSyncState } from "./pages/ResumeSyncState";
 import { RetryUnavailable } from "./pages/RetryUnavailable";
+import { Sharing } from "./pages/Sharing";
 import { TestInput } from "./pages/TestInput";
 
 function Index() {
@@ -21,6 +22,9 @@ function Index() {
       </li>
       <li>
         <Link to="/retry-unavailable">Retry Unavailable</Link>
+      </li>
+      <li>
+        <Link to="/sharing">Sharing</Link>
       </li>
     </ul>
   );
@@ -42,6 +46,10 @@ const router = createBrowserRouter([
   {
     path: "/file-stream",
     element: <FileStreamTest />,
+  },
+  {
+    path: "/sharing",
+    element: <Sharing />,
   },
   {
     path: "/",

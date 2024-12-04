@@ -13,7 +13,14 @@ import {
   SignerID,
   StreamingHash,
 } from "./crypto/crypto.js";
-import { RawCoID, SessionID, TransactionID } from "./ids.js";
+import {
+  RawCoID,
+  SessionID,
+  TransactionID,
+  getGroupDependentKeyList,
+  getParentGroupId,
+  isParentGroupReference,
+} from "./ids.js";
 import { Stringified, parseJSON, stableStringify } from "./jsonStringify.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
 import { LocalNode, ResolveAccountAgentError } from "./localNode.js";
@@ -790,6 +797,48 @@ export class CoValueCore {
         }
       }
 
+      // try to find revelation to parent group read keys
+      for (const co of content.keys()) {
+        if (isParentGroupReference(co)) {
+          const parentGroupID = getParentGroupId(co);
+          const parentGroup = this.node.expectCoValueLoaded(
+            parentGroupID,
+            "Expected parent group to be loaded",
+          );
+
+          const parentKeys = this.findValidParentKeys(
+            keyID,
+            content,
+            parentGroup,
+          );
+
+          for (const parentKey of parentKeys) {
+            const revelationForParentKey = content.get(
+              `${keyID}_for_${parentKey.id}`,
+            );
+
+            if (revelationForParentKey) {
+              const secret = parentGroup.crypto.decryptKeySecret(
+                {
+                  encryptedID: keyID,
+                  encryptingID: parentKey.id,
+                  encrypted: revelationForParentKey,
+                },
+                parentKey.secret,
+              );
+
+              if (secret) {
+                return secret as KeySecret;
+              } else {
+                console.error(
+                  `Encrypting parent ${parentKey.id} key didn't decrypt ${keyID}`,
+                );
+              }
+            }
+          }
+        }
+      }
+
       return undefined;
     } else if (this.header.ruleset.type === "ownedByGroup") {
       return this.node
@@ -800,6 +849,28 @@ export class CoValueCore {
         "Only groups or values owned by groups have read secrets",
       );
     }
+  }
+
+  findValidParentKeys(keyID: KeyID, group: RawGroup, parentGroup: CoValueCore) {
+    const validParentKeys: { id: KeyID; secret: KeySecret }[] = [];
+
+    for (const co of group.keys()) {
+      if (isKeyForKeyField(co) && co.startsWith(keyID)) {
+        const encryptingKeyID = co.split("_for_")[1] as KeyID;
+        const encryptingKeySecret = parentGroup.getReadKey(encryptingKeyID);
+
+        if (!encryptingKeySecret) {
+          continue;
+        }
+
+        validParentKeys.push({
+          id: encryptingKeyID,
+          secret: encryptingKeySecret,
+        });
+      }
+    }
+
+    return validParentKeys;
   }
 
   getGroup(): RawGroup {
@@ -955,9 +1026,7 @@ export class CoValueCore {
   /** @internal */
   getDependedOnCoValuesUncached(): RawCoID[] {
     return this.header.ruleset.type === "group"
-      ? expectGroup(this.getCurrentContent())
-          .keys()
-          .filter((k): k is RawAccountID => k.startsWith("co_"))
+      ? getGroupDependentKeyList(expectGroup(this.getCurrentContent()).keys())
       : this.header.ruleset.type === "ownedByGroup"
         ? [
             this.header.ruleset.group,
