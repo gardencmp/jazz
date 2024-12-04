@@ -50,7 +50,7 @@
       // Create a FileStream from the uploaded file
       const fileStream = await FileStream.createFromBlob(file, ownership);
 
-      // Create a new SharedFile instance with same ID
+      // Create the shared file entry
       const sharedFile = SharedFile.create(
         {
           name: fileName,
