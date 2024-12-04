@@ -1,0 +1,19 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "build:generate-docs"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "build:generate-docs": {
+      "inputs": ["../../../packages/*/src/**"],
+      "outputs": ["app/docs/api/**"],
+      "dependsOn": ["^build"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["build"]
+    }
+  }
+}
