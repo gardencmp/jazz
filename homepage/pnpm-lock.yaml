@@ -205,6 +205,21 @@ importers:
       gcmp-design-system:
         specifier: workspace:*
         version: link:../design-system
+      jazz-browser:
+        specifier: workspace:../*
+        version: link:../*
+      jazz-browser-media-images:
+        specifier: workspace:../*
+        version: link:../*
+      jazz-nodejs:
+        specifier: workspace:../*
+        version: link:../*
+      jazz-react:
+        specifier: workspace:../*
+        version: link:../*
+      jazz-tools:
+        specifier: workspace:../*
+        version: link:../*
       lucide-react:
         specifier: ^0.436.0
         version: 0.436.0(react@18.3.1)
