@@ -257,7 +257,7 @@ export class RawGroup<
   }
 
   /** @internal */
-  rotateReadKey(newReadKeys: Record<CoID<RawCoMap>, KeyID> = {}) {
+  rotateReadKey() {
     const currentlyPermittedReaders = this.keys().filter((key) => {
       if (key.startsWith("co_") || isAgentID(key)) {
         const role = this.get(key);
@@ -283,7 +283,6 @@ export class RawGroup<
     };
 
     const newReadKey = this.core.crypto.newRandomKeySecret();
-    newReadKeys[this.id] = newReadKey.id;
 
     for (const readerID of currentlyPermittedReaders) {
       const reader = this.core.node
@@ -317,22 +316,13 @@ export class RawGroup<
       "trusting",
     );
 
+    this.set("readKey", newReadKey.id, "trusting");
+
     // when we rotate our readKey (because someone got kicked out), we also need to (recursively)
     // rotate the readKeys of all child groups (so they are kicked out there as well)
     for (const parent of parentGroups) {
-      // Since we are recursively calling rotateReadKey, we need to check if the parent read key
-      // has been rotated in a previous iteration of this loop
-      let parentReadKeyID = newReadKeys[parent.id];
-      let parentReadKeySecret: KeySecret | undefined;
-
-      if (!parentReadKeyID) {
-        const { id, secret } = parent.core.getCurrentReadKey();
-
-        parentReadKeyID = id;
-        parentReadKeySecret = secret;
-      } else {
-        parentReadKeySecret = parent.core.getUncachedReadKey(parentReadKeyID);
-      }
+      const { id: parentReadKeyID, secret: parentReadKeySecret } =
+        parent.core.getCurrentReadKey();
 
       if (!parentReadKeySecret) {
         throw new Error(
@@ -354,12 +344,8 @@ export class RawGroup<
     }
 
     for (const child of childGroups) {
-      child.rotateReadKey(newReadKeys);
+      child.rotateReadKey();
     }
-
-    // Update the readKey of the group after iterating over all the childs
-    // Otherwise they won't be able to access the previous readKey
-    this.set("readKey", newReadKey.id, "trusting");
   }
 
   extend(parent: RawGroup) {

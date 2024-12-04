@@ -806,31 +806,34 @@ export class CoValueCore {
             "Expected parent group to be loaded",
           );
 
-          const parentKey = parentGroup.getCurrentReadKey();
-          if (!parentKey.secret) {
-            continue;
-          }
-
-          const revelationForParentKey = content.get(
-            `${keyID}_for_${parentKey.id}`,
+          const parentKeys = this.findValidParentKeys(
+            keyID,
+            content,
+            parentGroup,
           );
 
-          if (revelationForParentKey) {
-            const secret = parentGroup.crypto.decryptKeySecret(
-              {
-                encryptedID: keyID,
-                encryptingID: parentKey.id,
-                encrypted: revelationForParentKey,
-              },
-              parentKey.secret,
+          for (const parentKey of parentKeys) {
+            const revelationForParentKey = content.get(
+              `${keyID}_for_${parentKey.id}`,
             );
 
-            if (secret) {
-              return secret as KeySecret;
-            } else {
-              console.error(
-                `Encrypting parent ${parentKey.id} key didn't decrypt ${keyID}`,
+            if (revelationForParentKey) {
+              const secret = parentGroup.crypto.decryptKeySecret(
+                {
+                  encryptedID: keyID,
+                  encryptingID: parentKey.id,
+                  encrypted: revelationForParentKey,
+                },
+                parentKey.secret,
               );
+
+              if (secret) {
+                return secret as KeySecret;
+              } else {
+                console.error(
+                  `Encrypting parent ${parentKey.id} key didn't decrypt ${keyID}`,
+                );
+              }
             }
           }
         }
@@ -846,6 +849,28 @@ export class CoValueCore {
         "Only groups or values owned by groups have read secrets",
       );
     }
+  }
+
+  findValidParentKeys(keyID: KeyID, group: RawGroup, parentGroup: CoValueCore) {
+    const validParentKeys: { id: KeyID; secret: KeySecret }[] = [];
+
+    for (const co of group.keys()) {
+      if (isKeyForKeyField(co) && co.startsWith(keyID)) {
+        const encryptingKeyID = co.split("_for_")[1] as KeyID;
+        const encryptingKeySecret = parentGroup.getReadKey(encryptingKeyID);
+
+        if (!encryptingKeySecret) {
+          continue;
+        }
+
+        validParentKeys.push({
+          id: encryptingKeyID,
+          secret: encryptingKeySecret,
+        });
+      }
+    }
+
+    return validParentKeys;
   }
 
   getGroup(): RawGroup {
