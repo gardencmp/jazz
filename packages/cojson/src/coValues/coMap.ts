@@ -68,11 +68,9 @@ export class RawCoMapView<
     this.latestTxMadeAt = 0;
     this.options = options;
 
-    const validTransactions = core.getValidSortedTransactions(options);
-
-    for (let i = validTransactions.length - 1; i >= 0; i--) {
-      const { txID, changes, madeAt } = validTransactions[i]!;
-
+    for (const { txID, changes, madeAt } of core.getValidSortedTransactions(
+      options,
+    )) {
       if (options?.atTime && madeAt > options.atTime) {
         continue;
       }
