@@ -66,7 +66,7 @@ export function JazzNav() {
         },
         {
           title: "Releases",
-          href: "https://github.com/gardencmp/jazz/releases",
+          href: "https://github.com/garden-co/jazz/releases",
           newTab: true,
         },
       ]}

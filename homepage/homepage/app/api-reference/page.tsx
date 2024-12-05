@@ -3,8 +3,6 @@ import { clsx } from "clsx";
 import { MessageCircleQuestionIcon, PackageIcon } from "lucide-react";
 import Link from "next/link";
 
-import { DocNav } from "@/components/docs/nav";
-
 const CardHeading = ({
   children,
   className,
@@ -95,7 +93,7 @@ export default function Page() {
             </Link>
             , or open an issue on{" "}
             <Link
-              href="https://github.com/gardencmp/jazz"
+              href="https://github.com/garden-co/jazz"
               className="underline"
             >
               GitHub
