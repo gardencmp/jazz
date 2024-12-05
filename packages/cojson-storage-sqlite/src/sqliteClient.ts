@@ -3,28 +3,19 @@ import { CojsonInternalTypes, OutgoingSyncQueue, SessionID } from "cojson";
 import RawCoID = CojsonInternalTypes.RawCoID;
 import Signature = CojsonInternalTypes.Signature;
 import Transaction = CojsonInternalTypes.Transaction;
+import {
+  DBClientInterface,
+  SessionRow,
+  SignatureAfterRow,
+  StoredCoValueRow,
+  StoredSessionRow,
+  TransactionRow,
+} from "cojson-storage";
 
 export type RawCoValueRow = {
   id: CojsonInternalTypes.RawCoID;
   header: string;
 };
-
-export type CoValueRow = {
-  id: CojsonInternalTypes.RawCoID;
-  header: CojsonInternalTypes.CoValueHeader;
-};
-
-export type StoredCoValueRow = CoValueRow & { rowID: number };
-
-export type SessionRow = {
-  coValue: number;
-  sessionID: SessionID;
-  lastIdx: number;
-  lastSignature: CojsonInternalTypes.Signature;
-  bytesSinceLastSignature?: number;
-};
-
-export type StoredSessionRow = SessionRow & { rowID: number };
 
 export type RawTransactionRow = {
   ses: number;
@@ -32,19 +23,7 @@ export type RawTransactionRow = {
   tx: string;
 };
 
-export type TransactionRow = {
-  ses: number;
-  idx: number;
-  tx: CojsonInternalTypes.Transaction;
-};
-
-export type SignatureAfterRow = {
-  ses: number;
-  idx: number;
-  signature: CojsonInternalTypes.Signature;
-};
-
-export class SQLiteClient {
+export class SQLiteClient implements DBClientInterface {
   private readonly db: DatabaseT;
   private readonly toLocalNode: OutgoingSyncQueue;
 
@@ -161,7 +140,7 @@ export class SQLiteClient {
     idx,
     signature,
   }: { sessionRowID: number; idx: number; signature: Signature }) {
-    return this.db
+    this.db
       .prepare<[number, number, string]>(
         `INSERT INTO signatureAfter (ses, idx, signature) VALUES (?, ?, ?)`,
       )

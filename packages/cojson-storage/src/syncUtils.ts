@@ -1,7 +1,6 @@
 import {
   CojsonInternalTypes,
   JsonValue,
-  RawAccountID,
   SessionID,
   Stringified,
   cojsonInternals,
@@ -11,7 +10,7 @@ import {
   StoredCoValueRow,
   StoredSessionRow,
   TransactionRow,
-} from "./sqliteClient.js";
+} from "./types.js";
 
 export function collectNewTxs({
   newTxsInSession,

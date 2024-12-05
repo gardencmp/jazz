@@ -1,25 +1,24 @@
 {
-  "name": "cojson-storage-sqlite",
-  "type": "module",
+  "name": "cojson-storage",
   "version": "0.8.35",
   "main": "dist/index.js",
+  "type": "module",
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^8.5.2",
-    "cojson": "workspace:0.8.35",
-    "cojson-storage": "workspace:*"
+    "cojson": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "@types/better-sqlite3": "^7.6.4"
+    "vitest": "1.5.3",
+    "typescript": "^5.3.3"
   },
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist",
+    "test": "vitest --run --root ../../ --project cojson-storage",
+    "test:watch": "vitest --watch --root ../../ --project cojson-storage",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
     "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
     "prepublishOnly": "npm run build"
-  },
-  "gitHead": "33c27053293b4801b968c61d5c4c989f93a67d13"
+  }
 }

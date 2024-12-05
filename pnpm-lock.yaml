@@ -1272,11 +1272,27 @@ importers:
         specifier: 1.5.3
         version: 1.5.3(@types/node@22.5.1)(@vitest/browser@0.34.6)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(terser@5.33.0)
 
+  packages/cojson-storage:
+    dependencies:
+      cojson:
+        specifier: workspace:*
+        version: link:../cojson
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.6.3
+      vitest:
+        specifier: 1.5.3
+        version: 1.5.3(@types/node@22.5.1)(@vitest/browser@0.34.6)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(terser@5.33.0)
+
   packages/cojson-storage-indexeddb:
     dependencies:
       cojson:
-        specifier: workspace:0.8.35
+        specifier: workspace:*
         version: link:../cojson
+      cojson-storage:
+        specifier: workspace:*
+        version: link:../cojson-storage
     devDependencies:
       '@vitest/browser':
         specifier: ^0.34.1
@@ -1302,13 +1318,16 @@ importers:
       cojson:
         specifier: workspace:0.8.35
         version: link:../cojson
-      typescript:
-        specifier: ^5.3.3
-        version: 5.3.3
+      cojson-storage:
+        specifier: workspace:*
+        version: link:../cojson-storage
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.4
         version: 7.6.10
+      typescript:
+        specifier: ^5.3.3
+        version: 5.3.3
 
   packages/cojson-transport-ws:
     dependencies:
@@ -9119,9 +9138,6 @@ packages:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
 
-  pathe@1.1.1:
-    resolution: {integrity: sha512-d+RQGp0MAYTIaDBIMmOfMwz3E+LOZnxx1HZd5R18mmCZY0QBlK0LDZfPc8FW8Ed2DlvsuE6PRjroDY+wg4+j/Q==}
-
   pathe@1.1.2:
     resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}
 
@@ -10169,9 +10185,6 @@ packages:
   statuses@2.0.1:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
-
-  std-env@3.6.0:
-    resolution: {integrity: sha512-aFZ19IgVmhdB2uX599ve2kE6BIE3YMnQ6Gp6BURhW/oIzpXGKr878TQfAQZn1+i0Flcc/UKUy1gOlcfaUBCryg==}
 
   std-env@3.7.0:
     resolution: {integrity: sha512-JPbdCEQLj1w5GilpiHAx3qJvFndqybBysA3qUOnznweH4QbNYUsW/ea8QzSrnh0vNsezMMw5bcVool8lM0gwzg==}
@@ -15621,12 +15634,12 @@ snapshots:
     dependencies:
       '@vitest/utils': 1.5.3
       p-limit: 5.0.0
-      pathe: 1.1.1
+      pathe: 1.1.2
 
   '@vitest/snapshot@1.5.3':
     dependencies:
-      magic-string: 0.30.5
-      pathe: 1.1.1
+      magic-string: 0.30.12
+      pathe: 1.1.2
       pretty-format: 29.7.0
 
   '@vitest/spy@1.5.3':
@@ -20268,8 +20281,6 @@ snapshots:
 
   path-type@4.0.0: {}
 
-  pathe@1.1.1: {}
-
   pathe@1.1.2: {}
 
   pathval@1.1.1: {}
@@ -21517,8 +21528,6 @@ snapshots:
 
   statuses@2.0.1: {}
 
-  std-env@3.6.0: {}
-
   std-env@3.7.0: {}
 
   stream-buffers@2.2.0: {}
@@ -22334,8 +22343,8 @@ snapshots:
     dependencies:
       cac: 6.7.14
       debug: 4.3.7
-      pathe: 1.1.1
-      picocolors: 1.1.0
+      pathe: 1.1.2
+      picocolors: 1.1.1
       vite: 5.4.11(@types/node@22.5.1)(terser@5.33.0)
     transitivePeerDependencies:
       - '@types/node'
@@ -22457,13 +22466,13 @@ snapshots:
       '@vitest/utils': 1.5.3
       acorn-walk: 8.3.2
       chai: 4.3.10
-      debug: 4.3.4
+      debug: 4.3.7
       execa: 8.0.1
       local-pkg: 0.5.0
-      magic-string: 0.30.5
-      pathe: 1.1.1
-      picocolors: 1.0.0
-      std-env: 3.6.0
+      magic-string: 0.30.12
+      pathe: 1.1.2
+      picocolors: 1.1.1
+      std-env: 3.7.0
       strip-literal: 2.1.0
       tinybench: 2.5.1
       tinypool: 0.8.4

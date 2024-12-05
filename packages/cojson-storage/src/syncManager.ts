@@ -7,8 +7,8 @@ import {
   cojsonInternals,
   emptyKnownState,
 } from "cojson";
-import { IDBClient, StoredSessionRow } from "./idbClient.js";
 import { collectNewTxs, getDependedOnCoValues } from "./syncUtils.js";
+import { DBClientInterface, StoredSessionRow } from "./types.js";
 import NewContentMessage = CojsonInternalTypes.NewContentMessage;
 import KnownStateMessage = CojsonInternalTypes.KnownStateMessage;
 import RawCoID = CojsonInternalTypes.RawCoID;
@@ -20,9 +20,9 @@ type OutputMessageMap = Record<
 
 export class SyncManager {
   private readonly toLocalNode: OutgoingSyncQueue;
-  private readonly dbClient: IDBClient;
+  private readonly dbClient: DBClientInterface;
 
-  constructor(dbClient: IDBClient, toLocalNode: OutgoingSyncQueue) {
+  constructor(dbClient: DBClientInterface, toLocalNode: OutgoingSyncQueue) {
     this.toLocalNode = toLocalNode;
     this.dbClient = dbClient;
   }
@@ -59,6 +59,7 @@ export class SyncManager {
       return;
 
     const firstNewTxIdx = peerKnownState.sessions[sessionRow.sessionID] || 0;
+
     const signaturesAndIdxs = await this.dbClient.getSignatures(
       sessionRow.rowID,
       firstNewTxIdx,

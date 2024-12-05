@@ -5,8 +5,8 @@ import {
   Peer,
   cojsonInternals,
 } from "cojson";
-import { SQLiteClient, TransactionRow } from "./sqliteClient.js";
-import { SyncManager } from "./syncManager.js";
+import { SyncManager, TransactionRow } from "cojson-storage";
+import { SQLiteClient } from "./sqliteClient.js";
 
 export class SQLiteNode {
   private readonly syncManager: SyncManager;

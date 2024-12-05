@@ -1,39 +1,19 @@
-import { CojsonInternalTypes, SessionID } from "cojson";
+import { CojsonInternalTypes } from "cojson";
 import { SyncPromise } from "./syncPromises";
 import RawCoID = CojsonInternalTypes.RawCoID;
 import Transaction = CojsonInternalTypes.Transaction;
 import Signature = CojsonInternalTypes.Signature;
+import {
+  CoValueRow,
+  DBClientInterface,
+  SessionRow,
+  SignatureAfterRow,
+  StoredCoValueRow,
+  StoredSessionRow,
+  TransactionRow,
+} from "cojson-storage";
 
-export type CoValueRow = {
-  id: CojsonInternalTypes.RawCoID;
-  header: CojsonInternalTypes.CoValueHeader;
-};
-
-export type StoredCoValueRow = CoValueRow & { rowID: number };
-
-export type TransactionRow = {
-  ses: number;
-  idx: number;
-  tx: CojsonInternalTypes.Transaction;
-};
-
-export type SignatureAfterRow = {
-  ses: number;
-  idx: number;
-  signature: CojsonInternalTypes.Signature;
-};
-
-export type SessionRow = {
-  coValue: number;
-  sessionID: SessionID;
-  lastIdx: number;
-  lastSignature: CojsonInternalTypes.Signature;
-  bytesSinceLastSignature?: number;
-};
-
-export type StoredSessionRow = SessionRow & { rowID: number };
-
-export class IDBClient {
+export class IDBClient implements DBClientInterface {
   private db;
 
   currentTx:
@@ -238,11 +218,7 @@ export class IDBClient {
     );
   }
 
-  async unitOfWork(operationsCallback: () => any[]) {
-    const results = await Promise.all(operationsCallback());
-    const errors = results.filter((result) => result instanceof Error);
-    if (errors.length > 0) {
-      console.error("Errors in unit of work", errors);
-    }
+  async unitOfWork(operationsCallback: () => unknown[]) {
+    return Promise.all(operationsCallback());
   }
 }

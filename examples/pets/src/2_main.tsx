@@ -23,7 +23,7 @@ const peer =
   (new URL(window.location.href).searchParams.get(
     "peer",
   ) as `ws://${string}`) ??
-  "ws://localhost:4200/?key=pets-example-jazz@gcmp.io";
+  "wss://cloud.jazz.tools/?key=pets-example-jazz@gcmp.io";
 
 /** Walkthrough: The top-level provider `<Jazz.Provider/>`
  *
