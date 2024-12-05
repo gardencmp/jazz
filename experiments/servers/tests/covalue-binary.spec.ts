@@ -1,8 +1,8 @@
 import { test, expect, Page, Browser } from '@playwright/test';
-import { SERVER_URL, getRandomCoValueIndex, spawnBrowsers } from '../common';
-import { logger } from '../../src/util';
+import { SERVER_URL, getRandomCoValueIndex, spawnBrowsers } from './common';
 import fs from 'fs';
 import path from 'path';
+import logger from '../src/util/logger';
 
 test.describe('Binary CoValue', () => {
     let page: Page;
@@ -15,7 +15,7 @@ test.describe('Binary CoValue', () => {
         await page.close();
 
         // Clean up all uploaded files
-        const testFilesDir = path.join(__dirname, '../../public/uploads/');
+        const testFilesDir = path.join(__dirname, '../public/uploads/');
         if (fs.existsSync(testFilesDir)) {
             fs.readdirSync(testFilesDir).forEach((file) => {
                 const filePath = path.join(testFilesDir, file);
@@ -52,7 +52,7 @@ test.describe('Binary CoValue', () => {
         const optionsCount = options.length;
 
         // Pick a binary file for upload
-        const filePath = path.resolve(__dirname, '../fixtures/binary-sample.zip');
+        const filePath = path.resolve(__dirname, './fixtures/binary-sample.zip');
         await page.locator('#fileInput').setInputFiles(filePath);
 
         // Create a CoValue

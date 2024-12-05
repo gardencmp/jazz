@@ -1,6 +1,6 @@
 import { test, expect, Page, Browser } from '@playwright/test';
-import { SERVER_URL, getRandomCoValueIndex, spawnBrowsers } from '../common';
-import { logger } from '../../src/util';
+import { SERVER_URL, getRandomCoValueIndex, spawnBrowsers } from './common';
+import logger from '../src/util/logger';
 
 test.describe('Structured CoValue (text)', () => {
     let page: Page;

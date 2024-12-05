@@ -1,8 +1,10 @@
-import https from "https";
+import uWS from "uWebSockets.js";
 import path from "path";
+import fs from "fs";
+import { lookup } from "mime-types";
 import {
     CoValue,
-    WebSocketResponse,
+    uWebSocketResponse,
     MutationEvent,
     covalues,
     events,
@@ -12,15 +14,8 @@ import {
     PORT,
 } from "../util";
 import logger from "../util/logger";
-import { tlsCert } from "../util/tls";
-import { FileStreamManager } from "./filestream-manager";
-
-import WebSocket from "ws";
-import finalhandler from "finalhandler";
-import serveStatic from "serve-static";
-import { IncomingMessage, ServerResponse } from "http";
-import fs from "fs";
-import { lookup } from "mime-types";
+import { tlsCertPath } from "../util/tls";
+import { FileStreamManager } from "../node-js/filestream-manager";
 
 // Serve up the client folder on page load
 const rootDir = path.resolve(__dirname, "../..");
@@ -29,65 +24,59 @@ const staticDir =
         ? path.join(rootDir, "dist", "public")
         : path.join(rootDir, "public");
 
-const serveIndex = serveStatic(path.join(staticDir, "client", "ws"), {
-    index: ["index.html", "index.htm"],
-});
+const fileManager = new FileStreamManager();
 
-function sendFile(res: ServerResponse, filePath: string) {
+const app = uWS.SSLApp({
+    key_file_name: tlsCertPath.tlsKeyName,
+    cert_file_name: tlsCertPath.tlsCertName
+}).any("/*", (res, req) => {
+
+    const url = req.getUrl();
+    const prefix = "/faker";
+
     try {
-        const fileStat = fs.statSync(filePath);
-
-        res.writeHead(200, {
-            "Content-Length": fileStat.size,
-            "Content-Type": lookup(filePath) || "application/octet-stream",
-        });
-
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
-
-        fileStream.on("error", (err) => {
-            logger.error(err);
-            res.writeHead(500, { "Content-Type": "text/plain" }).end("Internal server error");
-        });
-    } catch (err) {
-        logger.error(err);
-        res.writeHead(404, { "Content-Type": "text/plain" }).end("File not found");
-    }
-}
-
-// Create the HTTPS server
-const server = https.createServer(
-    tlsCert,
-    (req: IncomingMessage, res: ServerResponse) => {
-        const prefix = "/faker";
-        if (req.url?.startsWith(prefix)) {
-            const file = req.url.substring(prefix.length, req.url.length);
+        if (url === "/") {
+            const filePath = path.join(staticDir, "client", "ws", "index.html");
+            const fileContents = fs.readFileSync(filePath);
+            
+            res.writeHeader('Content-Type', 'text/html')
+            .end(fileContents);
+            
+        } else if (url.startsWith(prefix)) {
+            const file = url.substring(prefix.length, url.length);
             const filePath = path.join(
                 __dirname,
                 `../../node_modules/@faker-js/faker/dist/esm/${file}`,
             );
 
-            // logger.info(`File ${file} fetching from path: ${filePath}`);
-            sendFile(res, filePath);
+            const fileContents = fs.readFileSync(filePath);
+            const fileStat = fs.statSync(filePath);
+            
+            res.writeHeader("Content-Length", `${fileStat.size}`);
+            res.writeHeader("Content-Type", lookup(filePath) || "application/octet-stream");
+            res.end(fileContents);
+            
         } else {
-            // Serve other static content or handle other routes
-            serveIndex(req, res, finalhandler(req, res));
+            res.writeStatus('404').end('Not found');
         }
+    } catch (err) {
+        logger.error(err);
+        res.writeStatus('404').end('File not found');
+    }
+
+}).ws("/*", {
+    open: (ws) => {
+        logger.debug("New WebSocket connection");
+
+        // FIXME: broadcasts will only work if registered here
+        ws.subscribe("9cab6ad3-eefd-4a19-95a3-f0f0d86e1e32");
     },
-);
-
-// Create WebSocket server
-const wss = new WebSocket.Server({ server });
-const fileManager = new FileStreamManager();
-
-wss.on("connection", (ws: WebSocket) => {
-    logger.debug("New Websocket connection");
-
-    ws.on("message", async (message: string) => {
+    message: (ws: uWS.WebSocket<{}>, message: ArrayBuffer, isBinary: boolean) => {
         try {
-            const data = JSON.parse(message);
+            const messageStr = Buffer.from(message).toString();
+            const data = JSON.parse(messageStr);
             const { action, binary, payload } = data;
-            const res = new WebSocketResponse(ws, wss);
+            const res = new uWebSocketResponse(ws, payload?.uuid);
 
             switch (action) {
                 case "LIST":
@@ -112,7 +101,7 @@ wss.on("connection", (ws: WebSocket) => {
                                 return;
                             }
 
-                            await fileManager.chunkFileDownload(
+                            fileManager.chunkFileDownload(
                                 {
                                     filePath,
                                     range: payload.range,
@@ -135,7 +124,7 @@ wss.on("connection", (ws: WebSocket) => {
                     res.action("POST");
                     if (payload) {
                         if (binary) {
-                            await fileManager.chunkFileUpload(payload, res);
+                            fileManager.chunkFileUpload(payload, res);
                         } else {
                             addCoValue(covalues, payload);
                             res.status(201).json({ m: "OK" });
@@ -165,10 +154,9 @@ wss.on("connection", (ws: WebSocket) => {
                         const event = events.get(uuid) as MutationEvent;
                         const { type } = event;
                         logger.debug(
-                            `[Broadcast to ${
-                                wss.clients.size - 1
-                            } clients] Mutation event of type: '${type}' was found for: ${uuid}.`,
+                            `[Broadcast] Mutation event of type: '${type}' was found for: ${uuid}.`,
                         );
+                        // res.broadcast(event);
                         res.status(200).action("MUTATION").broadcast(event);
                     } else {
                         res.status(404).json({ m: "CoValue not found" });
@@ -186,12 +174,9 @@ wss.on("connection", (ws: WebSocket) => {
                         `[Client-#${ua}] Opening a subscription on: ${subscriptionUuid}.`,
                     );
 
-                    // Clean up on close
-                    ws.on("close", () => {
-                        logger.debug(
-                            `[Client-#${ua}] Closed the WebSocket for: ${subscriptionUuid}.`,
-                        );
-                    });
+                    // Subscribe to events for this UUID
+                    ws.subscribe(subscriptionUuid);
+
                     res.status(200).json({ m: "OK" });
                     break;
 
@@ -202,20 +187,25 @@ wss.on("connection", (ws: WebSocket) => {
             }
         } catch (error) {
             logger.error("Error processing WebSocket message:", error);
-            new WebSocketResponse(ws, wss)
+            new uWebSocketResponse(ws, "")
                 .status(500)
                 .action("ERROR")
                 .json({ m: "Error processing request" });
         }
-    });
+    },
 });
 
-// Start the server
-server.listen(PORT, () => {
-    logger.info(
-        `HTTP/1.1 + TLSv1.3 Server is running on: https://localhost:${PORT}`,
-    );
-    logger.info(
-        `HTTP/1.1 WebSocket Server is running on: wss://localhost:${PORT}`,
-    );
+app.listen(+PORT, (token) => {
+    if (token) {
+        logger.info(
+            `HTTP/1.1 + TLSv1.3 Server is running on: https://localhost:${PORT}`,
+        );
+        logger.info(
+            `WebSocket Server is running on: wss://localhost:${PORT}`,
+        );
+    } else {
+        logger.error(`Failed to start server on port: ${PORT}`);
+    }
 });
+
+    

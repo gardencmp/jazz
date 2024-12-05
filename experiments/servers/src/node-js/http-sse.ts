@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import https from "https";
 import spdy from "spdy";
-import fs from "fs";
 import path from "path";
 import bodyParser from "body-parser";
 import {
@@ -12,10 +11,10 @@ import {
     addCoValue,
     updateCoValue,
     updateCoValueBinary,
-    tlsCert,
-    logger,
-    port,
+    PORT,
 } from "../util";
+import logger from "../util/logger";
+import { tlsCert } from "../util/tls";
 import { FileStreamManager, UploadBody } from "./filestream-manager";
 
 const app = express();
@@ -168,17 +167,17 @@ export function createHTTPServer(isHttp2: boolean) {
     if (isHttp2) {
         // Start a HTTPS server using HTTP/2
         const server = spdy.createServer(tlsCert, app);
-        server.listen(port, () => {
+        server.listen(PORT, () => {
             logger.info(
-                `HTTP/2 + TLSv1.3 Server is running on: https://localhost:${port}`,
+                `HTTP/2 + TLSv1.3 Server is running on: https://localhost:${PORT}`,
             );
         });
     } else {
         // Start a HTTPS server using HTTP/1.1
         const server = https.createServer(tlsCert, app);
-        server.listen(port, () => {
+        server.listen(PORT, () => {
             logger.info(
-                `HTTP/1.1 + TLSv1.3 Server is running on: https://localhost:${port}`,
+                `HTTP/1.1 + TLSv1.3 Server is running on: https://localhost:${PORT}`,
             );
         });
     }

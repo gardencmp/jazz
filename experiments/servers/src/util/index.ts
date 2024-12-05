@@ -1,33 +1,11 @@
 import { faker } from "@faker-js/faker";
 import { v4 as uuidv4 } from "uuid";
-import winston from "winston";
-import fs from "fs";
 import WebSocket from "ws";
+import * as uWS from "uWebSockets.js";
+import logger from "./logger";
 
-export const port = process.env.PORT || 3000;
-
-export const tlsCert = {
-    key: fs.readFileSync("cert/localhost+1-key.pem"),
-    cert: fs.readFileSync("cert/localhost+1.pem"),
-};
-
+export const PORT = process.env.PORT || 3000;
 export const CHUNK_SIZE = 100 * 1024; // 100KB chunk
-
-const customFormat = winston.format.printf(({ level, message, timestamp }) => {
-    return `${level}: [${timestamp}] ${message}`;
-});
-
-export const logger = winston.createLogger({
-    level: "debug",
-    format: winston.format.combine(
-        winston.format.timestamp({
-            format: "YYYY-MM-DD HH:mm:ss",
-        }),
-        customFormat,
-    ),
-    transports: [new winston.transports.Console()],
-    silent: false,
-});
 
 faker.seed(500); // a fixed seed minimizes random data variation between test runs for each server
 
@@ -177,15 +155,16 @@ type BufferLike =
     | ArrayBuffer
     | SharedArrayBuffer;
 
-export class WebSocketResponse {
-    private ws: WebSocket;
-    private wss: WebSocket.Server;
-    private actionName: string = "";
-    private statusCode: number = 200;
+/**
+ * Abstract base class for WebSocket responses, parameterized by the WebSocket implementation.
+ */
+export abstract class WebSocketResponseBase<TWebSocket> {
+    protected ws: TWebSocket;
+    protected actionName: string = "";
+    protected statusCode: number = 200;
 
-    constructor(ws: WebSocket, wss: WebSocket.Server) {
+    constructor(ws: TWebSocket) {
         this.ws = ws;
-        this.wss = wss;
     }
 
     action(action: string): this {
@@ -199,30 +178,88 @@ export class WebSocketResponse {
     }
 
     json(data: object): void {
-        this.ws.send(
+        this.send(
             JSON.stringify({
                 action: this.actionName,
                 code: this.statusCode,
                 payload: data,
-            }),
+            })
         );
     }
 
-    broadcast(data: object, ws: WebSocket): void {
+    /**
+     * Abstract method for sending data to the WebSocket.
+     * @param data The data to send.
+     * @param callback Optional callback for error handling.
+     */
+    abstract send(data: BufferLike, callback?: (err?: Error) => void): void;
+
+    /**
+     * Abstract method for broadcasting data to other clients.
+     * @param data The data to broadcast.
+     */
+    abstract broadcast(data: object): void;
+}
+
+/**
+ * Implementation for WebSocket using the `ws` library.
+ */
+export class WebSocketResponse extends WebSocketResponseBase<WebSocket> {
+    private wss: WebSocket.Server;
+
+    constructor(ws: WebSocket, wss: WebSocket.Server) {
+        super(ws);
+        this.wss = wss;
+    }
+
+    send(data: BufferLike, cb?: (err?: Error) => void): void {
+        this.ws.send(data, cb);
+    }
+
+    broadcast(data: object): void {
         this.wss.clients.forEach((client) => {
-            if (client !== ws && client.readyState === WebSocket.OPEN) {
+            if (client !== this.ws && client.readyState === WebSocket.OPEN) {
                 client.send(
                     JSON.stringify({
                         action: this.actionName,
                         code: this.statusCode,
                         payload: data,
-                    }),
+                    })
                 );
             }
         });
     }
+}
 
-    send(data: BufferLike, cb?: (err?: Error) => void): void {
-        this.ws.send(data, cb);
+/**
+ * Implementation for WebSocket using `uWebSockets.js`.
+ */
+export class uWebSocketResponse extends WebSocketResponseBase<uWS.WebSocket<{}>> {
+    private topic: string;
+
+    constructor(ws: uWS.WebSocket<{}>, topic: string) {
+        super(ws);
+        this.topic = topic;
+    }
+
+    send(data: any, callback?: (error?: Error) => void): void {
+        try {
+            this.ws.send(data);
+            callback?.();
+        } catch (error) {
+            callback?.(error as Error);
+        }
+    }
+
+    broadcast(data: object): void {
+        this.ws.publish(
+            this.topic,
+            JSON.stringify({
+                action: this.actionName,
+                code: this.statusCode,
+                payload: data,
+            }),
+            false
+        );
     }
 }

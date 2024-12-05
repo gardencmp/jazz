@@ -6,9 +6,10 @@ import {
     File,
     covalues,
     addCoValue,
-    logger,
     CHUNK_SIZE,
+    uWebSocketResponse,
 } from "../util";
+import logger from "../util/logger";
 
 export interface UploadBody {
     uuid: string;
@@ -34,7 +35,7 @@ interface StreamOptions {
 interface StreamTarget {
     type: "http" | "websocket";
     res?: Response;
-    wsr?: WebSocketResponse;
+    wsr?: WebSocketResponse | uWebSocketResponse;
 }
 
 export class FileStreamManager {
@@ -47,7 +48,7 @@ export class FileStreamManager {
     // upload methods
     async chunkFileUpload(
         payload: UploadBody,
-        res: WebSocketResponse | Response,
+        res: WebSocketResponse | uWebSocketResponse | Response,
     ) {
         const { uuid, filename, base64, chunk, chunks } = payload;
         const chunkIndex = parseInt(chunk, 10);

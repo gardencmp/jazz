@@ -1,5 +1,5 @@
 import { Page, chromium, Browser } from '@playwright/test';
-import { logger } from '../../src/util';
+import logger from '../../src/util/logger';
 
 export const SERVER_URL = 'https://localhost:3000';
 const NUM_BROWSERS: number = 10;
