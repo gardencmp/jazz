@@ -53,7 +53,7 @@ export class SQLiteClient {
     this.toLocalNode = toLocalNode;
   }
 
-  async getCoValue(coValueId: RawCoID): Promise<StoredCoValueRow | undefined> {
+  getCoValue(coValueId: RawCoID): StoredCoValueRow | undefined {
     const coValueRow = this.db
       .prepare(`SELECT * FROM coValues WHERE id = ?`)
       .get(coValueId) as RawCoValueRow & { rowID: number };
@@ -74,16 +74,16 @@ export class SQLiteClient {
     }
   }
 
-  async getCoValueSessions(coValueRowId: number): Promise<StoredSessionRow[]> {
+  getCoValueSessions(coValueRowId: number): StoredSessionRow[] {
     return this.db
       .prepare<number>(`SELECT * FROM sessions WHERE coValue = ?`)
       .all(coValueRowId) as StoredSessionRow[];
   }
 
-  async getNewTransactionInSession(
+  getNewTransactionInSession(
     sessionRowId: number,
     firstNewTxIdx: number,
-  ): Promise<TransactionRow[]> {
+  ): TransactionRow[] {
     const txs = this.db
       .prepare<[number, number]>(
         `SELECT * FROM transactions WHERE ses = ? AND idx >= ?`,
@@ -101,10 +101,10 @@ export class SQLiteClient {
     }
   }
 
-  async getSignatures(
+  getSignatures(
     sessionRowId: number,
     firstNewTxIdx: number,
-  ): Promise<SignatureAfterRow[]> {
+  ): SignatureAfterRow[] {
     return this.db
       .prepare<[number, number]>(
         `SELECT * FROM signatureAfter WHERE ses = ? AND idx >= ?`,
@@ -112,9 +112,7 @@ export class SQLiteClient {
       .all(sessionRowId, firstNewTxIdx) as SignatureAfterRow[];
   }
 
-  async addCoValue(
-    msg: CojsonInternalTypes.NewContentMessage,
-  ): Promise<number> {
+  addCoValue(msg: CojsonInternalTypes.NewContentMessage): number {
     return this.db
       .prepare<[CojsonInternalTypes.RawCoID, string]>(
         `INSERT INTO coValues (id, header) VALUES (?, ?)`,
@@ -122,13 +120,13 @@ export class SQLiteClient {
       .run(msg.id, JSON.stringify(msg.header)).lastInsertRowid as number;
   }
 
-  async addSessionUpdate({
+  addSessionUpdate({
     sessionUpdate,
     sessionRow,
   }: {
     sessionUpdate: SessionRow;
     sessionRow?: StoredSessionRow;
-  }): Promise<number> {
+  }): number {
     return (
       this.db
         .prepare<[number, string, number, string, number | undefined]>(
@@ -158,7 +156,7 @@ export class SQLiteClient {
       .run(sessionRowID, nextIdx, JSON.stringify(newTransaction));
   }
 
-  async addSignatureAfter({
+  addSignatureAfter({
     sessionRowID,
     idx,
     signature,
@@ -170,7 +168,7 @@ export class SQLiteClient {
       .run(sessionRowID, idx, signature);
   }
 
-  async unitOfWork(operationsCallback: () => any[]) {
+  unitOfWork(operationsCallback: () => any[]) {
     this.db.transaction(operationsCallback)();
   }
 }

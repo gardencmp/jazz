@@ -232,13 +232,7 @@ export class SyncManager {
         if ((sessionRow?.lastIdx || 0) < (msg.new[sessionID]?.after || 0)) {
           invalidAssumptions = true;
         } else {
-          return this.putNewTxs.call(
-            this,
-            msg,
-            sessionID,
-            sessionRow,
-            storedCoValueRowID,
-          );
+          return this.putNewTxs(msg, sessionID, sessionRow, storedCoValueRowID);
         }
       }),
     );

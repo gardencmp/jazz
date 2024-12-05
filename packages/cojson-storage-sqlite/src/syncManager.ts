@@ -28,7 +28,6 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage) {
-    console.log(`Got sync message:`, msg);
     switch (msg.action) {
       case "load":
         await this.handleLoad(msg);
@@ -234,13 +233,7 @@ export class SyncManager {
         if ((sessionRow?.lastIdx || 0) < (msg.new[sessionID]?.after || 0)) {
           invalidAssumptions = true;
         } else {
-          return this.putNewTxs.call(
-            this,
-            msg,
-            sessionID,
-            sessionRow,
-            storedCoValueRowID,
-          );
+          return this.putNewTxs(msg, sessionID, sessionRow, storedCoValueRowID);
         }
       }),
     );
