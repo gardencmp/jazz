@@ -1,29 +1,32 @@
 import { CodeGroup, ComingSoon } from "@/components/forMdx";
 
-# CoValues
+# Defining schemas: CoValues
 
-**CoValues ("Collaborative Values") are the core abstraction of Jazz.** Think of them as bread-and-butter datastructures that you can use to represent everything you need in your app.
+**CoValues ("Collaborative Values") are the core abstraction of Jazz.** They're your bread-and-butter datastructures that you use to represent everything in your app.
 
-As their name suggests, they are inherently collaborative, meaning **multiple users and devices can edit them at the same time.**
+As their name suggests, CoValues are inherently collaborative, meaning **multiple users and devices can edit them at the same time.**
 
-- CoValues allow for concurrent edits by always keeping their full edit histories, deriving the "current state" based on the currently locally available history.
-- **Think of CoValues as "super-fast Git for lots of tiny data".**
-- (The fact that this happens in an eventually-consistent way makes them [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type))
-- Having the full history around also means that you often don't need explicit timestamps and author info - you get this for free, just by having different accounts edit a value and then looking at its [edit metadata](/docs/coming-soon).
+**Think of CoValues as "super-fast Git for lots of tiny data."**
 
-CoValues mostly model JSON with CoMaps and CoLists, but also offer CoStreams for simple per-user value streams, and also let you represent binary data with BinaryCoStreams.
+- CoValues keep their full edit histories, from which they derive their "current state".
+- The fact that this happens in an eventually-consistent way makes them [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type).
+- Having the full history also means that you often don't need explicit timestamps and author info - you get this for free as part of a CoValue's [edit metadata](/docs/coming-soon).
 
-## Schemas as your app's first step
+CoValues model JSON with CoMaps and CoLists, but also offer CoFeeds for simple per-user value feeds, and let you represent binary data with FileStreams.
 
-Under the hood, CoValues are as dynamic and flexible as JSON itself, but the way you use them in Jazz is by defining fixed schemas to describe the shape of data in your app.
+## Start your app with a schema
 
-- This helps correctness and development speed in general, but is particularly important
-    - when you evolve your app and need migrations
-    - when different clients and server workers collaborate on CoValues and need to make compatible changes
+Fundamentally, CoValues are as dynamic and flexible as JSON, but in Jazz you use them by defining fixed schemas to describe the shape of data in your app.
 
-- Luckily, thinking about the shape of your data first is also a really good way to model your app. Even before you know the details of how your app will work, you'll probably know which kinds of objects it will deal with, and how they relate to each other.
+This helps correctness and development speed, but is particularly important...
+- when you evolve your app and need migrations
+- when different clients and server workers collaborate on CoValues and need to make compatible changes
 
-Jazz makes it really quick to define and update schemas, since they are simple TypeScript classes:
+Thinking about the shape of your data is also a great first step to model your app.
+
+Even before you know the details of how your app will work, you'll probably know which kinds of objects it will deal with, and how they relate to each other.
+
+Jazz makes it quick to declare schemas, since they are simple TypeScript classes:
 
 <CodeGroup>
 {/* prettier-ignore */}
@@ -35,14 +38,14 @@ export class TodoProject extends CoMap {
 ```
 </CodeGroup>
 
-Here you can see how we use the `co` definer for declaring collaboratively editable fields, which ensures that schema info is correct at the type level and at runtime.
+Here you can see how we extend a CoValue type and use `co` for declaring (collaboratively) editable fields. This means that schema info is available for type inference *and* at runtime.
 
-Classes might look a bit old-fashioned to some, but one nice property they have is that they are both types and values in TypeScript, so we can use them as both (with a single definition & import).
+Classes might look old-fashioned, but Jazz makes use of them being both types and values in TypeScript, letting you refer to either with a single definition and import.
 
 <CodeGroup>
 {/* prettier-ignore */}
 ```ts
-import { TodoProject } from "./schema";
+import { TodoProject, ListOfTasks } from "./schema";
 
 const project: TodoProject = TodoProject.create(
     {
@@ -54,13 +57,154 @@ const project: TodoProject = TodoProject.create(
 ```
 </CodeGroup>
 
-## CoValue field types
+## Types of CoValues
 
-Before we look at the different types of CoValues, let's learn what we can put *into* them.
+### `CoMap` (declaration)
+
+CoMaps are the most commonly used type of CoValue. They are the equivalent of JSON objects. (Collaborative editing follows a last-write-wins strategy per-key.)
+
+You can either declare struct-like CoMaps:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+class Person extends CoMap {
+    name = co.string;
+    age = co.number;
+    pet = co.optional.ref(Pet);
+}
+```
+</CodeGroup>
+
+Or record-like CoMaps (key-value pairs, where keys are always `string`):
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+class ColorToHex extends CoMap.Record(co.string) {}
+
+class ColorToFruit extends CoMap.Record(co.ref(Fruit)) {}
+```
+</CodeGroup>
+
+
+See the corresponding sections for [creating](/docs/using-covalues/creation#comap-creation),
+[subscribing/loading](/docs/using-covalues/subscription-and-loading),
+[reading from](/docs/using-covalues/reading#comap-reading) and
+[writing to](/docs/using-covalues/writing#comap-writing) CoMaps.
+
+### `CoList` (declaration)
+
+CoLists are ordered lists and are the equivalent of JSON arrays. (They support concurrent insertions and deletions, maintaining a consistent order.)
+
+You define them by specifying the type of the items they contain:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+class ListOfColors extends CoList.Of(co.string) {}
+
+class ListOfTasks extends CoList.Of(co.ref(Task)) {}
+```
+</CodeGroup>
+
+See the corresponding sections for [creating](/docs/using-covalues/creation#colist-creation),
+[subscribing/loading](/docs/using-covalues/subscription-and-loading),
+[reading from](/docs/using-covalues/reading#colist-reading) and
+[writing to](/docs/using-covalues/writing#colist-writing) CoLists.
+
+### `CoFeed` (declaration)
+
+CoFeeds are a special CoValue type that represent a feed of values for a set of users / sessions. (Each session of a user gets its own append-only feed.)
+
+They allow easy access of the latest or all items belonging to a user or their sessions. This makes them particularly useful for user presence, reactions, notifications, etc.
+
+You define them by specifying the type of feed item:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+class FeedOfTasks extends CoFeed.Of(co.ref(Task)) {}
+```
+</CodeGroup>
+
+See the corresponding sections for [creating](/docs/using-covalues/creation#cofeed-creation),
+[subscribing/loading](/docs/using-covalues/subscription-and-loading),
+[reading from](/docs/using-covalues/reading#cofeed-reading) and
+[writing to](/docs/using-covalues/writing#cofeed-writing) CoFeeds.
+
+### `FileStream` (declaration)
+
+FileStreams are a special type of CoValue that represent binary data. (They are created by a single user and offer no internal collaboration.)
+
+They allow you to upload and reference files, images, etc.
+
+You typically don't need to declare or extend them yourself, you simply refer to the built-in `FileStream` from another CoValue:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+import { FileStream } from "jazz-tools";
+
+class UserProfile extends CoMap {
+    name = co.string;
+    avatar = co.ref(FileStream);
+}
+```
+</CodeGroup>
+
+See the corresponding sections for [creating](/docs/using-covalues/creation#filestream-creation),
+[subscribing/loading](/docs/using-covalues/subscription-and-loading),
+[reading from](/docs/using-covalues/reading#filestream-reading) and
+[writing to](/docs/using-covalues/writing#filestream-writing) FileStreams.
+
+### `SchemaUnion` (declaration)
+
+SchemaUnion is a helper type that allows you to load and refer to multiple subclasses of a CoMap schema, distinguished by a discriminating field.
+
+You declare them with a base class type and discriminating lambda, in which you have access to the `RawCoMap`, on which you can call `get` with the field name to get the discriminating value.
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+import { SchemaUnion, CoMap } from "jazz-tools";
+
+class BaseWidget extends CoMap {
+  type = co.string;
+}
+
+class ButtonWidget extends BaseWidget {
+  type = co.literal("button");
+  label = co.string;
+}
+
+class SliderWidget extends BaseWidget {
+  type = co.literal("slider");
+  min = co.number;
+  max = co.number;
+}
+
+const WidgetUnion = SchemaUnion.Of<BaseWidget>((raw) => {
+  switch (raw.get("type")) {
+    case "button": return ButtonWidget;
+    case "slider": return SliderWidget;
+    default: throw new Error("Unknown widget type");
+  }
+});
+```
+</CodeGroup>
+
+See the corresponding sections for [creating](/docs/using-covalues/creation#schemaunion-creation),
+[subscribing/loading](/docs/using-covalues/subscription-and-loading) and
+[narrowing](/docs/using-covalues/reading#schemaunion-narrowing) SchemaUnions.
+
+## CoValue field/item types
+
+Now that we've seen the different types of CoValues, let's see more precisely how we declare the fields or items they contain.
 
 ### Primitive fields
 
-You can define primitive field types using the `co` definer:
+You can declare primitive field types using the `co` declarer:
 
 <CodeGroup>
 {/* prettier-ignore */}
@@ -89,7 +233,7 @@ co.literal("waiting", "ready");
 ```
 </CodeGroup>
 
-Finally, for more complex JSON data, that you *don't want to be collaborative internally* (but only every update as a whole), you can use `co.json<T>()`:
+Finally, for more complex JSON data, that you *don't want to be collaborative internally* (but only ever update as a whole), you can use `co.json<T>()`:
 
 <CodeGroup>
 {/* prettier-ignore */}
@@ -98,7 +242,7 @@ co.json<{ name: string }>();
 ```
 </CodeGroup>
 
-For more detail, see the API Reference for the [`co` Field Definer](/api-reference/jazz-tools#co).
+For more detail, see the API Reference for the [`co` field declarer](/api-reference/jazz-tools#co).
 
 ### Refs to other CoValues
 
@@ -108,7 +252,7 @@ Internally, this is represented by storing the IDs of the referenced CoValues in
 
 The important caveat here is that **a referenced CoValue might or might not be loaded yet,** but we'll see what exactly that means in [Subscribing and Deep Loading](/docs/coming-soon).
 
-In Schemas, you define Refs using the `co.ref<T>()` definer:
+In Schemas, you declare Refs using the `co.ref<T>()` declarer:
 
 <CodeGroup>
 {/* prettier-ignore */}
@@ -123,7 +267,7 @@ class ListOfPeople extends CoList.Of(co.ref(Person)) {}
 
 #### Optional Refs
 
-If you want to make a referenced CoValue field optional, you *have to* use `co.optional.ref<T>()`:
+⚠️ If you want to make a referenced CoValue field optional, you *have to* use `co.optional.ref<T>()`: ⚠️
 
 <CodeGroup>
 {/* prettier-ignore */}
@@ -134,6 +278,25 @@ class Person extends CoMap {
 ```
 </CodeGroup>
 
-### Computed fields, methods & constructors
+### Computed fields & methods
 
-<ComingSoon/>
+Since CoValue schemas are based on classes, you can easily add computed fields and methods:
+
+<CodeGroup>
+{/* prettier-ignore */}
+```ts
+class Person extends CoMap {
+    firstName = co.string;
+    lastName = co.string;
+    dateOfBirth = co.Date;
+
+    get name() {
+        return `${this.firstName} ${this.lastName}`;
+    }
+
+    ageAsOf(date: Date) {
+        return differenceInYears(date, this.dateOfBirth);
+    }
+}
+```
+</CodeGroup>
