@@ -63,7 +63,7 @@ await rm("./codeSamples", { recursive: true, force: true });
             defaultCompilerOptions: {
               allowImportingTsExtensions: true,
               noEmit: true,
-              jsx: "react-jsxdev",
+              jsx: 4,
               strict: true,
               paths: {
                 "jazz-tools": ["../../../packages/jazz-tools"],
