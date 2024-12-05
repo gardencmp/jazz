@@ -64,13 +64,19 @@ export class RawCoMapView<
     this.id = core.id as CoID<this>;
     this.core = core;
     this.latest = {};
-    const latest = this.latest;
     this.latestTxMadeAt = 0;
     this.options = options;
 
-    for (const { txID, changes, madeAt } of core.getValidSortedTransactions(
-      options,
-    )) {
+    this.updateLatestTransactions();
+  }
+
+  updateLatestTransactions() {
+    const { core, options, latest } = this;
+
+    for (const { txID, changes, madeAt } of core.getValidSortedTransactions({
+      ignorePrivateTransactions: options?.ignorePrivateTransactions ?? false,
+      after: this.latestTxMadeAt - 1,
+    })) {
       if (options?.atTime && madeAt > options.atTime) {
         continue;
       }
@@ -362,10 +368,7 @@ export class RawCoMap<
       privacy,
     );
 
-    const after = new RawCoMap(this.core) as this;
-
-    this.latestTxMadeAt = after.latestTxMadeAt;
-    this.latest = after.latest;
+    this.updateLatestTransactions();
     this.cachedOps = undefined;
   }
 
@@ -391,10 +394,7 @@ export class RawCoMap<
       privacy,
     );
 
-    const after = new RawCoMap(this.core) as this;
-
-    this.latestTxMadeAt = after.latestTxMadeAt;
-    this.latest = after.latest;
+    this.updateLatestTransactions();
     this.cachedOps = undefined;
   }
 }

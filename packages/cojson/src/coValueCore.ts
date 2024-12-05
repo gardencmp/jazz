@@ -618,12 +618,18 @@ export class CoValueCore {
 
   getValidSortedTransactions(options?: {
     ignorePrivateTransactions: boolean;
+    after?: number;
   }): DecryptedTransaction[] {
     const validTransactions = determineValidTransactions(this);
 
     const allTransactions: DecryptedTransaction[] = [];
+    const after = options?.after ?? -1;
 
     for (const { txID, tx } of validTransactions) {
+      if (tx.madeAt <= after) {
+        continue;
+      }
+
       if (tx.privacy === "trusting") {
         allTransactions.push({
           txID,
