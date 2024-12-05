@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { socials } from "@/lib/socials";
 import { JazzLogo } from "gcmp-design-system/src/app/components/atoms/logos/JazzLogo";
 import { Nav } from "gcmp-design-system/src/app/components/organisms/Nav";
@@ -8,6 +9,7 @@ export function JazzNav() {
   return (
     <Nav
       mainLogo={<JazzLogo className="w-24" />}
+      themeToggle={ThemeToggle}
       items={[
         { title: "Jazz Cloud", href: "/cloud" },
         {

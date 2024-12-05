@@ -1,4 +1,5 @@
 import { Pricing } from "@/components/Pricing";
+import { LatencyMap } from "@/components/cloud/latencyMap";
 import { GridCard } from "gcmp-design-system/src/app/components/atoms/GridCard";
 import {
   H2,
@@ -24,12 +25,12 @@ export const metadata = {
 export default function Cloud() {
   return (
     <div className="space-y-16">
-      <HeroHeader
-        className="container"
-        title="Jazz Cloud"
-        slogan="Real-time sync and storage infrastructure that scales up to millions of users."
-      />
-      <div className="container">
+      <div className="container space-y-12 overflow-x-hidden sm:overflow-x-visible">
+        <HeroHeader
+          title="Jazz Cloud"
+          slogan="Real-time sync and storage infrastructure that scales up to millions of users."
+        />
+        <LatencyMap />
         <GappedGrid>
           <GridCard>
             <H3>Optimal cloud routing</H3>
@@ -66,69 +67,6 @@ export default function Cloud() {
       </div>
 
       <div className="container space-y-16">
-        <div>
-          <SectionHeader
-            title="Global footprint"
-            slogan="We're rapidly expanding our network of sync & storage nodes. This is our current coverage."
-          />
-          <GappedGrid>
-            <div className="text-sm">
-              <H4>Under 50ms RTT</H4>
-              <UL>
-                <LI>Frankfurt</LI>
-                <LI>New York</LI>
-                <LI>Newark</LI>
-                <LI>North California</LI>
-                <LI>North Virginia</LI>
-                <LI>San Francisco</LI>
-                <LI>Singapore</LI>
-                <LI>Toronto</LI>
-              </UL>
-            </div>
-
-            <div className="text-sm">
-              <H4>Under 100ms RTT</H4>
-              <UL>
-                <LI>Amsterdam</LI>
-                <LI>Atlanta</LI>
-                <LI>London</LI>
-                <LI>Ohio</LI>
-                <LI>Paris</LI>
-              </UL>
-            </div>
-
-            <div className="text-sm">
-              <H4>Under 200ms RTT</H4>
-              <UL>
-                <LI>Bangalore</LI>
-                <LI>Dallas</LI>
-                <LI>Mumbai</LI>
-                <LI>Oregon</LI>
-              </UL>
-
-              <H4>Under 300ms RTT</H4>
-              <UL>
-                <LI> Seoul</LI>
-                <LI> Tokyo</LI>
-              </UL>
-            </div>
-
-            <div className="text-sm">
-              <H4>Under 400ms RTT</H4>
-              <UL>
-                <LI>Sao Paulo</LI>
-                <LI>Sydney</LI>
-              </UL>
-
-              <H4>Under 500ms RTT</H4>
-
-              <UL>
-                <LI>Cape Town</LI>
-              </UL>
-            </div>
-          </GappedGrid>
-        </div>
-
         <div>
           <SectionHeader
             title="Custom deployment scenarios"
