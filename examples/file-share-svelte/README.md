@@ -1,38 +1,54 @@
-# sv
+# File Share (Svelte)
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+This example app demonstrates how to implement secure file sharing in a Svelte application using Jazz.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Secure file uploads and downloads
+- End-to-end encryption
+- File access management
+- Integration with Jazz storage system
+- Passkey authentication
 
-```bash
-# create a new project in the current directory
-npx sv create
+## Getting Started
 
-# create a new project in my-app
-npx sv create my-app
+1. Clone the repository:
+
+```sh
+git clone https://github.com/garden-co/jazz.git
 ```
 
-## Developing
+2. Install dependencies:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```sh
+pnpm install
 ```
 
-## Building
+3. Navigate to the example directory:
 
-To create a production version of your app:
-
-```bash
-npm run build
+```sh
+cd examples/file-share-svelte
 ```
 
-You can preview the production build with `npm run preview`.
+4. Start the development server:
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```sh
+pnpm dev
+```
+
+5. Open your browser and visit [http://localhost:5173](http://localhost:5173)
+
+## How It Works
+
+This example showcases how to:
+- Upload files securely with end-to-end encryption
+- Generate and manage sharing links
+- Handle file downloads with decryption
+- Manage file access permissions
+- Authenticate users using passkeys
+
+## Learn More
+
+- [Jazz Documentation](https://jazz.tools/docs/svelte)
+- [Svelte Documentation](https://svelte.dev)
+- [WebAuthn API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API)
