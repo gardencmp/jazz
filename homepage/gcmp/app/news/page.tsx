@@ -20,7 +20,7 @@ export default function NewsPage() {
         <NewsletterForm />
 
         <p>
-          Follow us on <Link href="https://x.com/gcmp_io">@gcmp.io</Link> or{" "}
+          Follow us on <Link href="https://x.com/gcmp_io">@garden.co</Link> or{" "}
           <Link href="https://x.com/jazz_tools">@jazz_tools</Link>.
         </p>
 

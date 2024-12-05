@@ -1,13 +1,13 @@
-import ReactDOM from "react-dom/client";
-import App from "./5_App.tsx";
-import "./index.css";
 import {
   PasskeyAuthBasicUI,
   createJazzReactApp,
   usePasskeyAuth,
 } from "jazz-react";
 import React from "react";
+import ReactDOM from "react-dom/client";
 import { PasswordManagerAccount } from "./1_schema.ts";
+import App from "./5_App.tsx";
+import "./index.css";
 
 const Jazz = createJazzReactApp<PasswordManagerAccount>({
   AccountSchema: PasswordManagerAccount,
@@ -24,7 +24,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
     <>
       <Jazz.Provider
         auth={auth}
-        peer="wss://cloud.jazz.tools/?key=password-manager-example-jazz@gcmp.io"
+        peer="wss://cloud.jazz.tools/?key=password-manager-example-jazz@garden.co"
       >
         {children}
       </Jazz.Provider>

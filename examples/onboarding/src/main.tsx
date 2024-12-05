@@ -1,9 +1,9 @@
 import App from "@/App.tsx";
-import React from "react";
-import ReactDOM from "react-dom/client";
 import "@/index.css";
 import { HRAccount } from "@/schema.ts";
 import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
+import React from "react";
+import ReactDOM from "react-dom/client";
 
 const Jazz = createJazzReactApp({
   AccountSchema: HRAccount,
@@ -14,7 +14,7 @@ const peer =
   (new URL(window.location.href).searchParams.get(
     "peer",
   ) as `ws://${string}`) ??
-  "wss://cloud.jazz.tools/?key=onboarding-example-jazz@gcmp.io";
+  "wss://cloud.jazz.tools/?key=onboarding-example-jazz@garden.co";
 
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
   const [auth, authState] = useDemoAuth();

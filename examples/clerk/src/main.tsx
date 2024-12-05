@@ -28,7 +28,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
       {clerk.user && auth ? (
         <Jazz.Provider
           auth={auth}
-          peer="wss://cloud.jazz.tools/?key=minimal-auth-clerk-example@gcmp.io"
+          peer="wss://cloud.jazz.tools/?key=minimal-auth-clerk-example@garden.co"
         >
           {children}
         </Jazz.Provider>

@@ -1,7 +1,7 @@
-import "./index.css";
 import { DemoAuthBasicUI, createJazzVueApp, useDemoAuth } from "jazz-vue";
 import { createApp, defineComponent, h } from "vue";
 import App from "./App.vue";
+import "./index.css";
 import router from "./router";
 
 const Jazz = createJazzVueApp();
@@ -18,7 +18,7 @@ const RootComponent = defineComponent({
         JazzProvider,
         {
           auth: authMethod.value,
-          peer: "wss://mesh.jazz.tools/?key=chat-example-jazz@gcmp.io",
+          peer: "wss://cloud.jazz.tools/?key=chat-example-jazz@garden.co",
         },
         {
           default: () => h(App),

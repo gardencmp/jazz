@@ -18,7 +18,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
     <>
       <Jazz.Provider
         auth={auth}
-        peer="wss://cloud.jazz.tools/?key=image-upload-example@gcmp.io"
+        peer="wss://cloud.jazz.tools/?key=image-upload-example@garden.co"
       >
         {children}
       </Jazz.Provider>
