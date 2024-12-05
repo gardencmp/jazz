@@ -9,7 +9,13 @@ test.describe("FileStream - Sync", () => {
 
     await page.getByTestId("sync-duration").waitFor();
 
-    await expect(page.getByTestId("result")).toHaveText("Sync Completed: true");
+    await expect(page.getByTestId("synced-with-server")).toHaveText(
+      "Synced with the server: true",
+    );
+
+    await expect(page.getByTestId("result")).toHaveText(
+      "Two way sync completed: true",
+    );
   });
 
   test("should handle reconnections", async ({ page, browser }) => {
@@ -23,6 +29,10 @@ test.describe("FileStream - Sync", () => {
 
     await context.setOffline(true);
 
+    await expect(page.getByTestId("synced-with-server")).toHaveText(
+      "Synced with the server: false",
+    );
+
     // Wait for the ping system to detect the offline state
     await setTimeout(10000);
 
@@ -31,6 +41,12 @@ test.describe("FileStream - Sync", () => {
     // Wait for the sync to complete
     await page.getByTestId("sync-duration").waitFor();
 
-    await expect(page.getByTestId("result")).toHaveText("Sync Completed: true");
+    await expect(page.getByTestId("synced-with-server")).toHaveText(
+      "Synced with the server: true",
+    );
+
+    await expect(page.getByTestId("result")).toHaveText(
+      "Two way sync completed: true",
+    );
   });
 });

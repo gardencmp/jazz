@@ -45,16 +45,7 @@ export const createWorkerAccount = async ({
     syncManager.syncCoValue(accountProfileCoValue),
   ]);
 
-  await Promise.race([
-    Promise.all([
-      syncManager.waitForUploadIntoPeer(peer.id, accountCoValue.id),
-      syncManager.waitForUploadIntoPeer(peer.id, accountProfileCoValue.id),
-    ]),
-    failAfter(
-      4_000,
-      "Timeout: Didn't manage to upload the account and profile",
-    ),
-  ]);
+  await account.waitForAllCoValuesSync({ timeout: 4_000 });
 
   // Spawn a second peer to double check that the account is fully synced
   const peer2 = createWebSocketPeer({

@@ -442,6 +442,13 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
     }
     return casted;
   }
+
+  waitForSync(options?: { timeout?: number }) {
+    return this._raw.core.node.syncManager.waitForSync(
+      this.id,
+      options?.timeout,
+    );
+  }
 }
 
 function toRawItems<Item>(items: Item[], itemDescriptor: Schema) {

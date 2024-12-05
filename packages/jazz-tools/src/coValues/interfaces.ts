@@ -145,6 +145,12 @@ export class CoValueBase implements CoValue {
     }
     return casted;
   }
+
+  waitForSync(options?: {
+    timeout?: number;
+  }) {
+    return this._raw.core.waitForSync(options);
+  }
 }
 
 export function loadCoValue<V extends CoValue, Depth>(

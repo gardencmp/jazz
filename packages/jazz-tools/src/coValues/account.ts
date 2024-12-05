@@ -285,6 +285,14 @@ export class Account extends CoValueBase implements CoValue {
   ): () => void {
     return subscribeToExistingCoValue(this, depth, listener);
   }
+
+  waitForAllCoValuesSync(options?: {
+    timeout?: number;
+  }) {
+    return this._raw.core.node.syncManager.waitForAllCoValuesSync(
+      options?.timeout,
+    );
+  }
 }
 
 export const AccountAndGroupProxyHandler: ProxyHandler<Account | Group> = {
