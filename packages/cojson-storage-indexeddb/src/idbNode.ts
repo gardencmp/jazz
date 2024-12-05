@@ -4,12 +4,12 @@ import {
   Peer,
   cojsonInternals,
 } from "cojson";
-import { IDBClient } from "./idbClient";
-import { SyncManager } from "./syncManager";
+import { SyncManager } from "cojson-storage";
+import { IDBClient } from "./idbClient.js";
 
 export class IDBNode {
-  private dbClient: IDBClient;
-  private syncManager: SyncManager;
+  private readonly dbClient: IDBClient;
+  private readonly syncManager: SyncManager;
 
   constructor(
     db: IDBDatabase,

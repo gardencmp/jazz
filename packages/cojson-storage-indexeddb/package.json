@@ -6,7 +6,8 @@
   "types": "src/index.ts",
   "license": "MIT",
   "dependencies": {
-    "cojson": "workspace:0.8.35"
+    "cojson": "workspace:*",
+    "cojson-storage": "workspace:*"
   },
   "devDependencies": {
     "@vitest/browser": "^0.34.1",

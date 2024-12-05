@@ -14,10 +14,10 @@ import {
   SessionID,
   SyncMessage,
 } from "cojson";
-import { IDBClient } from "../idbClient";
-import { SyncManager } from "../syncManager";
-import { getDependedOnCoValues } from "../syncUtils";
-import { fixtures } from "./fixtureMessages";
+import { SyncManager } from "../syncManager.js";
+import { getDependedOnCoValues } from "../syncUtils.js";
+import { DBClientInterface } from "../types.js";
+import { fixtures } from "./fixtureMessages.js";
 import RawCoID = CojsonInternalTypes.RawCoID;
 import NewContentMessage = CojsonInternalTypes.NewContentMessage;
 
@@ -38,18 +38,19 @@ const incomingContentMessage = fixtures[coValueIdToLoad].getContent({
   after: 0,
 }) as SyncMessage;
 
-describe("IDB sync manager", () => {
+describe("DB sync manager", () => {
   let syncManager: SyncManager;
   let queue: OutgoingSyncQueue = {} as unknown as OutgoingSyncQueue;
 
-  const IDBClient = vi.fn();
-  IDBClient.prototype.getCoValue = vi.fn();
-  IDBClient.prototype.getCoValueSessions = vi.fn();
-  IDBClient.prototype.addSessionUpdate = vi.fn();
-  IDBClient.prototype.addTransaction = vi.fn();
+  const DBClient = vi.fn();
+  DBClient.prototype.getCoValue = vi.fn();
+  DBClient.prototype.getCoValueSessions = vi.fn();
+  DBClient.prototype.addSessionUpdate = vi.fn();
+  DBClient.prototype.addTransaction = vi.fn();
+  DBClient.prototype.unitOfWork = vi.fn((callback) => Promise.all(callback()));
 
   beforeEach(async () => {
-    const idbClient = new IDBClient() as unknown as Mocked<IDBClient>;
+    const idbClient = new DBClient() as unknown as Mocked<DBClientInterface>;
     syncManager = new SyncManager(idbClient, queue);
     syncManager.sendStateMessage = vi.fn();
 
@@ -70,7 +71,7 @@ describe("IDB sync manager", () => {
     test("sends empty known message for unknown coValue", async () => {
       const loadMsg = createEmptyLoadMsg(coValueIdToLoad);
 
-      IDBClient.prototype.getCoValue.mockResolvedValueOnce(undefined);
+      DBClient.prototype.getCoValue.mockResolvedValueOnce(undefined);
 
       await syncManager.handleSyncMessage(loadMsg);
 
@@ -85,12 +86,12 @@ describe("IDB sync manager", () => {
     test("Sends known and content message for known coValue with no sessions", async () => {
       const loadMsg = createEmptyLoadMsg(coValueIdToLoad);
 
-      IDBClient.prototype.getCoValue.mockResolvedValueOnce({
+      DBClient.prototype.getCoValue.mockResolvedValueOnce({
         id: coValueIdToLoad,
         header: coValueHeader,
         rowID: 3,
       });
-      IDBClient.prototype.getCoValueSessions.mockResolvedValueOnce([]);
+      DBClient.prototype.getCoValueSessions.mockResolvedValueOnce([]);
 
       await syncManager.handleSyncMessage(loadMsg);
 
@@ -116,14 +117,12 @@ describe("IDB sync manager", () => {
     test("Sends both known and content messages when we have new sessions info for the requested coValue ", async () => {
       const loadMsg = createEmptyLoadMsg(coValueIdToLoad);
 
-      IDBClient.prototype.getCoValue.mockResolvedValueOnce({
+      DBClient.prototype.getCoValue.mockResolvedValueOnce({
         id: coValueIdToLoad,
         header: coValueHeader,
         rowID: 3,
       });
-      IDBClient.prototype.getCoValueSessions.mockResolvedValueOnce(
-        sessionsData,
-      );
+      DBClient.prototype.getCoValueSessions.mockResolvedValueOnce(sessionsData);
 
       const newTxData = {
         newTransactions: [
@@ -192,7 +191,7 @@ describe("IDB sync manager", () => {
         [dependency3]: [dependency1],
       };
 
-      IDBClient.prototype.getCoValue.mockImplementation(
+      DBClient.prototype.getCoValue.mockImplementation(
         (coValueId: RawCoID) => ({
           id: coValueId,
           header: coValueHeader,
@@ -200,7 +199,7 @@ describe("IDB sync manager", () => {
         }),
       );
 
-      IDBClient.prototype.getCoValueSessions.mockResolvedValue([]);
+      DBClient.prototype.getCoValueSessions.mockResolvedValue([]);
 
       // Fetch dependencies of the current dependency for the future recursion iterations
       vi.mocked(getDependedOnCoValues).mockImplementation(
@@ -266,7 +265,7 @@ describe("IDB sync manager", () => {
 
   describe("Handle content incoming message", () => {
     test("Sends correction message for unknown coValue", async () => {
-      IDBClient.prototype.getCoValue.mockResolvedValueOnce(undefined);
+      DBClient.prototype.getCoValue.mockResolvedValueOnce(undefined);
 
       await syncManager.handleSyncMessage({
         ...incomingContentMessage,
@@ -283,12 +282,12 @@ describe("IDB sync manager", () => {
     });
 
     test("Saves new transaction without sending message when IDB has fewer transactions", async () => {
-      IDBClient.prototype.getCoValue.mockResolvedValueOnce({
+      DBClient.prototype.getCoValue.mockResolvedValueOnce({
         id: coValueIdToLoad,
         header: coValueHeader,
         rowID: 3,
       });
-      IDBClient.prototype.getCoValueSessions.mockResolvedValueOnce([]);
+      DBClient.prototype.getCoValueSessions.mockResolvedValueOnce([]);
       const msg = {
         ...incomingContentMessage,
         header: undefined,
@@ -301,7 +300,7 @@ describe("IDB sync manager", () => {
           acc + msg.new[sessionID as SessionID]!.newTransactions.length,
         0,
       );
-      expect(IDBClient.prototype.addTransaction).toBeCalledTimes(
+      expect(DBClient.prototype.addTransaction).toBeCalledTimes(
         incomingTxCount,
       );
 
@@ -309,14 +308,12 @@ describe("IDB sync manager", () => {
     });
 
     test("Sends correction message when peer sends a message far ahead of our state due to invalid assumption", async () => {
-      IDBClient.prototype.getCoValue.mockResolvedValueOnce({
+      DBClient.prototype.getCoValue.mockResolvedValueOnce({
         id: coValueIdToLoad,
         header: coValueHeader,
         rowID: 3,
       });
-      IDBClient.prototype.getCoValueSessions.mockResolvedValueOnce(
-        sessionsData,
-      );
+      DBClient.prototype.getCoValueSessions.mockResolvedValueOnce(sessionsData);
 
       const farAheadContentMessage = fixtures[coValueIdToLoad].getContent({
         after: 10000,

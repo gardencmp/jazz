@@ -7,9 +7,8 @@ import {
   cojsonInternals,
   emptyKnownState,
 } from "cojson";
-import { IDBClient, StoredSessionRow } from "./idbClient";
-import { SyncPromise } from "./syncPromises.js";
-import { collectNewTxs, getDependedOnCoValues } from "./syncUtils";
+import { collectNewTxs, getDependedOnCoValues } from "./syncUtils.js";
+import { DBClientInterface, StoredSessionRow } from "./types.js";
 import NewContentMessage = CojsonInternalTypes.NewContentMessage;
 import KnownStateMessage = CojsonInternalTypes.KnownStateMessage;
 import RawCoID = CojsonInternalTypes.RawCoID;
@@ -21,11 +20,11 @@ type OutputMessageMap = Record<
 
 export class SyncManager {
   private readonly toLocalNode: OutgoingSyncQueue;
-  private readonly idbClient: IDBClient;
+  private readonly dbClient: DBClientInterface;
 
-  constructor(idbClient: IDBClient, toLocalNode: OutgoingSyncQueue) {
+  constructor(dbClient: DBClientInterface, toLocalNode: OutgoingSyncQueue) {
     this.toLocalNode = toLocalNode;
-    this.idbClient = idbClient;
+    this.dbClient = dbClient;
   }
 
   async handleSyncMessage(msg: SyncMessage) {
@@ -60,23 +59,25 @@ export class SyncManager {
       return;
 
     const firstNewTxIdx = peerKnownState.sessions[sessionRow.sessionID] || 0;
-    const signaturesAndIdxs = await this.idbClient.getSignatures(
-      sessionRow,
-      firstNewTxIdx,
-    );
-    const newTxsInSession = await this.idbClient.getNewTransactionInSession(
-      sessionRow,
+
+    const signaturesAndIdxs = await this.dbClient.getSignatures(
+      sessionRow.rowID,
       firstNewTxIdx,
     );
 
-    collectNewTxs(
+    const newTxsInSession = await this.dbClient.getNewTransactionInSession(
+      sessionRow.rowID,
+      firstNewTxIdx,
+    );
+
+    collectNewTxs({
       newTxsInSession,
       newContentMessages,
       sessionRow,
       signaturesAndIdxs,
       peerKnownState,
       firstNewTxIdx,
-    );
+    });
   }
 
   async sendNewContent(
@@ -104,7 +105,7 @@ export class SyncManager {
       return messageMap;
     }
 
-    const coValueRow = await this.idbClient.getCoValue(peerKnownState.id);
+    const coValueRow = await this.dbClient.getCoValue(peerKnownState.id);
 
     if (!coValueRow) {
       const emptyKnownMessage: KnownStateMessage = {
@@ -116,7 +117,7 @@ export class SyncManager {
       return messageMap;
     }
 
-    const allCoValueSessions = await this.idbClient.getCoValueSessions(
+    const allCoValueSessions = await this.dbClient.getCoValueSessions(
       coValueRow.rowID,
     );
 
@@ -185,10 +186,8 @@ export class SyncManager {
     return this.sendNewContent(msg);
   }
 
-  async handleContent(
-    msg: CojsonInternalTypes.NewContentMessage,
-  ): Promise<void | unknown> {
-    const coValueRow = await this.idbClient.getCoValue(msg.id);
+  async handleContent(msg: CojsonInternalTypes.NewContentMessage) {
+    const coValueRow = await this.dbClient.getCoValue(msg.id);
 
     // We have no info about coValue header
     const invalidAssumptionOnHeaderPresence = !msg.header && !coValueRow;
@@ -205,10 +204,10 @@ export class SyncManager {
 
     const storedCoValueRowID: number = coValueRow
       ? coValueRow.rowID
-      : await this.idbClient.addCoValue(msg);
+      : await this.dbClient.addCoValue(msg);
 
     const allOurSessionsEntries =
-      await this.idbClient.getCoValueSessions(storedCoValueRowID);
+      await this.dbClient.getCoValueSessions(storedCoValueRowID);
 
     const allOurSessions: {
       [sessionID: SessionID]: StoredSessionRow;
@@ -221,9 +220,10 @@ export class SyncManager {
       header: true,
       sessions: {},
     };
+
     let invalidAssumptions = false;
 
-    await Promise.all(
+    await this.dbClient.unitOfWork(() =>
       (Object.keys(msg.new) as SessionID[]).map((sessionID) => {
         const sessionRow = allOurSessions[sessionID];
         if (sessionRow) {
@@ -285,44 +285,37 @@ export class SyncManager {
 
     const sessionUpdate = {
       coValue: storedCoValueRowID,
-      sessionID: sessionID,
+      sessionID,
       lastIdx: newLastIdx,
       lastSignature: msg.new[sessionID]!.lastSignature,
       bytesSinceLastSignature: newBytesSinceLastSignature,
     };
 
-    const sessionRowID: number = await this.idbClient.addSessionUpdate(
-      sessionRow,
+    const sessionRowID: number = await this.dbClient.addSessionUpdate({
       sessionUpdate,
-    );
+      sessionRow,
+    });
 
-    let maybePutRequest;
     if (shouldWriteSignature) {
-      maybePutRequest = this.idbClient.addSignatureAfter({
+      await this.dbClient.addSignatureAfter({
         sessionRowID,
         idx: newLastIdx - 1,
         signature: msg.new[sessionID]!.lastSignature,
       });
-    } else {
-      maybePutRequest = SyncPromise.resolve();
     }
 
-    return maybePutRequest.then(() =>
-      Promise.all(
-        actuallyNewTransactions.map((newTransaction, i) => {
-          return this.idbClient.addTransaction(
-            sessionRowID,
-            nextIdx + i,
-            newTransaction,
-          );
-        }),
+    return Promise.all(
+      actuallyNewTransactions.map((newTransaction, i) =>
+        this.dbClient.addTransaction(sessionRowID, nextIdx + i, newTransaction),
       ),
     );
   }
 
-  handleKnown(_msg: KnownStateMessage) {
-    // We don't intend to use IndexedDB itself as a synchronisation mechanism, so we can ignore the known messages
+  handleKnown(_msg: CojsonInternalTypes.KnownStateMessage) {
+    // We don't intend to use the storage (SQLite,IDB,etc.) itself as a synchronisation mechanism, so we can ignore the known messages
   }
+
+  handleDone(_msg: CojsonInternalTypes.DoneMessage) {}
 
   async sendStateMessage(msg: any): Promise<unknown> {
     return this.toLocalNode
@@ -331,6 +324,4 @@ export class SyncManager {
         console.error(`Error sending ${msg.action} state, id ${msg.id}`, e),
       );
   }
-
-  handleDone(_msg: CojsonInternalTypes.DoneMessage) {}
 }
