@@ -1,6 +1,6 @@
-import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import type { Metadata } from "next";
+import "./globals.css";
 
 import { Inter, Manrope } from "next/font/google";
 import localFont from "next/font/local";
@@ -44,7 +44,7 @@ const metaTags = {
   title: "garden computing",
   description:
     "Computers are magic. So why do we put up with so much complexity? We believe just a few new ideas can make all the difference.",
-  url: "https://gcmp.io",
+  url: "https://garden.co",
 };
 
 export const metadata: Metadata = {

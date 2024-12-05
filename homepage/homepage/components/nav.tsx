@@ -60,7 +60,7 @@ export function JazzNav() {
         },
         {
           title: "Blog",
-          href: "https://gcmp.io/news",
+          href: "https://garden.co/news",
           firstOnRight: true,
           newTab: true,
         },
