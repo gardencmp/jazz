@@ -617,7 +617,7 @@ export class CoValueCore {
   }
 
   getValidSortedTransactions(options?: {
-    ignorePrivateTransactions: true;
+    ignorePrivateTransactions: boolean;
   }): DecryptedTransaction[] {
     const validTransactions = determineValidTransactions(this);
 

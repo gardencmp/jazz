@@ -703,7 +703,7 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
     } else {
       const descriptor = (target._schema[key as keyof CoMap["_schema"]] ||
         target._schema[ItemsSym]) as Schema;
-      if (descriptor || key in target._raw.ops) {
+      if (descriptor || key in target._raw.latest) {
         return {
           enumerable: true,
           configurable: true,

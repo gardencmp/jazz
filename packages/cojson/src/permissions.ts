@@ -59,46 +59,47 @@ export function determineValidTransactions(
       throw new Error("Group must be a map");
     }
 
-    return [...coValue.sessionLogs.entries()].flatMap(
-      ([sessionID, sessionLog]) => {
-        const transactor = accountOrAgentIDfromSessionID(sessionID);
+    const validTransactions: ValidTransactionsResult[] = [];
 
-        return sessionLog.transactions
-          .filter((tx) => {
-            const groupAtTime = groupContent.atTime(tx.madeAt);
-            const effectiveTransactor = agentInAccountOrMemberInGroup(
-              transactor,
-              groupAtTime,
-            );
+    for (const [sessionID, sessionLog] of coValue.sessionLogs.entries()) {
+      const transactor = accountOrAgentIDfromSessionID(sessionID);
 
-            if (!effectiveTransactor) {
-              return false;
-            }
+      sessionLog.transactions.forEach((tx, txIndex) => {
+        const groupAtTime = groupContent.atTime(tx.madeAt);
+        const effectiveTransactor = agentInAccountOrMemberInGroup(
+          transactor,
+          groupAtTime,
+        );
 
-            const transactorRoleAtTxTime =
-              groupAtTime.roleOfInternal(effectiveTransactor)?.role ||
-              groupAtTime.roleOfInternal(EVERYONE)?.role;
+        if (!effectiveTransactor) {
+          return;
+        }
 
-            return (
-              transactorRoleAtTxTime === "admin" ||
-              transactorRoleAtTxTime === "writer"
-            );
-          })
-          .map((tx, txIndex) => ({
-            txID: { sessionID: sessionID, txIndex },
-            tx,
-          }));
-      },
-    );
+        const transactorRoleAtTxTime =
+          groupAtTime.roleOfInternal(effectiveTransactor)?.role ||
+          groupAtTime.roleOfInternal(EVERYONE)?.role;
+
+        if (
+          transactorRoleAtTxTime !== "admin" &&
+          transactorRoleAtTxTime !== "writer"
+        ) {
+          return;
+        }
+
+        validTransactions.push({ txID: { sessionID, txIndex }, tx });
+      });
+    }
+
+    return validTransactions;
   } else if (coValue.header.ruleset.type === "unsafeAllowAll") {
-    return [...coValue.sessionLogs.entries()].flatMap(
-      ([sessionID, sessionLog]) => {
-        return sessionLog.transactions.map((tx, txIndex) => ({
-          txID: { sessionID: sessionID, txIndex },
-          tx,
-        }));
-      },
-    );
+    const validTransactions: ValidTransactionsResult[] = [];
+
+    for (const [sessionID, sessionLog] of coValue.sessionLogs.entries()) {
+      sessionLog.transactions.forEach((tx, txIndex) => {
+        validTransactions.push({ txID: { sessionID, txIndex }, tx });
+      });
+    }
+    return validTransactions;
   } else {
     throw new Error(
       "Unknown ruleset type " +
