@@ -1,11 +1,11 @@
 import { useClerk, useUser } from "@clerk/clerk-expo";
 import { useJazzClerkAuth } from "jazz-react-auth-clerk";
 import React, {
-  useContext,
   createContext,
+  PropsWithChildren,
+  useContext,
   useEffect,
   useState,
-  PropsWithChildren,
 } from "react";
 import { Text, View } from "react-native";
 import { Jazz } from "./jazz";
@@ -49,7 +49,7 @@ export function JazzAndAuth({ children }: PropsWithChildren) {
       {auth ? (
         <Jazz.Provider
           auth={auth}
-          peer="wss://cloud.jazz.tools/?key=chat-rn-clerk-example-jazz@gcmp.io"
+          peer="wss://cloud.jazz.tools/?key=chat-rn-clerk-example-jazz@garden.co"
           storage={undefined}
         >
           {children}

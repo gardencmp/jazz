@@ -60,13 +60,13 @@ export function JazzNav() {
         },
         {
           title: "Blog",
-          href: "https://gcmp.io/news",
+          href: "https://garden.co/news",
           firstOnRight: true,
           newTab: true,
         },
         {
           title: "Releases",
-          href: "https://github.com/gardencmp/jazz/releases",
+          href: "https://github.com/garden-co/jazz/releases",
           newTab: true,
         },
       ]}

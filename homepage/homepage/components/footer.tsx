@@ -25,7 +25,7 @@ export function JazzFooter() {
               newTab: true,
             },
             {
-              href: "https://github.com/gardencmp/jazz/releases",
+              href: "https://github.com/garden-co/jazz/releases",
               label: "Releases",
               newTab: true,
             },

@@ -17,7 +17,7 @@
   {#if auth.current}
     <Provider
       auth={auth.current}
-      peer="wss://cloud.jazz.tools/?key=minimal-svelte-auth-passkey@gcmp.io"
+      peer="wss://cloud.jazz.tools/?key=minimal-svelte-auth-passkey@garden.co"
     >
       {@render children?.()}
     </Provider>

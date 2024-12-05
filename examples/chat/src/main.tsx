@@ -13,7 +13,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
     <>
       <Jazz.Provider
         auth={auth}
-        peer="wss://cloud.jazz.tools/?key=chat-example-jazz@gcmp.io"
+        peer="wss://cloud.jazz.tools/?key=chat-example-jazz@garden.co"
       >
         {children}
       </Jazz.Provider>

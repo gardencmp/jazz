@@ -15,6 +15,6 @@ For community and support, please join our [Discord](https://discord.gg/utDMjHYg
 - Homepage: [jazz.tools](https://jazz.tools)
 - Docs: [jazz.tools/docs](https://jazz.tools/docs)
 - Community & support: [Discord](https://discord.gg/utDMjHYg42)
-- Updates: [X](https://x.com/jazz_tools) & [Email](https://gcmp.io/news)
+- Updates: [X](https://x.com/jazz_tools) & [Email](https://garden.co/news)
 
 Copyright 2024 &mdash; Garden Computing, Inc.

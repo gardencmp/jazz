@@ -1,7 +1,7 @@
-import "./assets/main.css";
 import { DemoAuthBasicUI, createJazzVueApp, useDemoAuth } from "jazz-vue";
 import { createApp, defineComponent, h } from "vue";
 import App from "./App.vue";
+import "./assets/main.css";
 import router from "./router";
 import { ToDoAccount } from "./schema";
 
@@ -19,7 +19,7 @@ const RootComponent = defineComponent({
         JazzProvider,
         {
           auth: authMethod.value,
-          peer: "wss://mesh.jazz.tools/?key=vue-todo-example-jazz@gcmp.io",
+          peer: "wss://cloud.jazz.tools/?key=vue-todo-example-jazz@garden.co",
         },
         {
           default: () => h(App),

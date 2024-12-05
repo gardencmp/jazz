@@ -6,7 +6,7 @@ Thank you for considering contributing to Jazz! Jazz is an open-source framework
 
 ### 1. Reporting Bugs
 
-If you find a bug, please [open an issue with as much detail as possible](https://github.com/gardencmp/jazz/issues). Include:
+If you find a bug, please [open an issue with as much detail as possible](https://github.com/garden-co/jazz/issues). Include:
 
 - A clear and descriptive title.
 - Steps to reproduce the issue.
@@ -40,7 +40,7 @@ You'll need Node.js 20.x or 22.x installed (we're working on support for 23.x), 
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/gardencmp/jazz.git
+   git clone https://github.com/garden-co/jazz.git
    ```
 
 2. **Install dependencies**:

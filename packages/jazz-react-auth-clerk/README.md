@@ -7,7 +7,7 @@ This package provides a [Clerk-based](https://clerk.com/) authentication strateg
 `useJazzClerkAuth` is a hook that returns a `JazzAuth` object and a `JazzAuthState` object. Provide a Clerk instance to `useJazzClerkAuth`, and it will return the appropriate `JazzAuth` object. Once authenticated, authentication will persist across page reloads, even if the device is offline.
 
 
-See the full [example app](https://github.com/gardencmp/jazz/tree/main/examples/clerk) for a complete example.
+See the full [example app](https://github.com/garden-co/jazz/tree/main/examples/clerk) for a complete example.
 
 ```tsx
 import { ClerkProvider, SignInButton, useClerk } from "@clerk/clerk-react";

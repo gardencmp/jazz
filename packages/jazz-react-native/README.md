@@ -196,8 +196,8 @@ You can optionally pass a custom `kvStore` and `AccountSchema` to `createJazzRNA
 
 Refer to the Jazz + React Native demo projects for implementing authentication:
 
-- [DemoAuth Example](https://github.com/gardencmp/jazz/tree/main/examples/chat-rn)
-- [ClerkAuth Example](https://github.com/gardencmp/jazz/tree/main/examples/chat-rn-clerk)
+- [DemoAuth Example](https://github.com/garden-co/jazz/tree/main/examples/chat-rn)
+- [ClerkAuth Example](https://github.com/garden-co/jazz/tree/main/examples/chat-rn-clerk)
 
 In the demos, you'll find details on:
 
@@ -208,7 +208,7 @@ In the demos, you'll find details on:
 
 ### 🖼️ Working with Images
 
-To work with images in Jazz, import the `createImage` function from [`jazz-react-native-media-images`](https://github.com/gardencmp/jazz/tree/main/packages/jazz-react-native-media-images).
+To work with images in Jazz, import the `createImage` function from [`jazz-react-native-media-images`](https://github.com/garden-co/jazz/tree/main/packages/jazz-react-native-media-images).
 
 ```js
 import { createImage } from "jazz-react-native-media-images";
@@ -223,7 +223,7 @@ const image = await createImage(base64ImageDataURI, {
 someCovalue.image = image;
 ```
 
-For a complete implementation, please refer to [this](https://github.com/gardencmp/jazz/blob/main/examples/pets/src/3_NewPetPostForm.tsx) demo.
+For a complete implementation, please refer to [this](https://github.com/garden-co/jazz/blob/main/examples/pets/src/3_NewPetPostForm.tsx) demo.
 
 ### 📱 Running Your App
 
