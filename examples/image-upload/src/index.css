@@ -11,12 +11,17 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --border-color: #2f2e2d;
 }
 
 html,
 body,
 #root {
   height: 100%;
+}
+
+body {
+  margin: 0;
 }
 
 button {
@@ -30,6 +35,7 @@ button {
 
 @media (prefers-color-scheme: light) {
   :root {
+    --border-color: #e5e5e5;
     color: #213547;
     background-color: #ffffff;
   }
@@ -43,23 +49,32 @@ button {
   }
 }
 
+* {
+  border-color: var(--border-color);
+}
+
+header,
+main {
+  padding: 0.5rem 0;
+}
+
+header {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
 nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid whitesmoke;
-  margin-bottom: 2rem;
 }
 
 .container {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 0 1rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
+  max-width: 800px;
 }
 
 label {

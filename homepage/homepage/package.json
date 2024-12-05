@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "NODE_OPTIONS=--max-old-space-size=8192 next dev",
     "build:generate-docs": "node genDocs.mjs --build",
-    "build": "pnpm run build:generate-docs && next build",
+    "build": "pnpm run build:generate-docs && node renderCodeSamples.mjs && next build",
     "start": "next start",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write"

@@ -19,7 +19,10 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
       >
         {children}
       </Jazz.Provider>
-      <DemoAuthBasicUI appName="Reactions" state={authState} />
+
+      {authState.state !== "signedIn" && (
+        <DemoAuthBasicUI appName="Reactions" state={authState} />
+      )}
     </>
   );
 }

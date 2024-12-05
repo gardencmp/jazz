@@ -22,7 +22,10 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
       >
         {children}
       </Jazz.Provider>
-      <DemoAuthBasicUI appName="Image upload" state={authState} />
+
+      {authState.state !== "signedIn" && (
+        <DemoAuthBasicUI appName="Image upload" state={authState} />
+      )}
     </>
   );
 }
