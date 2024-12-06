@@ -1,5 +1,14 @@
 # jazz-example-chat
 
+## 0.0.114
+
+### Patch Changes
+
+- Updated dependencies [441fe27]
+  - cojson@0.8.36
+  - jazz-tools@0.8.36
+  - jazz-react@0.8.36
+
 ## 0.0.113
 
 ### Patch Changes

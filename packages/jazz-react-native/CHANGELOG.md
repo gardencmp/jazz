@@ -1,5 +1,15 @@
 # jazz-browser
 
+## 0.8.36
+
+### Patch Changes
+
+- c84764a: feat: added jazz-react-native-auth-clerk package
+- Updated dependencies [441fe27]
+  - cojson@0.8.36
+  - jazz-tools@0.8.36
+  - cojson-transport-ws@0.8.36
+
 ## 0.8.35
 
 ### Patch Changes
