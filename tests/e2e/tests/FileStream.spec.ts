@@ -24,14 +24,14 @@ test.describe("FileStream - Sync", () => {
 
     await page.getByRole("button", { name: "Upload Test File" }).click();
 
+    await expect(page.getByTestId("synced-with-server")).toHaveText(
+      "Synced with the server: false",
+    );
+
     // Wait for the coMapDonwloaded signal to ensure that the iframe is loaded
     await page.getByTestId("co-map-downloaded").waitFor();
 
     await context.setOffline(true);
-
-    await expect(page.getByTestId("synced-with-server")).toHaveText(
-      "Synced with the server: false",
-    );
 
     // Wait for the ping system to detect the offline state
     await setTimeout(10000);
