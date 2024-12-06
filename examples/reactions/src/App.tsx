@@ -17,21 +17,27 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <nav>
-        <span>
-          You're logged in as <strong>{me?.profile?.name}</strong>
-        </span>
-        <button className="btn" onClick={() => logOut()}>
-          Logout
-        </button>
-      </nav>
+    <>
+      <header>
+        <nav className="container">
+          <span>
+            You're logged in as <strong>{me?.profile?.name}</strong>
+          </span>
+          <button className="btn" onClick={() => logOut()}>
+            Log out
+          </button>
+        </nav>
+      </header>
 
-      {router.route({
-        "/": () => createReactions() as never,
-        "/reactions/:id": (id) => <ReactionsScreen id={id as ID<Reactions>} />,
-      })}
-    </div>
+      <main className="container">
+        {router.route({
+          "/": () => createReactions() as never,
+          "/reactions/:id": (id) => (
+            <ReactionsScreen id={id as ID<Reactions>} />
+          ),
+        })}
+      </main>
+    </>
   );
 }
 

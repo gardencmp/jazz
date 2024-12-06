@@ -3,37 +3,22 @@ import { NextjsLogo } from "@/components/icons/NextjsLogo";
 import { ReactLogo } from "@/components/icons/ReactLogo";
 import { ReactNativeLogo } from "@/components/icons/ReactNativeLogo";
 import { VueLogo } from "@/components/icons/VueLogo";
-import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import { CloudUploadIcon, FingerprintIcon, ImageIcon } from "lucide-react";
 
-type Example = {
-  name: string;
-  slug: string;
-  description?: string;
-  illustration?: React.ReactNode;
-  tech?: string[];
-  features?: string[];
-  demoUrl?: string;
-};
-
-const tech = {
-  react: "React",
-  nextjs: "Next.js",
-  reactNative: "React Native",
-  vue: "Vue",
-};
-
-const features = {
-  fileUpload: "File upload",
-  imageUpload: "Image upload",
-  passkey: "Passkey auth",
-  clerk: "Clerk auth",
-  inviteLink: "Invite link",
-  coFeed: "CoFeed",
-};
+import {
+  Schema_ts as ImageUploadSchema,
+  ImageUpload_tsx,
+} from "@/codeSamples/examples/image-upload/src";
+import {
+  Schema_ts as ReactionsSchema,
+  ReactionsScreen_tsx,
+} from "@/codeSamples/examples/reactions/src";
+import { ExampleCard } from "@/components/examples/ExampleCard";
+import { ExampleDemo } from "@/components/examples/ExampleDemo";
+import { Example, features, tech } from "@/lib/example";
 
 const MockButton = ({ children }: { children: React.ReactNode }) => (
   <p className="bg-blue-100 text-blue-800 py-1 p-2 rounded-full font-medium text-center text-xs">
@@ -206,7 +191,7 @@ const PasswordManagerIllustration = () => (
   </div>
 );
 
-const reactExamples = [
+const reactExamples: Example[] = [
   {
     name: "Chat",
     slug: "chat",
@@ -214,53 +199,6 @@ const reactExamples = [
     tech: [tech.react],
     demoUrl: "https://chat.jazz.tools",
     illustration: <ChatIllustration />,
-  },
-  {
-    name: "Clerk",
-    slug: "clerk",
-    description: "A React app that uses Clerk for authentication",
-    tech: [tech.react],
-    features: [features.clerk],
-    demoUrl: "https://clerk-demo.jazz.tools",
-    illustration: <ClerkIllustration />,
-  },
-  {
-    name: "Passkey",
-    slug: "passkey",
-    description: "A React app that uses Passkey for authentication",
-    tech: [tech.react],
-    features: [features.passkey],
-    demoUrl: "https://passkey-demo.jazz.tools",
-    illustration: (
-      <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
-        <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
-          <FingerprintIcon
-            size={36}
-            strokeWidth={0.75}
-            className="stroke-red-600"
-          />
-          <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    name: "Image upload",
-    slug: "image-upload",
-    description: "Learn how to upload and delete images",
-    tech: [tech.react],
-    features: [features.imageUpload],
-    demoUrl: "https://image-upload-demo.jazz.tools",
-    illustration: <ImageUploadIllustration />,
-  },
-  {
-    name: "Reactions",
-    slug: "reactions",
-    description: "Collect and render reactions from multiple users.",
-    tech: [tech.react],
-    features: [features.coFeed],
-    demoUrl: "https://reactions-demo.jazz.tools",
-    illustration: <ReactionsIllustration />,
   },
   {
     name: "Rate my pet",
@@ -302,9 +240,38 @@ const reactExamples = [
     demoUrl: "https://music-demo.jazz.tools",
     illustration: <MusicIllustration />,
   },
+  {
+    name: "Clerk",
+    slug: "clerk",
+    description: "A React app that uses Clerk for authentication",
+    tech: [tech.react],
+    features: [features.clerk],
+    demoUrl: "https://clerk-demo.jazz.tools",
+    illustration: <ClerkIllustration />,
+  },
+  {
+    name: "Passkey",
+    slug: "passkey",
+    description: "A React app that uses Passkey for authentication",
+    tech: [tech.react],
+    features: [features.passkey],
+    demoUrl: "https://passkey-demo.jazz.tools",
+    illustration: (
+      <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
+        <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
+          <FingerprintIcon
+            size={36}
+            strokeWidth={0.75}
+            className="stroke-red-600"
+          />
+          <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
+        </div>
+      </div>
+    ),
+  },
 ];
 
-const nextExamples = [
+const nextExamples: Example[] = [
   {
     name: "Book shelf",
     slug: "book-shelf",
@@ -358,6 +325,49 @@ const vueExamples: Example[] = [
   },
 ];
 
+const demos = [
+  {
+    name: "Image upload",
+    slug: "image-upload",
+    description: "Learn how to upload and delete images",
+    tech: [tech.react],
+    features: [features.imageUpload],
+    demoUrl: "https://image-upload-demo.jazz.tools",
+    illustration: <ImageUploadIllustration />,
+    showDemo: true,
+    codeSamples: [
+      {
+        name: "image-upload.tsx",
+        content: <ImageUpload_tsx />,
+      },
+      {
+        name: "schema.ts",
+        content: <ImageUploadSchema />,
+      },
+    ],
+  },
+  {
+    name: "Reactions",
+    slug: "reactions",
+    description: "Collect and render reactions from multiple users.",
+    tech: [tech.react],
+    features: [features.coFeed],
+    demoUrl: "https://reactions-demo.jazz.tools",
+    illustration: <ReactionsIllustration />,
+    showDemo: true,
+    codeSamples: [
+      {
+        name: "reactions.tsx",
+        content: <ReactionsScreen_tsx />,
+      },
+      {
+        name: "schema.ts",
+        content: <ReactionsSchema />,
+      },
+    ],
+  },
+];
+
 const categories = [
   {
     name: "React",
@@ -385,55 +395,6 @@ const categories = [
   },
 ];
 
-function Example({ example }: { example: Example }) {
-  const { name, slug, tech, features, description, demoUrl, illustration } =
-    example;
-  const githubUrl = `https://github.com/gardencmp/jazz/tree/main/examples/${slug}`;
-
-  return (
-    <div className="col-span-2 border bg-stone-50 shadow-sm p-3 flex flex-col rounded-lg dark:bg-stone-950">
-      <div className="mb-3 aspect-[16/9] overflow-hidden w-full rounded-md bg-white border dark:bg-stone-925 sm:aspect-[2/1] md:aspect-[3/2]">
-        {illustration}
-      </div>
-
-      <div className="flex-1 space-y-2 mb-2">
-        <h2 className="font-medium text-stone-900 dark:text-white leading-none">
-          {name}
-        </h2>
-        <div className="flex gap-1">
-          {tech?.map((tech) => (
-            <p
-              className="bg-green-50 border border-green-500 text-green-600 rounded-full py-0.5 px-2 text-xs dark:bg-green-800 dark:text-green-200 dark:border-green-700"
-              key={tech}
-            >
-              {tech}
-            </p>
-          ))}
-          {features?.map((feature) => (
-            <p
-              className="bg-pink-50 border border-pink-500 text-pink-600 rounded-full py-0.5 px-2 text-xs dark:bg-pink-800 dark:text-pink-200 dark:border-pink-700"
-              key={feature}
-            >
-              {feature}
-            </p>
-          ))}
-        </div>
-        <p className="text-sm">{description}</p>
-      </div>
-      <div className="flex gap-2">
-        <Button href={githubUrl} variant="secondary" size="sm">
-          View code
-        </Button>
-        {demoUrl && (
-          <Button href={demoUrl} variant="secondary" size="sm">
-            View demo
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function Page() {
   return (
     <div className="container flex flex-col gap-6 pb-10 lg:pb-20">
@@ -441,6 +402,14 @@ export default function Page() {
         title="Example apps"
         slogan="Find an example app with code most similar to what you want to build"
       />
+
+      <div className="grid gap-8 mb-12 lg:gap-12">
+        <h2 className="sr-only">Example apps with demo and code</h2>
+        {demos.map(
+          (demo) =>
+            demo.showDemo && <ExampleDemo key={demo.slug} example={demo} />,
+        )}
+      </div>
 
       <div className="grid gap-12 lg:gap-20">
         {categories.map((category) => (
@@ -453,9 +422,17 @@ export default function Page() {
             </div>
 
             <GappedGrid>
-              {category.examples.map((example) => (
-                <Example key={example.slug} example={example} />
-              ))}
+              {category.examples.map((example) =>
+                example.showDemo ? (
+                  <ExampleDemo key={example.slug} example={example} />
+                ) : (
+                  <ExampleCard
+                    className="border bg-stone-50 shadow-sm p-3 rounded-lg dark:bg-stone-950"
+                    key={example.slug}
+                    example={example}
+                  />
+                ),
+              )}
             </GappedGrid>
           </div>
         ))}

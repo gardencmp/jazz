@@ -8,9 +8,10 @@
   "dependencies": {
     "better-sqlite3": "^8.5.2",
     "cojson": "workspace:0.8.35",
-    "typescript": "^5.3.3"
+    "cojson-storage": "workspace:*"
   },
   "devDependencies": {
+    "typescript": "^5.3.3",
     "@types/better-sqlite3": "^7.6.4"
   },
   "scripts": {

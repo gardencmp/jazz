@@ -1,13 +1,7 @@
-"use client";
-
-import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
-import { type ThemeProviderProps } from "next-themes/dist/types";
-import * as React from "react";
+import { UseThemeProps } from "next-themes/dist/types";
 import { useEffect } from "react";
 
-function ThemeWatcher() {
-  let { resolvedTheme, setTheme } = useTheme();
-
+export function ThemeWatcher({ resolvedTheme, setTheme }: UseThemeProps) {
   useEffect(() => {
     let media = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -27,13 +21,4 @@ function ThemeWatcher() {
   }, [resolvedTheme, setTheme]);
 
   return null;
-}
-
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return (
-    <NextThemesProvider {...props}>
-      <ThemeWatcher />
-      {children}
-    </NextThemesProvider>
-  );
 }

@@ -1,14 +1,14 @@
-import "./globals.css";
-import { ThemeProvider } from "gcmp-design-system/src/app/components/molecules/ThemeProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import type { Metadata } from "next";
+import "./globals.css";
 
 import { Inter, Manrope } from "next/font/google";
 import localFont from "next/font/local";
 
 import { GcmpNav } from "@/components/Nav";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { ThemeToggle } from "gcmp-design-system/src/app/components/molecules/ThemeToggle";
 
 // If loading a variable font, you don't need to specify the font weight
 const manrope = Manrope({
@@ -44,7 +44,7 @@ const metaTags = {
   title: "garden computing",
   description:
     "Computers are magic. So why do we put up with so much complexity? We believe just a few new ideas can make all the difference.",
-  url: "https://gcmp.io",
+  url: "https://garden.co",
 };
 
 export const metadata: Metadata = {

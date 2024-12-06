@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { socials } from "@/lib/socials";
 import { JazzLogo } from "gcmp-design-system/src/app/components/atoms/logos/JazzLogo";
 import { Nav } from "gcmp-design-system/src/app/components/organisms/Nav";
@@ -8,6 +9,7 @@ export function JazzNav() {
   return (
     <Nav
       mainLogo={<JazzLogo className="w-24" />}
+      themeToggle={ThemeToggle}
       items={[
         { title: "Jazz Cloud", href: "/cloud" },
         {
@@ -28,18 +30,6 @@ export function JazzNav() {
             },
             {
               icon: (
-                <BoxIcon
-                  className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
-                  strokeWidth={1.5}
-                />
-              ),
-              title: "API reference",
-              href: "/api-reference",
-              description:
-                "API references for packages like jazz-tools, jazz-react, and more.",
-            },
-            {
-              icon: (
                 <CodeIcon
                   className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
                   strokeWidth={1.5}
@@ -50,6 +40,18 @@ export function JazzNav() {
               description:
                 "Demo and source code for example apps built with Jazz.",
             },
+            {
+              icon: (
+                <BoxIcon
+                  className="size-5 stroke-blue dark:stroke-blue-500 shrink-0"
+                  strokeWidth={1.5}
+                />
+              ),
+              title: "API reference",
+              href: "/api-reference",
+              description:
+                "API references for packages like jazz-tools, jazz-react, and more.",
+            },
           ],
         },
         {
@@ -58,13 +60,13 @@ export function JazzNav() {
         },
         {
           title: "Blog",
-          href: "https://gcmp.io/news",
+          href: "https://garden.co/news",
           firstOnRight: true,
           newTab: true,
         },
         {
           title: "Releases",
-          href: "https://github.com/gardencmp/jazz/releases",
+          href: "https://github.com/garden-co/jazz/releases",
           newTab: true,
         },
       ]}

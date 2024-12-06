@@ -1,39 +1,19 @@
-import { CojsonInternalTypes, SessionID } from "cojson";
+import { CojsonInternalTypes } from "cojson";
 import { SyncPromise } from "./syncPromises";
 import RawCoID = CojsonInternalTypes.RawCoID;
 import Transaction = CojsonInternalTypes.Transaction;
 import Signature = CojsonInternalTypes.Signature;
+import {
+  CoValueRow,
+  DBClientInterface,
+  SessionRow,
+  SignatureAfterRow,
+  StoredCoValueRow,
+  StoredSessionRow,
+  TransactionRow,
+} from "cojson-storage";
 
-export type CoValueRow = {
-  id: CojsonInternalTypes.RawCoID;
-  header: CojsonInternalTypes.CoValueHeader;
-};
-
-export type StoredCoValueRow = CoValueRow & { rowID: number };
-
-export type TransactionRow = {
-  ses: number;
-  idx: number;
-  tx: CojsonInternalTypes.Transaction;
-};
-
-export type SignatureAfterRow = {
-  ses: number;
-  idx: number;
-  signature: CojsonInternalTypes.Signature;
-};
-
-export type SessionRow = {
-  coValue: number;
-  sessionID: SessionID;
-  lastIdx: number;
-  lastSignature: CojsonInternalTypes.Signature;
-  bytesSinceLastSignature?: number;
-};
-
-export type StoredSessionRow = SessionRow & { rowID: number };
-
-export class IDBClient {
+export class IDBClient implements DBClientInterface {
   private db;
 
   currentTx:
@@ -148,29 +128,29 @@ export class IDBClient {
   }
 
   async getNewTransactionInSession(
-    sessionRow: StoredSessionRow,
+    sessionRowId: number,
     firstNewTxIdx: number,
   ): Promise<TransactionRow[]> {
     return this.makeRequest<TransactionRow[]>(({ transactions }) =>
       transactions.getAll(
         IDBKeyRange.bound(
-          [sessionRow.rowID, firstNewTxIdx],
-          [sessionRow.rowID, Infinity],
+          [sessionRowId, firstNewTxIdx],
+          [sessionRowId, Infinity],
         ),
       ),
     );
   }
 
   async getSignatures(
-    sessionRow: StoredSessionRow,
+    sessionRowId: number,
     firstNewTxIdx: number,
   ): Promise<SignatureAfterRow[]> {
     return this.makeRequest<SignatureAfterRow[]>(
       ({ signatureAfter }: { signatureAfter: IDBObjectStore }) =>
         signatureAfter.getAll(
           IDBKeyRange.bound(
-            [sessionRow.rowID, firstNewTxIdx],
-            [sessionRow.rowID, Infinity],
+            [sessionRowId, firstNewTxIdx],
+            [sessionRowId, Infinity],
           ),
         ),
     );
@@ -191,10 +171,13 @@ export class IDBClient {
     )) as number;
   }
 
-  async addSessionUpdate(
-    sessionRow: StoredSessionRow | undefined,
-    sessionUpdate: SessionRow,
-  ): Promise<number> {
+  async addSessionUpdate({
+    sessionUpdate,
+    sessionRow,
+  }: {
+    sessionUpdate: SessionRow;
+    sessionRow?: StoredSessionRow;
+  }): Promise<number> {
     return this.makeRequest<number>(({ sessions }) =>
       sessions.put(
         sessionRow?.rowID
@@ -221,7 +204,7 @@ export class IDBClient {
     );
   }
 
-  addSignatureAfter({
+  async addSignatureAfter({
     sessionRowID,
     idx,
     signature,
@@ -233,5 +216,9 @@ export class IDBClient {
         signature,
       } satisfies SignatureAfterRow),
     );
+  }
+
+  async unitOfWork(operationsCallback: () => unknown[]) {
+    return Promise.all(operationsCallback());
   }
 }

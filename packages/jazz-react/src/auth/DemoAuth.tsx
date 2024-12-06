@@ -116,11 +116,9 @@ export const DemoAuthBasicUI = ({
         flexDirection: "column",
         justifyContent: "center",
         width: "18rem",
-        padding: "1rem 0",
         maxWidth: "calc(100vw - 2rem)",
         gap: "2rem",
         margin: "0 auto",
-        ...(darkMode ? { background: "#000" } : {}),
       }}
     >
       {state.state === "loading" ? (
@@ -131,6 +129,8 @@ export const DemoAuthBasicUI = ({
             style={{
               color: darkMode ? "#fff" : "#000",
               textAlign: "center",
+              fontSize: "1.5rem",
+              fontWeight: "bold",
             }}
           >
             {appName}
@@ -157,7 +157,7 @@ export const DemoAuthBasicUI = ({
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="webauthn"
               style={{
-                border: darkMode ? "2px solid #444" : "2px solid #ddd",
+                border: darkMode ? "1px solid #444" : "1px solid #ddd",
                 padding: "11px 8px",
                 borderRadius: "6px",
                 background: darkMode ? "#000" : "#fff",

@@ -79,7 +79,7 @@ pre.twoslash data-lsp:hover::before {
 }
 
 pre .code-container {
-  @apply overflow-auto p-2 pl-0 bg-white dark:bg-stone-925 rounded-b-xl text-xs h-full;
+  @apply overflow-auto p-2 pl-0 bg-white dark:bg-stone-950 rounded-b-xl text-xs h-full leading-5;
 }
 /* The try button */
 pre .code-container > a {

@@ -26,6 +26,7 @@
     "mdast-util-mdx": "^3.0.0",
     "micromark-extension-mdxjs": "^3.0.0",
     "next": "14.2.15",
+    "next-themes": "^0.2.1",
     "react": "^18",
     "react-dom": "^18",
     "shiki": "^0.14.6",

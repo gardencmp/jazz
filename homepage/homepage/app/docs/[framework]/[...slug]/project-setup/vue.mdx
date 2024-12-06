@@ -4,7 +4,7 @@ import { CodeGroup } from "@/components/forMdx";
 
 This guide provides step-by-step instructions for setting up and running a Jazz-powered Todo application using VueJS.
 
-See the full example [here](https://github.com/gardencmp/jazz/tree/main/examples/todo-vue).
+See the full example [here](https://github.com/garden-co/jazz/tree/main/examples/todo-vue).
 
 ---
 
@@ -127,7 +127,7 @@ const RootComponent = defineComponent({
         JazzProvider,
         {
           auth: authMethod.value,
-          peer: "wss://mesh.jazz.tools/?key=vue-todo-example-jazz@gcmp.io",
+          peer: "wss://cloud.jazz.tools/?key=vue-todo-example-jazz@garden.co",
         },
         {
           default: () => h(App),
@@ -227,7 +227,7 @@ const folders = useCoState(FolderList, computedFoldersId, [{ items: [{}] }]);
 ```
 </CodeGroup>
 
-See the full example [here](https://github.com/gardencmp/jazz/tree/main/examples/todo-vue).
+See the full example [here](https://github.com/garden-co/jazz/tree/main/examples/todo-vue).
 
 ## Mutating a CoValue
 
@@ -259,4 +259,4 @@ const createFolder = async (name: string) => {
 ```
 </CodeGroup>
 
-See the full example [here](https://github.com/gardencmp/jazz/tree/main/examples/todo-vue).
+See the full example [here](https://github.com/garden-co/jazz/tree/main/examples/todo-vue).

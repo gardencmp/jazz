@@ -134,7 +134,7 @@ export function ChatDemoSection() {
         slogan={
           <>
             A chat app in 174 lines of client-side code.{" "}
-            <Link href="https://github.com/gardencmp/jazz/tree/main/examples/chat">
+            <Link href="https://github.com/garden-co/jazz/tree/main/examples/chat">
               View code
             </Link>
           </>
