@@ -251,7 +251,7 @@ importers:
         specifier: ^1.5.4
         version: 1.5.4
       react:
-        specifier: ^18
+        specifier: '18'
         version: 18.3.1
       react-dom:
         specifier: ^18
@@ -264,7 +264,7 @@ importers:
         version: 0.14.7
       shiki-twoslash:
         specifier: ^3.1.2
-        version: 3.1.2(typescript@5.4.5)
+        version: 3.1.2(typescript@5.3.3)
       tailwind-merge:
         specifier: ^1.14.0
         version: 1.14.0
@@ -285,7 +285,7 @@ importers:
         specifier: ^20
         version: 20.12.11
       '@types/react':
-        specifier: ^18
+        specifier: '18'
         version: 18.3.1
       '@types/react-dom':
         specifier: ^18
@@ -301,10 +301,10 @@ importers:
         version: 3.4.3
       typedoc:
         specifier: ^0.25.13
-        version: 0.25.13(typescript@5.4.5)
+        version: 0.25.13(typescript@5.3.3)
       typescript:
-        specifier: ^5.3.3
-        version: 5.4.5
+        specifier: 5.3.3
+        version: 5.3.3
 
 packages:
 
@@ -2604,6 +2604,11 @@ packages:
     hasBin: true
     peerDependencies:
       typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x || 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x
+
+  typescript@5.3.3:
+    resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
 
   typescript@5.4.5:
     resolution: {integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==}
@@ -5953,6 +5958,16 @@ snapshots:
 
   shebang-regex@3.0.0: {}
 
+  shiki-twoslash@3.1.2(typescript@5.3.3):
+    dependencies:
+      '@typescript/twoslash': 3.1.0
+      '@typescript/vfs': 1.3.4
+      fenceparser: 1.1.1
+      shiki: 0.10.1
+      typescript: 5.3.3
+    transitivePeerDependencies:
+      - supports-color
+
   shiki-twoslash@3.1.2(typescript@5.4.5):
     dependencies:
       '@typescript/twoslash': 3.1.0
@@ -6136,6 +6151,14 @@ snapshots:
 
   tslib@2.8.1: {}
 
+  typedoc@0.25.13(typescript@5.3.3):
+    dependencies:
+      lunr: 2.3.9
+      marked: 4.3.0
+      minimatch: 9.0.4
+      shiki: 0.14.7
+      typescript: 5.3.3
+
   typedoc@0.25.13(typescript@5.4.5):
     dependencies:
       lunr: 2.3.9
@@ -6143,6 +6166,8 @@ snapshots:
       minimatch: 9.0.4
       shiki: 0.14.7
       typescript: 5.4.5
+
+  typescript@5.3.3: {}
 
   typescript@5.4.5: {}
 
