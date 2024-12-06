@@ -1,22 +1,24 @@
-import { SideNav } from "@/components/SideNav";
 import { SideNavHeader } from "@/components/SideNavHeader";
 import { SideNavItem } from "@/components/SideNavItem";
-import { docNavigationItems } from "@/lib/docNavigationItems";
 import { packages } from "@/lib/packages";
 import { clsx } from "clsx";
 import { ChevronRight, PackageIcon } from "lucide-react";
 import Link from "next/link";
-import { twMerge } from "tailwind-merge";
-import { requestProject } from "./requestProject";
+import { ProjectReflection } from "typedoc";
 
-export function ApiNav({ className }: { className?: string }) {
+export function ApiNav({
+  className,
+  projects,
+}: { className?: string; projects: ProjectReflection[] }) {
+  if (!projects?.length) return;
+
   return (
     <div className={clsx(className, "text-sm space-y-5")}>
       <SideNavHeader href="/api-reference">API Reference</SideNavHeader>
       <ul className="space-y-5">
-        {packages.map(({ name }) => (
-          <li key={name}>
-            <PackageNavItem package={name} />
+        {projects.map((project, index) => (
+          <li key={project.name}>
+            <PackageNavItem package={packages[index].name} project={project} />
           </li>
         ))}
       </ul>
@@ -24,13 +26,13 @@ export function ApiNav({ className }: { className?: string }) {
   );
 }
 
-export async function PackageNavItem({
+export function PackageNavItem({
   package: packageName,
+  project,
 }: {
   package: string;
+  project: ProjectReflection;
 }) {
-  let project = await requestProject(packageName as any);
-
   return (
     <>
       <SideNavItem

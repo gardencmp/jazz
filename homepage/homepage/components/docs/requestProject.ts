@@ -21,3 +21,16 @@ export async function requestProject(
   const deserializer = new Deserializer({} as any);
   return deserializer.reviveProject(docs[packageName], packageName);
 }
+
+export async function requestProjects(): Promise<ProjectReflection[]> {
+  const projectNames = Object.keys(docs) as (keyof typeof docs)[];
+
+  const projects = await Promise.all(
+    projectNames.map(async (name) => {
+      const project = await requestProject(name);
+      return project;
+    }),
+  );
+
+  return projects;
+}
