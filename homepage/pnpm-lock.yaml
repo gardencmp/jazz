@@ -303,7 +303,7 @@ importers:
         specifier: ^0.25.13
         version: 0.25.13(typescript@5.4.5)
       typescript:
-        specifier: ^5.3.3
+        specifier: ^5.4.5
         version: 5.4.5
 
 packages:
