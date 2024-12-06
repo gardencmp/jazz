@@ -285,7 +285,7 @@ importers:
         specifier: ^20
         version: 20.12.11
       '@types/react':
-        specifier: ^18
+        specifier: ^18.2.8
         version: 18.3.1
       '@types/react-dom':
         specifier: ^18
