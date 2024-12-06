@@ -19,7 +19,7 @@ import NetInfo from "@react-native-community/netinfo";
 import { RawAccountID } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
 import * as Linking from "expo-linking";
-import { PureJSCrypto } from "jazz-tools/native";
+import { RNQuickCrypto } from "./crypto/RNQuickCrypto.js";
 
 export { RNDemoAuth } from "./auth/DemoAuthMethod.js";
 
@@ -87,12 +87,12 @@ export async function createJazzRNContext<Acc extends Account>(
       ? await createJazzContext({
           AccountSchema: options.AccountSchema,
           auth: options.auth,
-          crypto: await PureJSCrypto.create(),
+          crypto: await RNQuickCrypto.create(),
           peersToLoadFrom: [firstWsPeer],
           sessionProvider: provideLockSession,
         })
       : await createJazzContext({
-          crypto: await PureJSCrypto.create(),
+          crypto: await RNQuickCrypto.create(),
           peersToLoadFrom: [firstWsPeer],
         });
 
