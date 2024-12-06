@@ -1,5 +1,15 @@
 # cojson-storage-indexeddb
 
+## 0.8.36
+
+### Patch Changes
+
+- 1afbd2c: Refactor the SQLite and IndexedDB storage packages to extract common synchronization functionality into newly created cojson-storage package.
+- Updated dependencies [441fe27]
+- Updated dependencies [1afbd2c]
+  - cojson@0.8.36
+  - cojson-storage@0.8.36
+
 ## 0.8.35
 
 ### Patch Changes
