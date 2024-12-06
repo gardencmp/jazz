@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.36
+
+### Patch Changes
+
+- 441fe27: Optimise large record-like CoMaps for access of latest value
+
 ## 0.8.35
 
 ### Patch Changes

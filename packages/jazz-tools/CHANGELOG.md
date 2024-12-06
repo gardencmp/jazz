@@ -1,5 +1,13 @@
 # jazz-tools
 
+## 0.8.36
+
+### Patch Changes
+
+- 441fe27: Optimise large record-like CoMaps for access of latest value
+- Updated dependencies [441fe27]
+  - cojson@0.8.36
+
 ## 0.8.35
 
 ### Patch Changes
