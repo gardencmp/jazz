@@ -51,12 +51,12 @@
     "@biomejs/biome": "1.9.4",
     "@types/geojson": "^7946.0.14",
     "@types/node": "^20",
-    "@types/react": "^18.2.8",
+    "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10",
     "postcss": "^8",
     "tailwindcss": "^3",
     "typedoc": "^0.25.13",
-    "typescript": "^5.4.5"
+    "typescript": "^5.3.3"
   }
 }
