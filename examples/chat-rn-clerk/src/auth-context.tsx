@@ -1,5 +1,5 @@
 import { useClerk, useUser } from "@clerk/clerk-expo";
-import { useJazzClerkAuth } from "jazz-react-auth-clerk";
+import { useJazzClerkAuth } from "jazz-react-native-auth-clerk";
 import React, {
   useContext,
   createContext,
@@ -8,7 +8,7 @@ import React, {
   PropsWithChildren,
 } from "react";
 import { Text, View } from "react-native";
-import { Jazz } from "./jazz";
+import { Jazz, kvStore } from "./jazz";
 
 const AuthContext = createContext<{
   isAuthenticated: boolean;
@@ -25,7 +25,7 @@ export function useAuth() {
 export function JazzAndAuth({ children }: PropsWithChildren) {
   const { isSignedIn, isLoaded: isClerkLoaded } = useUser();
   const clerk = useClerk();
-  const [auth, state] = useJazzClerkAuth(clerk);
+  const [auth, state] = useJazzClerkAuth(clerk, kvStore);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export function JazzAndAuth({ children }: PropsWithChildren) {
             <Text style={{ color: "red" }}>{error}</Text>
           </View>
         ))}
-      {auth ? (
+      {auth && clerk.user ? (
         <Jazz.Provider
           auth={auth}
           peer="wss://cloud.jazz.tools/?key=chat-rn-clerk-example-jazz@gcmp.io"

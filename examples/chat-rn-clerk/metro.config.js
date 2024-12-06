@@ -19,7 +19,10 @@ config.resolver.nodeModulesPaths = [
 ];
 config.resolver.sourceExts = ["mjs", "js", "json", "ts", "tsx"];
 config.resolver.unstable_enablePackageExports = true;
-config.resolver.requireCycleIgnorePatterns = [/(^|\/|\\)node_modules($|\/|\\)/];
+config.resolver.requireCycleIgnorePatterns = [
+  /(^|\/|\\)node_modules($|\/|\\)/,
+  /(^|\/|\\)packages($|\/|\\)/,
+];
 
 // Use turborepo to restore the cache when possible
 config.cacheStores = [
