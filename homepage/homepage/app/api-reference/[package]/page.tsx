@@ -1,4 +1,5 @@
 import { PackageDocs } from "@/components/docs/packageDocs";
+import { requestProject } from "@/components/docs/requestProject";
 import { packages } from "@/lib/packages";
 import { notFound } from "next/navigation";
 
@@ -6,12 +7,14 @@ interface Props {
   params: { package: string };
 }
 
-export default function Page({ params }: Props) {
+export default async function Page({ params }: Props) {
   if (!packages.map((p) => p.name).includes(params.package)) {
     return notFound();
   }
 
-  return <PackageDocs package={params.package} />;
+  const project = await requestProject(params.package as any);
+
+  return <PackageDocs project={project} package={params.package} />;
 }
 
 export async function generateMetadata({ params }: Props) {

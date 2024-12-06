@@ -2,13 +2,13 @@ import { PackageIcon, Type } from "lucide-react";
 import {
   CommentDisplayPart,
   DeclarationReflection,
+  ProjectReflection,
   ReflectionKind,
   SignatureReflection,
   SomeType,
   TypeContext,
   TypeParameterReflection,
 } from "typedoc";
-import { requestProject } from "./requestProject";
 import {
   ClassOrInterface,
   DocComment,
@@ -18,15 +18,13 @@ import {
   PropDecl,
 } from "./tags";
 
-export async function PackageDocs({
+export function PackageDocs({
   package: packageName,
+  project,
 }: {
   package: string;
+  project: ProjectReflection;
 }) {
-  let project = await requestProject(packageName as any);
-
-  // console.dir(project, {depth: 10});
-
   return (
     <>
       <h2 className="flex items-center gap-2">
