@@ -4,7 +4,7 @@ import { Platform } from "react-native";
 export interface TokenCache {
   getToken: (key: string) => Promise<string | undefined | null>;
   saveToken: (key: string, token: string) => Promise<void>;
-  clearToken?: (key: string) => void;
+  clearToken: (key: string) => void;
 }
 
 const createTokenCache = (): TokenCache => {
@@ -26,6 +26,9 @@ const createTokenCache = (): TokenCache => {
     },
     saveToken: (key: string, token: string) => {
       return SecureStore.setItemAsync(key, token);
+    },
+    clearToken: (key: string) => {
+      return SecureStore.deleteItemAsync(key);
     },
   };
 };

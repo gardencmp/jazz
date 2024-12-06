@@ -14,9 +14,10 @@ import {
 } from "jazz-tools";
 import { Linking } from "react-native";
 import {
-  BrowserContext,
-  BrowserGuestContext,
+  KvStore,
   KvStoreContext,
+  ReactNativeContext,
+  ReactNativeGuestContext,
   createJazzRNContext,
   parseInviteLink,
 } from "./index.js";
@@ -28,7 +29,7 @@ export function createJazzRNApp<Acc extends Account>({
   AccountSchema = Account as unknown as AccountClass<Acc>,
 } = {}): JazzReactApp<Acc> {
   const JazzContext = React.createContext<
-    BrowserContext<Acc> | BrowserGuestContext | undefined
+    ReactNativeContext<Acc> | ReactNativeGuestContext | undefined
   >(undefined);
 
   if (!kvStore) {
@@ -49,7 +50,7 @@ export function createJazzRNApp<Acc extends Account>({
     storage?: "indexedDB" | "singleTabOPFS";
   }) {
     const [ctx, setCtx] = useState<
-      BrowserContext<Acc> | BrowserGuestContext | undefined
+      ReactNativeContext<Acc> | ReactNativeGuestContext | undefined
     >();
 
     const [sessionCount, setSessionCount] = useState(0);
@@ -80,7 +81,11 @@ export function createJazzRNApp<Acc extends Account>({
       });
 
       return () => {
-        void promiseWithDoneCallback.then((done) => done());
+        void promiseWithDoneCallback
+          .then((done) => done())
+          .catch((e) => {
+            console.error("Error in createJazzRNContext", e);
+          });
       };
     }, [AccountSchema, auth, peer, storage, sessionCount]);
 
@@ -240,6 +245,7 @@ export function createJazzRNApp<Acc extends Account>({
     useAccountOrGuest,
     useCoState,
     useAcceptInvite,
+    kvStore,
   };
 }
 
@@ -293,6 +299,8 @@ export interface JazzReactApp<Acc extends Account> {
     onAccept: (projectID: ID<V>) => void;
     forValueHint?: string;
   }): void;
+
+  kvStore: KvStore;
 }
 
 export * from "./media.js";

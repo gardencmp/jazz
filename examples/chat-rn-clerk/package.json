@@ -41,7 +41,7 @@
     "expo-status-bar": "~1.12.1",
     "expo-system-ui": "~3.0.7",
     "expo-web-browser": "~13.0.3",
-    "jazz-react-auth-clerk": "workspace:*",
+    "jazz-react-native-auth-clerk": "workspace:*",
     "jazz-react-native": "workspace:*",
     "jazz-react-native-media-images": "workspace:*",
     "jazz-tools": "workspace:*",

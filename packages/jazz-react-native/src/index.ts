@@ -26,27 +26,27 @@ export { RNDemoAuth } from "./auth/DemoAuthMethod.js";
 import { KvStoreContext } from "./storage/kv-store-context.js";
 
 /** @category Context Creation */
-export type BrowserContext<Acc extends Account> = {
+export type ReactNativeContext<Acc extends Account> = {
   me: Acc;
   logOut: () => void;
   // TODO: Symbol.dispose?
   done: () => void;
 };
 
-export type BrowserGuestContext = {
+export type ReactNativeGuestContext = {
   guest: AnonymousJazzAgent;
   logOut: () => void;
   done: () => void;
 };
 
-export type BrowserContextOptions<Acc extends Account> = {
+export type ReactNativeContextOptions<Acc extends Account> = {
   auth: AuthMethod;
   AccountSchema: CoValueClass<Acc> & {
     fromNode: (typeof Account)["fromNode"];
   };
-} & BaseBrowserContextOptions;
+} & BaseReactNativeContextOptions;
 
-export type BaseBrowserContextOptions = {
+export type BaseReactNativeContextOptions = {
   peer: `wss://${string}` | `ws://${string}`;
   reconnectionTimeout?: number;
   storage?: "indexedDB" | "singleTabOPFS";
@@ -55,17 +55,17 @@ export type BaseBrowserContextOptions = {
 
 /** @category Context Creation */
 export async function createJazzRNContext<Acc extends Account>(
-  options: BrowserContextOptions<Acc>,
-): Promise<BrowserContext<Acc>>;
+  options: ReactNativeContextOptions<Acc>,
+): Promise<ReactNativeContext<Acc>>;
 export async function createJazzRNContext(
-  options: BaseBrowserContextOptions,
-): Promise<BrowserGuestContext>;
+  options: BaseReactNativeContextOptions,
+): Promise<ReactNativeGuestContext>;
 export async function createJazzRNContext<Acc extends Account>(
-  options: BrowserContextOptions<Acc> | BaseBrowserContextOptions,
-): Promise<BrowserContext<Acc> | BrowserGuestContext>;
+  options: ReactNativeContextOptions<Acc> | BaseReactNativeContextOptions,
+): Promise<ReactNativeContext<Acc> | ReactNativeGuestContext>;
 export async function createJazzRNContext<Acc extends Account>(
-  options: BrowserContextOptions<Acc> | BaseBrowserContextOptions,
-): Promise<BrowserContext<Acc> | BrowserGuestContext> {
+  options: ReactNativeContextOptions<Acc> | BaseReactNativeContextOptions,
+): Promise<ReactNativeContext<Acc> | ReactNativeGuestContext> {
   const firstWsPeer = createWebSocketPeer({
     websocket: new WebSocket(options.peer),
     id: options.peer + "@" + new Date().toISOString(),
@@ -191,15 +191,6 @@ export async function provideLockSession(
     sessionDone,
   });
 }
-
-const window = {
-  location: {
-    href: "#",
-  },
-  history: {
-    replaceState: (a: any, b: any, c: any) => {},
-  },
-};
 
 /** @category Invite Links */
 export function createInviteLink<C extends CoValue>(

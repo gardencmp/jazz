@@ -363,12 +363,12 @@ importers:
       expo-web-browser:
         specifier: ~13.0.3
         version: 13.0.3(expo@51.0.37(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2)))
-      jazz-react-auth-clerk:
-        specifier: workspace:*
-        version: link:../../packages/jazz-react-auth-clerk
       jazz-react-native:
         specifier: workspace:*
         version: link:../../packages/jazz-react-native
+      jazz-react-native-auth-clerk:
+        specifier: workspace:*
+        version: link:../../packages/jazz-react-native-auth-clerk
       jazz-react-native-media-images:
         specifier: workspace:*
         version: link:../../packages/jazz-react-native-media-images
@@ -1342,6 +1342,8 @@ importers:
         specifier: 8.5.10
         version: 8.5.10
 
+  packages/coverage: {}
+
   packages/hash-slash:
     devDependencies:
       '@types/react':
@@ -1521,6 +1523,22 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
+
+  packages/jazz-react-native-auth-clerk:
+    dependencies:
+      cojson:
+        specifier: workspace:*
+        version: link:../cojson
+      jazz-react-native:
+        specifier: workspace:*
+        version: link:../jazz-react-native
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../jazz-tools
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.6.3
 
   packages/jazz-react-native-media-images:
     dependencies:
