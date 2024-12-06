@@ -56,7 +56,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       next:
         specifier: 14.2.5
         version: 14.2.5(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -114,7 +114,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.3.1)
@@ -235,7 +235,7 @@ importers:
         version: link:../../packages/jazz-react-native
       jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       nativewind:
         specifier: ^2.0.11
         version: 2.0.11(react@18.3.1)(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
@@ -374,7 +374,7 @@ importers:
         version: link:../../packages/jazz-react-native-media-images
       jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       nativewind:
         specifier: ^2.0.11
         version: 2.0.11(react@18.3.1)(tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.3.3)))
@@ -462,7 +462,7 @@ importers:
         version: link:../../packages/jazz-browser
       jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       jazz-vue:
         specifier: workspace:*
         version: link:../../packages/jazz-vue
@@ -532,7 +532,7 @@ importers:
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -572,7 +572,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -709,7 +709,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.3.1)
@@ -770,7 +770,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -819,7 +819,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -908,7 +908,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -975,7 +975,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.3.1)
@@ -1060,7 +1060,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -1114,7 +1114,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       lucide-react:
         specifier: ^0.274.0
         version: 0.274.0(react@18.3.1)
@@ -1178,7 +1178,7 @@ importers:
         version: link:../../packages/jazz-browser
       jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       jazz-vue:
         specifier: workspace:*
         version: link:../../packages/jazz-vue
@@ -1370,7 +1370,7 @@ importers:
         version: link:../cojson-transport-ws
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -1385,7 +1385,7 @@ importers:
         version: link:../jazz-browser
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
     devDependencies:
       typescript:
         specifier: ^5.3.3
@@ -1404,7 +1404,7 @@ importers:
         version: link:../jazz-browser
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
       pica:
         specifier: ^9.0.1
         version: 9.0.1
@@ -1426,7 +1426,7 @@ importers:
         version: link:../cojson-transport-ws
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
       ws:
         specifier: ^8.14.2
         version: 8.15.1
@@ -1451,7 +1451,7 @@ importers:
         version: link:../jazz-browser
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
     devDependencies:
       '@types/react':
         specifier: ^18.2.19
@@ -1479,7 +1479,7 @@ importers:
         version: link:../jazz-react
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -1504,7 +1504,7 @@ importers:
         version: link:../cojson-transport-ws
       jazz-tools:
         specifier: workspace:*
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
     devDependencies:
       '@react-native-community/netinfo':
         specifier: ^11.3.1
@@ -1526,7 +1526,7 @@ importers:
     dependencies:
       jazz-tools:
         specifier: workspace:*
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
     devDependencies:
       '@bam.tech/react-native-image-resizer':
         specifier: ^3.0.10
@@ -1575,7 +1575,7 @@ importers:
         version: 3.6.5
       jazz-tools:
         specifier: workspace:0.8.35
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
       ws:
         specifier: ^8.14.2
         version: 8.17.0
@@ -1594,7 +1594,7 @@ importers:
         version: link:../jazz-browser
       jazz-tools:
         specifier: workspace:*
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
     devDependencies:
       '@sveltejs/adapter-vercel':
         specifier: ^5.5.0
@@ -1664,6 +1664,22 @@ importers:
         specifier: 1.5.3
         version: 1.5.3(@types/node@22.5.1)(@vitest/browser@0.34.6)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(terser@5.33.0)
 
+  packages/jazz-tools-2:
+    dependencies:
+      cojson:
+        specifier: workspace:*
+        version: link:../cojson
+      fast-check:
+        specifier: ^3.17.2
+        version: 3.21.0
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.6.3
+      vitest:
+        specifier: 1.5.3
+        version: 1.5.3(@types/node@22.5.1)(@vitest/browser@0.34.6)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(terser@5.33.0)
+
   packages/jazz-vue:
     dependencies:
       '@scure/bip39':
@@ -1677,7 +1693,7 @@ importers:
         version: link:../jazz-browser
       jazz-tools:
         specifier: workspace:*
-        version: link:../jazz-tools
+        version: link:../jazz-tools-2
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.1.4
@@ -1714,7 +1730,7 @@ importers:
         version: link:../../packages/jazz-react
       jazz-tools:
         specifier: workspace:*
-        version: link:../../packages/jazz-tools
+        version: link:../../packages/jazz-tools-2
       react:
         specifier: 18.3.1
         version: 18.3.1
