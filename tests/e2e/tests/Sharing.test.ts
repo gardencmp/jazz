@@ -34,7 +34,6 @@ test.describe("Sharing", () => {
       "CoValue root ---> CoValue child 1",
     );
 
-    const id = await page.getByTestId("id").textContent();
     const inviteLink = await page
       .getByTestId("invite-link-reader")
       .textContent();
@@ -43,14 +42,13 @@ test.describe("Sharing", () => {
     const newUserPage = await (await browser.newContext()).newPage();
     await newUserPage.goto(inviteLink!);
 
-    await expect(newUserPage.getByTestId("id")).toHaveText(id ?? "", {
-      timeout: 20_000,
-    });
-
     // The user should not have access to the internal values
     // because they are part of a different group
     await expect(newUserPage.getByTestId("values")).toContainText(
       "CoValue root",
+      {
+        timeout: 20_000,
+      },
     );
     await expect(newUserPage.getByTestId("values")).not.toContainText(
       "CoValue root ---> CoValue child 1",
@@ -73,7 +71,6 @@ test.describe("Sharing", () => {
 
     await page.getByRole("button", { name: "Create the root" }).click();
 
-    const id = await page.getByTestId("id").textContent();
     const inviteLink = await page
       .getByTestId("invite-link-admin")
       .textContent();
@@ -82,9 +79,12 @@ test.describe("Sharing", () => {
     const newUserPage = await (await browser.newContext()).newPage();
     await newUserPage.goto(inviteLink!);
 
-    await expect(newUserPage.getByTestId("id")).toHaveText(id ?? "", {
-      timeout: 20_000,
-    });
+    await expect(newUserPage.getByTestId("values")).toContainText(
+      "CoValue root",
+      {
+        timeout: 20_000,
+      },
+    );
 
     await newUserPage.getByRole("button", { name: "Add a child" }).click();
     await newUserPage.getByRole("button", { name: "Add a child" }).click();
@@ -111,7 +111,6 @@ test.describe("Sharing", () => {
 
     await page.getByRole("button", { name: "Create the root" }).click();
 
-    const id = await page.getByTestId("id").textContent();
     const inviteLink = await page
       .getByTestId("invite-link-writer")
       .textContent();
@@ -120,9 +119,12 @@ test.describe("Sharing", () => {
     const newUserPage = await (await browser.newContext()).newPage();
     await newUserPage.goto(inviteLink!);
 
-    await expect(newUserPage.getByTestId("id")).toHaveText(id ?? "", {
-      timeout: 20_000,
-    });
+    await expect(newUserPage.getByTestId("values")).toContainText(
+      "CoValue root",
+      {
+        timeout: 20_000,
+      },
+    );
 
     await newUserPage.getByRole("button", { name: "Add a child" }).click();
     await newUserPage
@@ -146,7 +148,6 @@ test.describe("Sharing", () => {
     await page.getByRole("button", { name: "Add a child" }).click();
     await page.getByRole("button", { name: "Share the children" }).click();
 
-    const id = await page.getByTestId("id").textContent();
     const inviteLink = await page
       .getByTestId("invite-link-reader")
       .textContent();
@@ -155,9 +156,12 @@ test.describe("Sharing", () => {
     const newUserPage = await (await browser.newContext()).newPage();
     await newUserPage.goto(inviteLink!);
 
-    await expect(newUserPage.getByTestId("id")).toHaveText(id ?? "", {
-      timeout: 20_000,
-    });
+    await expect(newUserPage.getByTestId("values")).toContainText(
+      "CoValue root",
+      {
+        timeout: 20_000,
+      },
+    );
 
     await page.getByRole("button", { name: "Revoke access" }).click();
     await page.getByRole("button", { name: "Add a child" }).click();
@@ -203,6 +207,20 @@ test.describe("Sharing", () => {
 
     await otherAdminPage.goto(adminInviteLink!);
     await readerPage.goto(readerInviteLink!);
+
+    await expect(otherAdminPage.getByTestId("values")).toContainText(
+      "CoValue root",
+      {
+        timeout: 20_000,
+      },
+    );
+
+    await expect(readerPage.getByTestId("values")).toContainText(
+      "CoValue root",
+      {
+        timeout: 20_000,
+      },
+    );
 
     await initialOwnerPage.getByRole("button", { name: "Add a child" }).click();
     await initialOwnerPage
@@ -308,6 +326,20 @@ test.describe("Sharing", () => {
 
     await otherAdminPage.goto(adminInviteLink!);
     await readerPage.goto(readerInviteLink!);
+
+    await expect(otherAdminPage.getByTestId("values")).toContainText(
+      "CoValue root",
+      {
+        timeout: 20_000,
+      },
+    );
+
+    await expect(readerPage.getByTestId("values")).toContainText(
+      "CoValue root",
+      {
+        timeout: 20_000,
+      },
+    );
 
     await initialOwnerPage.getByRole("button", { name: "Add a child" }).click();
     await initialOwnerPage
