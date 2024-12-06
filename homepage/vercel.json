@@ -1,5 +1,19 @@
 {
-  "build": {
-    "installCommand": "pnpm install"
+  "projects": {
+    "homepage": {
+      "root": "homepage",
+      "builds": [
+        {
+          "src": "homepage/homepage/package.json",
+          "use": "@vercel/node"
+        }
+      ],
+      "routes": [
+        {
+          "src": "/(.*)",
+          "dest": "homepage/homepage/$1"
+        }
+      ]
+    }
   }
 }
