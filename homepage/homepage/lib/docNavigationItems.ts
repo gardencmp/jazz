@@ -81,8 +81,8 @@ export const docNavigationItems = [
         done: 0,
       },
       {
-        name: "Updating & deleting",
-        href: "/docs/using-covalues/updating",
+        name: "Writing & deleting",
+        href: "/docs/using-covalues/writing",
         done: 0,
       },
       {
