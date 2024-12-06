@@ -945,30 +945,6 @@ describe("CoMap Typescript validation", async () => {
     expectTypeOf(map.required).toBeNullable();
   });
 
-  test("waitForSync should resolve when the value is synced", async () => {
-    class TestMap extends CoMap {
-      name = co.string;
-    }
-
-    const { clientNode, serverNode, clientAccount } = await setupTwoNodes();
-
-    const map = TestMap.create(
-      {
-        name: "Alice",
-      },
-      { owner: clientAccount },
-    );
-
-    await map.waitForSync({ timeout: 1000 });
-
-    // Killing the client node so the serverNode can't load the map from it
-    clientNode.gracefulShutdown();
-
-    const loadedMap = await serverNode.load(map._raw.id);
-
-    expect(loadedMap).not.toBe("unavailable");
-  });
-
   test("waitForSync should resolve when the value is uploaded", async () => {
     class TestMap extends CoMap {
       name = co.string;

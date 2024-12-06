@@ -13,6 +13,7 @@ import {
   isControlledAccount,
 } from "../index.web.js";
 import { randomSessionProvider } from "../internal.js";
+import { setupTwoNodes } from "./utils.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -452,5 +453,43 @@ describe("FileStream.loadAsBlob", async () => {
     // The promise resolves before the stream is ended
     // so we get a blob only with the first chunk
     expect(blob?.size).toBe(1);
+  });
+});
+
+describe("waitForSync", async () => {
+  test("CoFeed: should resolve when the value is uploaded", async () => {
+    class TestStream extends CoFeed.Of(co.string) {}
+
+    const { clientNode, serverNode, clientAccount } = await setupTwoNodes();
+
+    const stream = TestStream.create(["1", "2", "3"], { owner: clientAccount });
+
+    await stream.waitForSync({ timeout: 1000 });
+
+    // Killing the client node so the serverNode can't load the map from it
+    clientNode.gracefulShutdown();
+
+    const loadedStream = await serverNode.load(stream._raw.id);
+
+    expect(loadedStream).not.toBe("unavailable");
+  });
+
+  test("FileStream: should resolve when the value is uploaded", async () => {
+    const { clientNode, serverNode, clientAccount } = await setupTwoNodes();
+
+    const stream = FileStream.create({ owner: clientAccount });
+
+    stream.start({ mimeType: "text/plain" });
+    stream.push(new Uint8Array([2]));
+    stream.end();
+
+    await stream.waitForSync({ timeout: 1000 });
+
+    // Killing the client node so the serverNode can't load the map from it
+    clientNode.gracefulShutdown();
+
+    const loadedStream = await serverNode.load(stream._raw.id);
+
+    expect(loadedStream).not.toBe("unavailable");
   });
 });

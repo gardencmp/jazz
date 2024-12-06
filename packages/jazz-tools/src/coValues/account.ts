@@ -286,6 +286,22 @@ export class Account extends CoValueBase implements CoValue {
     return subscribeToExistingCoValue(this, depth, listener);
   }
 
+  /**
+   * Wait for the `Account` to be uploaded to the other peers.
+   *
+   * @category Subscription & Loading
+   */
+  waitForSync(options?: {
+    timeout?: number;
+  }) {
+    return this._raw.core.waitForSync(options);
+  }
+
+  /**
+   * Wait for all the available `CoValues` to be uploaded to the other peers.
+   *
+   * @category Subscription & Loading
+   */
   waitForAllCoValuesSync(options?: {
     timeout?: number;
   }) {

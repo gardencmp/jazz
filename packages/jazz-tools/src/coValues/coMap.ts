@@ -553,6 +553,15 @@ export class CoMap extends CoValueBase implements CoValue {
     }
     return this;
   }
+
+  /**
+   * Wait for the `CoMap` to be uploaded to the other peers.
+   *
+   * @category Subscription & Loading
+   */
+  waitForSync(options?: { timeout?: number }) {
+    return this._raw.core.waitForSync(options);
+  }
 }
 
 export type CoKeys<Map extends object> = Exclude<

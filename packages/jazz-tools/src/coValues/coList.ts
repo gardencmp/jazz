@@ -443,11 +443,13 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
     return casted;
   }
 
+  /**
+   * Wait for the `CoList` to be uploaded to the other peers.
+   *
+   * @category Subscription & Loading
+   */
   waitForSync(options?: { timeout?: number }) {
-    return this._raw.core.node.syncManager.waitForSync(
-      this.id,
-      options?.timeout,
-    );
+    return this._raw.core.waitForSync(options);
   }
 }
 

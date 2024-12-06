@@ -25,3 +25,16 @@ test("waitForAllCoValuesSync should resolve when all the values are synced", asy
     expect(loadedMap).not.toBe("unavailable");
   }
 });
+
+test("waitForSync should resolve when the value is uploaded", async () => {
+  const { clientNode, serverNode, clientAccount } = await setupTwoNodes();
+
+  await clientAccount.waitForSync({ timeout: 1000 });
+
+  // Killing the client node so the serverNode can't load the map from it
+  clientNode.gracefulShutdown();
+
+  const loadedAccount = await serverNode.load(clientAccount._raw.id);
+
+  expect(loadedAccount).not.toBe("unavailable");
+});
