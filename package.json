@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "workspaces": ["packages/*", "examples/*"],
-  "packageManager": "pnpm@9.1.4",
+  "packageManager": "pnpm@9.14.0",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@changesets/cli": "^2.27.3",
