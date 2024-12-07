@@ -227,6 +227,9 @@ export async function GET(req: NextRequest) {
     </svg>`;
 
   return new Response(svg, {
-    headers: { "Content-Type": "image/svg+xml" },
+    headers: {
+      "Content-Type": "image/svg+xml",
+      "Cache-Control": "public, s-maxage=7200, stale-while-revalidate=3600",
+    },
   });
 }
