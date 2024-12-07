@@ -137,6 +137,7 @@ function CoValueCoreDiagram({
     roles: { [user: string]: "reader" | "writer" | "admin" };
     currentKey: string;
   };
+  showFullGroup?: boolean;
 }) {
   return (
     <div className="overflow-x-scroll">
