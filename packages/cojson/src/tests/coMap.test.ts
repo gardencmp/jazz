@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { expectMap } from "../coValue.js";
+import { operationToEditEntry } from "../coValues/coMap.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { LocalNode } from "../localNode.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
@@ -82,6 +83,29 @@ test("Can get CoMap entry values at different points in time", () => {
   expect(content.atTime(beforeA).get("hello")).toEqual(undefined);
   expect(content.atTime(beforeB).get("hello")).toEqual("A");
   expect(content.atTime(beforeC).get("hello")).toEqual("B");
+
+  const ops = content.timeFilteredOps("hello");
+
+  expect(content.atTime(beforeC).lastEditAt("hello")).toEqual(
+    operationToEditEntry(ops![1]!),
+  );
+  expect(content.atTime(beforeC).nthEditAt("hello", 0)).toEqual(
+    operationToEditEntry(ops![0]!),
+  );
+  expect(content.atTime(beforeC).nthEditAt("hello", 2)).toEqual(undefined);
+
+  expect([...content.atTime(beforeC).editsAt("hello")]).toEqual([
+    operationToEditEntry(ops![0]!),
+    operationToEditEntry(ops![1]!),
+  ]);
+
+  expect(content.atTime(beforeB).asObject()).toEqual({
+    hello: "A",
+  });
+
+  expect(content.atTime(beforeC).asObject()).toEqual({
+    hello: "B",
+  });
 });
 
 test("Can get all historic values of key in CoMap", () => {

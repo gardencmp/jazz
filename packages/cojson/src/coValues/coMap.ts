@@ -83,7 +83,7 @@ export class RawCoMapView<
   }
 
   /** @internal */
-  getValidSortedTransactions() {
+  private getValidSortedTransactions() {
     if (this.validSortedTransactions) {
       return this.validSortedTransactions;
     }
@@ -98,12 +98,12 @@ export class RawCoMapView<
     return validSortedTransactions;
   }
 
-  resetCachedValues() {
+  private resetCachedValues() {
     this.validSortedTransactions = undefined;
     this.cachedOps = undefined;
   }
 
-  processLatestTransactions() {
+  private processLatestTransactions() {
     // Reset all internal state and cached values
     this.latest = {};
     this.latestTxMadeAt = 0;
@@ -143,6 +143,11 @@ export class RawCoMapView<
         }
       }
     }
+  }
+
+  revalidateTransactions() {
+    this.resetCachedValues();
+    this.processLatestTransactions();
   }
 
   private getOps() {
@@ -381,8 +386,7 @@ export class RawCoMap<
       privacy,
     );
 
-    this.resetCachedValues();
-    this.processLatestTransactions();
+    this.revalidateTransactions();
   }
 
   /** Delete the given key (setting it to undefined).
@@ -407,12 +411,11 @@ export class RawCoMap<
       privacy,
     );
 
-    this.resetCachedValues();
-    this.processLatestTransactions();
+    this.revalidateTransactions();
   }
 }
 
-function operationToEditEntry<
+export function operationToEditEntry<
   K extends string,
   V extends JsonValue | undefined,
 >(op: MapOp<K, V>) {
