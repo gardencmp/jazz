@@ -1,5 +1,12 @@
 # jazz-svelte
 
+## 0.0.4
+
+### Patch Changes
+
+- jazz-browser@0.8.37
+- jazz-tools@0.8.37
+
 ## 0.0.3
 
 ### Patch Changes

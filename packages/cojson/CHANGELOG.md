@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.37
+
+### Patch Changes
+
+- 3d9f12e: Optimize the atTime processing on CoMap
+
 ## 0.8.36
 
 ### Patch Changes
