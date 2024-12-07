@@ -258,7 +258,9 @@ function sessionsForGroup(group: {
         {
           payload: {
             key: group.currentKey + "_for_" + user,
-            value: role,
+            value: fakeEncryptedPayload({
+              encrKey: group.currentKey + user,
+            }).split("\n")[0],
           },
           t: 0,
         },
