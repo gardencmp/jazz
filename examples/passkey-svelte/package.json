@@ -2,6 +2,7 @@
   "name": "passkey-svelte",
   "version": "0.0.4",
   "type": "module",
+  "private": true,
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
