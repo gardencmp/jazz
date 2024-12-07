@@ -11,7 +11,7 @@
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write"
   },
-  "packageManager": "pnpm@9.1.4",
+  "packageManager": "pnpm@9.14.0",
   "dependencies": {
     "@headlessui/react": "^2.2.0",
     "@icons-pack/react-simple-icons": "^9.1.0",
