@@ -140,8 +140,14 @@ export function FeaturesSection() {
 
         <div className="relative border p-4 sm:p-8 shadow-sm rounded-xl col-span-2 sm:col-span-4 flex flex-col justify-end">
           <div className="mb-3 sm:-right-3 sm:bottom-30 sm:absolute sm:left-[40%] sm:top-2 md:top-4 md:left-[23%]">
-            <img src="/api/latencyMap?spacing=2&dark=false" className="w-full dark:hidden" />
-            <img src="/api/latencyMap?spacing=2&dark=true" className="w-full hidden dark:block" />
+            <img
+              src="/api/latencyMap?spacing=2&dark=false"
+              className="w-full dark:hidden"
+            />
+            <img
+              src="/api/latencyMap?spacing=2&dark=true"
+              className="w-full hidden dark:block"
+            />
           </div>
 
           <H3>Jazz Cloud</H3>

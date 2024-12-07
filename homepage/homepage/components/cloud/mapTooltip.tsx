@@ -1,8 +1,8 @@
 "use client";
 
+import { clsx } from "clsx";
 import { useLayoutEffect, useState } from "react";
 import { pingColorThresholds } from "./pingColorThresholds";
-import { clsx } from "clsx";
 
 export default function MapTooltip() {
   const [style, setStyle] = useState<React.CSSProperties>({});

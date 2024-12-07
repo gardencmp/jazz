@@ -3,9 +3,9 @@ import type { FeatureCollection, Point, Position } from "geojson";
 import { type NextRequest } from "next/server";
 import land from "../../../components/cloud/ne_110m_land.json";
 
+import { pingColorThresholds } from "../../../components/cloud/pingColorThresholds";
 // generated with: globalping ping cloud.jazz.tools from world --limit 500 --packets 16 --json | jq "del(.results[].result.rawOutput)" > pings.json
 import pings from "../../../components/cloud/pings.json";
-import { pingColorThresholds } from "../../../components/cloud/pingColorThresholds";
 
 export const revalidate = 2 * 60 * 60; // 2 hours
 
