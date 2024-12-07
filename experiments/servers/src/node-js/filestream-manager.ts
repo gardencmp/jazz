@@ -179,7 +179,7 @@ export class FileStreamManager {
         return { start, end, contentLength: end - start + 1 };
     }
 
-    handleStreamError(
+    chunkFileDownloadError(
         error: Error,
         target: StreamTarget,
         fileStream: fs.ReadStream,
@@ -245,6 +245,8 @@ export class FileStreamManager {
             highWaterMark: CHUNK_SIZE,
         });
 
+        const totalChunks = Math.ceil(fileSize / CHUNK_SIZE);
+        let chunkIndex = 0;
         let bytesRead = 0;
 
         const sendChunk = () => {
@@ -254,7 +256,7 @@ export class FileStreamManager {
                     target.wsr.send(chunk, (error) => {
                         if (error) {
                             logger.error(`[GET] Error in closure #1`);
-                            this.handleStreamError(error, target, fileStream);
+                            this.chunkFileDownloadError(error, target, fileStream);
                             return;
                         }
                         bytesRead += chunk.length;
@@ -266,7 +268,7 @@ export class FileStreamManager {
                     target.res.write(chunk, (error) => {
                         if (error) {
                             logger.error(`[GET] Error in closure #2`);
-                            this.handleStreamError(error, target, fileStream);
+                            this.chunkFileDownloadError(error, target, fileStream);
                             return;
                         }
                         bytesRead += chunk.length;
@@ -275,6 +277,10 @@ export class FileStreamManager {
                         }
                     });
                 }
+                chunkIndex++;
+                logger.debug(
+                    `[GET] Sent chunk ${chunkIndex} of ${totalChunks} with size ${chunk.length}`,
+                );
             } else if (!fileStream.readableEnded) {
                 fileStream.once("readable", sendChunk);
             }
@@ -287,15 +293,15 @@ export class FileStreamManager {
                 target.res.end();
             }
             logger.debug(
-                `[GET] Streamed file '${filePath}' of size ${fileSize} (${
+                `[GET] Chunked download of file '${filePath}' with size ${fileSize} (${
                     fileSize / 1_000_000
-                }MB) successfully.`,
+                }MB) completed successfully.`,
             );
         });
 
         fileStream.on("error", (error) => {
             logger.error(`[GET] Error in closure #3`);
-            this.handleStreamError(error, target, fileStream);
+            this.chunkFileDownloadError(error, target, fileStream);
         });
 
         sendChunk();

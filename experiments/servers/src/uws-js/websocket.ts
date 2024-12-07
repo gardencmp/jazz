@@ -208,7 +208,11 @@ const app = uWS.SSLApp({
     close: (ws: uWS.WebSocket<{}>, code: number, message: ArrayBuffer) => {
         logger.debug('[Event-Close] WebSocket closed');
         // ws.getUserData();
-    }
+    },
+
+    dropped: (ws: uWS.WebSocket<{}>, message: ArrayBuffer, isBinary: boolean) => {
+        logger.debug(`[Event-Dropped] WebSocket message dropped => isBinary: ${isBinary}, messageLength: ${message.byteLength}`);
+    },
 });
 
 app.listen(+PORT, (token) => {
