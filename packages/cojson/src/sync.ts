@@ -712,7 +712,7 @@ export class SyncManager {
     }
   }
 
-  async waitForSyncWithPeer(peerId: PeerID, id: RawCoID, timeout = 10000) {
+  async waitForSyncWithPeer(peerId: PeerID, id: RawCoID, timeout: number) {
     const { syncState } = this;
     const currentSyncState = syncState.getCurrentSyncState(peerId, id);
 
@@ -745,9 +745,7 @@ export class SyncManager {
     const peers = this.getPeers();
 
     return Promise.all(
-      peers
-        .filter((peer) => peer.role !== "storage")
-        .map((peer) => this.waitForSyncWithPeer(peer.id, id, timeout)),
+      peers.map((peer) => this.waitForSyncWithPeer(peer.id, id, timeout)),
     );
   }
 
