@@ -65,12 +65,19 @@ const app = uWS.SSLApp({
     }
 
 }).ws("/*", {
-    open: (ws) => {
-        logger.debug("New WebSocket connection");
+    /* Options */
+    compression: uWS.DISABLED, /* uWS.SHARED_COMPRESSOR, */
+    maxPayloadLength: 16 * 1024 * 1024,
+    idleTimeout: 10,
+    /* maxBackpressure: 1024, */
+
+    open: (ws: uWS.WebSocket<{}>) => {
+        logger.debug("[Event-Open] New WebSocket connection");
 
         // FIXME: broadcasts will only work if registered here
         ws.subscribe("9cab6ad3-eefd-4a19-95a3-f0f0d86e1e32");
     },
+
     message: (ws: uWS.WebSocket<{}>, message: ArrayBuffer, isBinary: boolean) => {
         try {
             const messageStr = Buffer.from(message).toString();
@@ -193,6 +200,15 @@ const app = uWS.SSLApp({
                 .json({ m: "Error processing request" });
         }
     },
+
+    drain: (ws: uWS.WebSocket<{}>) => {
+        logger.debug(`[Event-Drain] WebSocket backpressure: ${ws.getBufferedAmount()}`);
+    },
+
+    close: (ws: uWS.WebSocket<{}>, code: number, message: ArrayBuffer) => {
+        logger.debug('[Event-Close] WebSocket closed');
+        // ws.getUserData();
+    }
 });
 
 app.listen(+PORT, (token) => {

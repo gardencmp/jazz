@@ -244,7 +244,11 @@ export class uWebSocketResponse extends WebSocketResponseBase<uWS.WebSocket<{}>>
 
     send(data: any, callback?: (error?: Error) => void): void {
         try {
-            this.ws.send(data);
+            if (typeof data !== "string") {
+                this.ws.send(data, true);
+            } else {
+                this.ws.send(data);
+            }
             callback?.();
         } catch (error) {
             callback?.(error as Error);

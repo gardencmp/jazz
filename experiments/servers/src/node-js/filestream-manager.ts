@@ -109,7 +109,7 @@ export class FileStreamManager {
 
             // Check if upload is complete
             logger.debug(
-                `Received chunk ${uploadState.receivedChunks.size} of ${totalChunks} with size ${buffer.length}`,
+                `[POST] Received chunk ${uploadState.receivedChunks.size} of ${totalChunks} with size ${buffer.length}`,
             );
             if (uploadState.receivedChunks.size === totalChunks) {
                 await this.handleCompletedUpload(uuid, uploadState);
@@ -118,7 +118,7 @@ export class FileStreamManager {
                 res.status(200).json({ m: "OK" });
             }
         } catch (err: unknown) {
-            const msg = `Error processing chunk ${chunkIndex} for file '${uploadState.originalFilename}'`;
+            const msg = `[POST] Error processing chunk ${chunkIndex} for file '${uploadState.originalFilename}'`;
             if (err instanceof Error) logger.error(err.stack);
             logger.error(msg, err);
             res.status(500).json({ m: msg });
@@ -145,7 +145,7 @@ export class FileStreamManager {
         this.uploads.delete(uuid);
 
         logger.debug(
-            `Chunked upload of ${uploadState.totalChunks} chunks for file '${uploadState.originalFilename}' completed successfully.`,
+            `[POST] Chunked upload of ${uploadState.totalChunks} chunks for file '${uploadState.originalFilename}' completed successfully.`,
         );
     }
 
@@ -184,7 +184,7 @@ export class FileStreamManager {
         target: StreamTarget,
         fileStream: fs.ReadStream,
     ) {
-        logger.error("Error in file stream:", error);
+        logger.error("[GET] Error in file stream:", error);
         fileStream.destroy();
 
         if (target.type === "websocket" && target.wsr) {
@@ -236,7 +236,7 @@ export class FileStreamManager {
         }
 
         logger.debug(
-            `Streaming file '${filePath}' of size ${fileSize} (${
+            `[GET] Streaming file '${filePath}' of size ${fileSize} (${
                 fileSize / 1_000_000
             }MB) in ${CHUNK_SIZE / 1024}KB chunks...`,
         );
@@ -253,6 +253,7 @@ export class FileStreamManager {
                 if (target.type === "websocket" && target.wsr) {
                     target.wsr.send(chunk, (error) => {
                         if (error) {
+                            logger.error(`[GET] Error in closure #1`);
                             this.handleStreamError(error, target, fileStream);
                             return;
                         }
@@ -264,6 +265,7 @@ export class FileStreamManager {
                 } else if (target.type === "http" && target.res) {
                     target.res.write(chunk, (error) => {
                         if (error) {
+                            logger.error(`[GET] Error in closure #2`);
                             this.handleStreamError(error, target, fileStream);
                             return;
                         }
@@ -285,13 +287,14 @@ export class FileStreamManager {
                 target.res.end();
             }
             logger.debug(
-                `Streamed file '${filePath}' of size ${fileSize} (${
+                `[GET] Streamed file '${filePath}' of size ${fileSize} (${
                     fileSize / 1_000_000
                 }MB) successfully.`,
             );
         });
 
         fileStream.on("error", (error) => {
+            logger.error(`[GET] Error in closure #3`);
             this.handleStreamError(error, target, fileStream);
         });
 
