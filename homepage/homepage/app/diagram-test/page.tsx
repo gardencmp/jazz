@@ -1,5 +1,5 @@
-import clsx from "clsx";
 import bs58 from "bs58";
+import clsx from "clsx";
 
 export default function Page() {
   const scenario1 = {
@@ -35,41 +35,78 @@ export default function Page() {
     ],
   };
 
+  const header = {
+    type: "comap",
+    ownedBy: "co_zCCymDTETFr2rv9U",
+    createdAt: "2024-12-06...",
+    uniqueness: "fc89fjwo3",
+  };
+
   return (
     <div className="flex flex-col justify-center gap-5 p-5">
       <div>Under the hood</div>
       <p>Basic setup</p>
       <CoValueCoreDiagram
-        header={{
-          owner: "Group A",
-          createdAt: "2024-12-06...",
-          uniqueness: "fc89fjwo3",
-        }}
+        header={header}
         sessions={scenario1}
         highlightLastPerKey={false}
         showHashAndSignature={false}
+        encryptedItems={false}
       />
       <p>Showing latest (effective) transactions per key</p>
       <CoValueCoreDiagram
-        header={{
-          owner: "Group A",
-          createdAt: "2024-12-06...",
-          uniqueness: "fc89fjwo3",
-        }}
+        header={header}
         sessions={scenario1}
         highlightLastPerKey={true}
         showHashAndSignature={false}
+        encryptedItems={false}
       />
       <p>Showing hash and signature</p>
       <CoValueCoreDiagram
-        header={{
-          owner: "Group A",
-          createdAt: "2024-12-06...",
-          uniqueness: "fc89fjwo3",
-        }}
+        header={header}
         sessions={scenario1}
         highlightLastPerKey={false}
         showHashAndSignature={true}
+        encryptedItems={false}
+      />
+      <p>Showing encrypted items</p>
+      <CoValueCoreDiagram
+        header={header}
+        sessions={scenario1}
+        highlightLastPerKey={false}
+        showHashAndSignature={true}
+        encryptedItems={true}
+      />
+      <p>Showing group</p>
+      <CoValueCoreDiagram
+        header={header}
+        sessions={scenario1}
+        highlightLastPerKey={false}
+        showHashAndSignature={true}
+        encryptedItems={true}
+        group={{
+          roles: {
+            alice: "admin",
+            bob: "writer",
+          },
+          currentKey: "keyID_z89fdhd9",
+        }}
+      />
+      <p>Showing extended group</p>
+      <CoValueCoreDiagram
+        header={header}
+        sessions={scenario1}
+        highlightLastPerKey={false}
+        showHashAndSignature={true}
+        encryptedItems={true}
+        group={{
+          roles: {
+            alice: "admin",
+            bob: "writer",
+          },
+          currentKey: "keyID_z89fdhd9",
+        }}
+        showFullGroup={true}
       />
     </div>
   );
@@ -82,6 +119,9 @@ function CoValueCoreDiagram({
   sessions,
   highlightLastPerKey,
   showHashAndSignature,
+  encryptedItems,
+  group,
+  showFullGroup,
 }: {
   header: object;
   sessions: {
@@ -90,94 +130,246 @@ function CoValueCoreDiagram({
       t: number;
     }[];
   };
-  highlightLastPerKey?: boolean;
-  showHashAndSignature?: boolean;
+  highlightLastPerKey: boolean;
+  showHashAndSignature: boolean;
+  encryptedItems: boolean;
+  group?: {
+    roles: { [user: string]: "reader" | "writer" | "admin" };
+    currentKey: string;
+  };
 }) {
   return (
     <div className="overflow-x-scroll">
-      <div className="flex gap-3 not-prose p-10 bg-black rounded-lg">
-        <div className="flex-1 bg-stone-900 p-2 rounded-lg rounded-l-xl">
-          <pre className="text-xs">
-            {JSON.stringify(header, null, 2)
-              .replace(/\n\s+/g, "\n")
-              .replace(/,/g, "")
-              .replace(/[{}]\n?/g, "")}
-          </pre>
-        </div>
-        <div className="flex-[4] flex flex-col gap-3">
-          {Object.entries(sessions).map(([key, log]) => (
-            <div key={key} className="flex gap-1">
-              <div className="bg-stone-900 p-2 rounded rounded-l-lg min-w-[8rem]">
-                <span
-                  className={
-                    userColors[key.split("_")[0] as keyof typeof userColors]
-                  }
-                >
-                  {key.split("_")[0]}
-                </span>{" "}
-                <span className="text-xs">
-                  {key.split("_").slice(1).join(" ")}
-                </span>
+      <div className="p-10 bg-black rounded-lg flex flex-col gap-10">
+        {group &&
+          (showFullGroup ? (
+            <CoValueContent
+              header={headerForGroup(group)}
+              sessions={sessionsForGroup(group)}
+              highlightLastPerKey={false}
+              showHashAndSignature={false}
+              encryptedItems={false}
+            />
+          ) : (
+            <div className="relative">
+              <SimplifiedGroup group={group} />
+              <div className="text-xs p-2 absolute -bottom-8">
+                {fakeCoID(headerForGroup(group))}
               </div>
-              {log.map((item, idx) => {
-                const isLastPerKey =
-                  highlightLastPerKey &&
-                  item.t >=
-                    Object.values(sessions)
-                      .flatMap((session) => session)
-                      .filter((i) => i.payload.key === item.payload.key)
-                      .reduce((max, item) => Math.max(max, item.t), 0);
-                return (
-                  <div
-                    key={JSON.stringify(item)}
-                    className={clsx(
-                      "bg-stone-900 rounded min-w-[9.5rem]",
-                      isLastPerKey ? "outline outline-amber-500" : "",
-                    )}
-                  >
+            </div>
+          ))}
+        <CoValueContent
+          header={header}
+          sessions={sessions}
+          highlightLastPerKey={highlightLastPerKey}
+          showHashAndSignature={showHashAndSignature}
+          encryptedItems={encryptedItems}
+        />
+      </div>
+    </div>
+  );
+}
+
+function HeaderContent({ header }: { header: object }) {
+  return (
+    <div className="bg-stone-900 h-full px-4 py-3 rounded-lg rounded-l-xl">
+      <div className="flex justify-between text-stone-600 mb-4 ">header</div>
+      <pre className="text-xs">
+        {JSON.stringify(header, null, 2)
+          .replace(/\n\s+/g, "\n")
+          .replace(/,/g, "")
+          .replace(/[{}]\n?/g, "")}
+      </pre>
+    </div>
+  );
+}
+
+function SimplifiedGroup({
+  group,
+}: {
+  group: {
+    roles: { [user: string]: "reader" | "writer" | "admin" };
+    currentKey: string;
+  };
+}) {
+  return (
+    <div className="bg-stone-900 p-2 rounded-lg rounded-l-xl max-w-[30rem]">
+      {Object.entries(group.roles).map(([user, role]) => (
+        <div key={user}>
+          <span className={clsx("font-bold", userColors[user])}>{user}</span>:{" "}
+          {role}
+        </div>
+      ))}
+      <div>
+        readKey:{" "}
+        <span className="font-bold text-fuchsia-500">{group.currentKey}</span>
+      </div>
+      {Object.keys(group.roles).map((user) => (
+        <div key={user}>
+          <span className="font-bold text-fuchsia-500">{group.currentKey}</span>
+          _for_
+          <span className={clsx("font-bold", userColors[user])}>{user}</span>:{" "}
+          {
+            fakeEncryptedPayload({
+              encrKey: group.currentKey + user,
+            }).split("\n")[0]
+          }
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function headerForGroup(group: {
+  roles: { [user: string]: "reader" | "writer" | "admin" };
+  currentKey: string;
+}) {
+  return {
+    type: "comap",
+    isGroup: true,
+    owner: Object.keys(group.roles)[0],
+    createdAt: "2024-12-06...",
+    uniqueness: group.currentKey,
+  };
+}
+
+function sessionsForGroup(group: {
+  roles: { [user: string]: "reader" | "writer" | "admin" };
+  currentKey: string;
+}) {
+  return {
+    [Object.keys(group.roles)[0] + "_session_1"]: [
+      {
+        payload: {
+          key: "readKey",
+          value: group.currentKey,
+        },
+        t: 0,
+      },
+      ...Object.entries(group.roles).flatMap(([user, role]) => [
+        {
+          payload: {
+            key: user,
+            value: role,
+          },
+          t: 0,
+        },
+        {
+          payload: {
+            key: group.currentKey + "_for_" + user,
+            value: role,
+          },
+          t: 0,
+        },
+      ]),
+    ],
+  };
+}
+
+function SessionHeader({ sessionKey }: { sessionKey: string }) {
+  return (
+    <div className="bg-stone-900 p-2 rounded rounded-l-lg min-w-[8rem]">
+      <span className={userColors[sessionKey.split("_")[0]]}>
+        {sessionKey.split("_")[0]}
+      </span>{" "}
+      <span className="text-xs">
+        {sessionKey.split("_").slice(1).join(" ")}
+      </span>
+    </div>
+  );
+}
+
+function CoValueContent({
+  header,
+  sessions,
+  highlightLastPerKey,
+  showHashAndSignature,
+  encryptedItems,
+}: {
+  header: object;
+  sessions: {
+    [key: string]: { payload: { key: string } & object; t: number }[];
+  };
+  highlightLastPerKey: boolean;
+  showHashAndSignature: boolean;
+  encryptedItems: boolean;
+}) {
+  return (
+    <div className="flex gap-3 not-prose relative">
+      <div className="flex-1 ">
+        <HeaderContent header={header} />
+        <div className="text-xs p-2 absolute -bottom-8">
+          h(header) = {fakeCoID(header)} ("CoValue ID")
+        </div>
+      </div>
+      <div className="flex-[6] flex flex-col gap-3">
+        {Object.entries(sessions).map(([key, log]) => (
+          <div key={key} className="flex gap-1">
+            <SessionHeader sessionKey={key} />
+            {log.map((item, idx) => {
+              const isLastPerKey =
+                highlightLastPerKey &&
+                item.t >=
+                  Object.values(sessions)
+                    .flatMap((session) => session)
+                    .filter((i) => i.payload.key === item.payload.key)
+                    .reduce((max, item) => Math.max(max, item.t), 0);
+              return (
+                <div
+                  key={JSON.stringify(item)}
+                  className={clsx(
+                    "bg-stone-900 rounded min-w-[9.5rem]",
+                    isLastPerKey ? "outline outline-amber-500" : "",
+                  )}
+                >
+                  {encryptedItems ? (
+                    <pre className="text-sm p-2 border-b border-stone-700 text-fuchsia-500">
+                      {fakeEncryptedPayload(item.payload)}
+                    </pre>
+                  ) : (
                     <pre className="text-sm p-2 border-b border-stone-700">
                       {JSON.stringify(item.payload, null, 2)
                         .replace(/\n\s+/g, "\n")
                         .replace(/,/g, "")
                         .replace(/[{}]\n?/g, "")}
                     </pre>
-                    <div className="flex justify-between">
-                      <pre className="text-xs p-2">idx={idx}</pre>
-                      <pre className="text-xs p-2">t={item.t}</pre>
-                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <pre className="text-xs p-2 text-stone-600">idx={idx}</pre>
+                    <pre className="text-xs p-2 font-bold">t={item.t}</pre>
                   </div>
-                );
-              })}
-              {showHashAndSignature && (
-                <div className="p-2 rounded min-w-[9.5rem]">
-                  <pre className="text-xs">→ {fakeHash(log)}</pre>
-                  <pre
-                    className={clsx(
-                      "text-xs p-2",
-                      userColors[key.split("_")[0] as keyof typeof userColors],
-                    )}
-                  >
-                    {"   ↪ "}
-                    {fakeSignature(log)}
-                  </pre>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+              );
+            })}
+            {showHashAndSignature && (
+              <div className="p-2 rounded min-w-[9.5rem]">
+                <pre className="text-xs">→ {fakeHash(log)}</pre>
+                <pre
+                  className={clsx(
+                    "text-xs p-2",
+                    userColors[key.split("_")[0] as keyof typeof userColors],
+                  )}
+                >
+                  {"   ↪ "}
+                  {fakeSignature(log)}
+                </pre>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-const userColors = {
+const userColors: { [user: string]: string } = {
   alice: "text-emerald-500",
   bob: "text-blue-500",
 };
 
 function fakeHash(session: { payload: object; t: number }[]) {
   return (
-    "hash_x" +
+    "hash_z" +
     bs58.encode(
       encoder.encode(
         hashCode(
@@ -185,6 +377,12 @@ function fakeHash(session: { payload: object; t: number }[]) {
         ) + "",
       ),
     )
+  );
+}
+
+function fakeCoID(header: object) {
+  return (
+    "co_z" + bs58.encode(encoder.encode(hashCode(JSON.stringify(header)) + ""))
   );
 }
 
@@ -211,4 +409,17 @@ function hashCode(str: string) {
     hash |= 0; // Convert to 32bit integer
   }
   return hash;
+}
+
+function fakeEncryptedPayload(payload: object) {
+  return (
+    "encr_z" +
+    bs58.encode(
+      encoder.encode(hashCode(JSON.stringify(payload)) + "").slice(0, 6),
+    ) +
+    "…\n    …" +
+    bs58.encode(
+      encoder.encode(hashCode(JSON.stringify(payload) + "a") + "").slice(0, 7),
+    )
+  );
 }
