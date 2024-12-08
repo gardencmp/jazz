@@ -1,5 +1,5 @@
 import { SyncMessage } from "cojson";
-import { Channel } from "cojson/src/streamUtils.ts";
+import type { Channel } from "queueueue";
 import { Mocked, describe, expect, test, vi } from "vitest";
 import { MAX_OUTGOING_MESSAGES_CHUNK_BYTES } from "../BatchedOutgoingMessages.js";
 import {
