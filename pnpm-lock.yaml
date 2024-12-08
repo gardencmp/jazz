@@ -1753,6 +1753,9 @@ importers:
       '@vitejs/plugin-react-swc':
         specifier: ^3.3.2
         version: 3.5.0(@swc/helpers@0.5.5)(vite@5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0))
+      jazz-run:
+        specifier: workspace:*
+        version: link:../../packages/jazz-run
       jstat:
         specifier: ^1.9.6
         version: 1.9.6

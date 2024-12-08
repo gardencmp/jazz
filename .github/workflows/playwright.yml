@@ -45,13 +45,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Setup .env
+        run: echo "VITE_WS_PEER=ws://localhost:4200/" >> .env
+        working-directory: ./${{ matrix.project }}
+
       - name: Pnpm Build
         run: pnpm turbo build
         working-directory: ./${{ matrix.project }}
-      
-      - name: Build jazz-run
-        run: pnpm exec turbo build && chmod +x dist/index.js;
-        working-directory: ./packages/jazz-run
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install
