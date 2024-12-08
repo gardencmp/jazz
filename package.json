@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "workspaces": ["packages/*", "examples/*"],
-  "packageManager": "pnpm@9.14.0",
+  "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@changesets/cli": "^2.27.3",
+    "@changesets/cli": "^2.27.10",
     "@vitest/coverage-istanbul": "1.5.3",
     "@vitest/ui": "1.5.3",
     "happy-dom": "^15.8.3",
