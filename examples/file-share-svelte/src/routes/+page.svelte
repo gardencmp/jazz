@@ -1,12 +1,12 @@
 <script lang="ts">
+  import FileItem from '$lib/components/FileItem.svelte';
   import { useAccount, useCoState } from '$lib/jazz';
-  import { SharedFile, ListOfSharedFiles } from '$lib/schema';
+  import { ListOfSharedFiles, SharedFile } from '$lib/schema';
+  import { generateTempFileId } from '$lib/utils';
   import { createInviteLink } from 'jazz-svelte';
   import { FileStream } from 'jazz-tools';
-  import FileItem from '$lib/components/FileItem.svelte';
-  import { SvelteMap } from 'svelte/reactivity';
-  import { generateTempFileId } from '$lib/utils';
   import { CloudUpload } from 'lucide-svelte';
+  import { SvelteMap } from 'svelte/reactivity';
 
   const { me, logOut } = useAccount();
 

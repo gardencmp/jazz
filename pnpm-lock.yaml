@@ -574,6 +574,9 @@ importers:
         specifier: ^0.3.28
         version: 0.3.28(svelte@5.2.7)
     devDependencies:
+      '@playwright/test':
+        specifier: ^1.45.3
+        version: 1.46.1
       '@sveltejs/adapter-vercel':
         specifier: ^5.5.0
         version: 5.5.0(@sveltejs/kit@2.8.1(@sveltejs/vite-plugin-svelte@4.0.1(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0)))(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0)))(rollup@4.24.0)
