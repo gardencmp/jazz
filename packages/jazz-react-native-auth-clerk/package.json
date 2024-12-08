@@ -1,6 +1,6 @@
 {
   "name": "jazz-react-native-auth-clerk",
-  "version": "0.8.36",
+  "version": "0.8.37",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
