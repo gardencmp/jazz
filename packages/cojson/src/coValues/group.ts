@@ -92,7 +92,7 @@ export class RawGroup<
         }
       | undefined = roleHere && { role: roleHere, via: undefined };
 
-    const parentGroups = this.getParentGroups();
+    const parentGroups = this.getParentGroups(this.options?.atTime);
 
     for (const parentGroup of parentGroups) {
       const roleInParent = parentGroup.roleOfInternal(accountID);
@@ -109,7 +109,7 @@ export class RawGroup<
     return roleInfo;
   }
 
-  getParentGroups() {
+  getParentGroups(atTime?: number) {
     const groups: RawGroup[] = [];
 
     for (const key of this.keys()) {
@@ -118,7 +118,14 @@ export class RawGroup<
           getParentGroupId(key),
           "Expected parent group to be loaded",
         );
-        groups.push(expectGroup(parent.getCurrentContent()));
+
+        const parentGroup = expectGroup(parent.getCurrentContent());
+
+        if (atTime) {
+          groups.push(parentGroup.atTime(atTime));
+        } else {
+          groups.push(parentGroup);
+        }
       }
     }
 
