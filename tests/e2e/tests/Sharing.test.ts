@@ -6,6 +6,9 @@ test.describe("Sharing", () => {
     await page.goto("/sharing");
 
     await page.getByRole("button", { name: "Create the root" }).click();
+    await expect(page.getByTestId("id")).not.toHaveText("", {
+      timeout: 20_000,
+    });
 
     const id = await page.getByTestId("id").textContent();
     const inviteLink = await page
@@ -28,6 +31,10 @@ test.describe("Sharing", () => {
     await page.goto("/sharing");
 
     await page.getByRole("button", { name: "Create the root" }).click();
+    await expect(page.getByTestId("id")).not.toHaveText("", {
+      timeout: 20_000,
+    });
+
     await page.getByRole("button", { name: "Add a child" }).click();
 
     await expect(page.getByTestId("values")).toContainText(
@@ -70,6 +77,9 @@ test.describe("Sharing", () => {
     await page.goto("/sharing");
 
     await page.getByRole("button", { name: "Create the root" }).click();
+    await expect(page.getByTestId("id")).not.toHaveText("", {
+      timeout: 20_000,
+    });
 
     const inviteLink = await page
       .getByTestId("invite-link-admin")
@@ -110,6 +120,9 @@ test.describe("Sharing", () => {
     await page.goto("/sharing");
 
     await page.getByRole("button", { name: "Create the root" }).click();
+    await expect(page.getByTestId("id")).not.toHaveText("", {
+      timeout: 20_000,
+    });
 
     const inviteLink = await page
       .getByTestId("invite-link-writer")
@@ -145,6 +158,10 @@ test.describe("Sharing", () => {
     await page.goto("/sharing");
 
     await page.getByRole("button", { name: "Create the root" }).click();
+    await expect(page.getByTestId("id")).not.toHaveText("", {
+      timeout: 20_000,
+    });
+
     await page.getByRole("button", { name: "Add a child" }).click();
     await page.getByRole("button", { name: "Share the children" }).click();
 
@@ -197,6 +214,9 @@ test.describe("Sharing", () => {
     await initialOwnerPage
       .getByRole("button", { name: "Create the root" })
       .click();
+    await expect(initialOwnerPage.getByTestId("id")).not.toHaveText("", {
+      timeout: 20_000,
+    });
 
     const adminInviteLink = await page
       .getByTestId("invite-link-admin")
@@ -316,6 +336,9 @@ test.describe("Sharing", () => {
     await initialOwnerPage
       .getByRole("button", { name: "Create the root" })
       .click();
+    await expect(initialOwnerPage.getByTestId("id")).not.toHaveText("", {
+      timeout: 20_000,
+    });
 
     const adminInviteLink = await page
       .getByTestId("invite-link-admin")

@@ -1043,6 +1043,12 @@ export class CoValueCore {
           ]
         : [];
   }
+
+  waitForSync(options?: {
+    timeout?: number;
+  }) {
+    return this.node.syncManager.waitForSync(this.id, options?.timeout);
+  }
 }
 
 function getNextKnownSignatureIdx(

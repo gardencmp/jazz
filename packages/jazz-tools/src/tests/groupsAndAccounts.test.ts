@@ -1,7 +1,7 @@
 import { RawGroup } from "cojson";
 import { describe, expect, test } from "vitest";
 import { Account, CoMap, Group, WasmCrypto, co } from "../index.web.js";
-import { waitFor } from "./utils.js";
+import { setupTwoNodes, waitFor } from "./utils.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -226,5 +226,20 @@ describe("Group inheritance", () => {
     expect(() =>
       groupOnTheOtherSide.extend(parentGroupOnTheOtherSide),
     ).not.toThrow();
+  });
+
+  test("waitForSync should resolve when the value is uploaded", async () => {
+    const { clientNode, serverNode, clientAccount } = await setupTwoNodes();
+
+    const group = Group.create({ owner: clientAccount });
+
+    await group.waitForSync({ timeout: 1000 });
+
+    // Killing the client node so the serverNode can't load the map from it
+    clientNode.gracefulShutdown();
+
+    const loadedGroup = await serverNode.load(group._raw.id);
+
+    expect(loadedGroup).not.toBe("unavailable");
   });
 });

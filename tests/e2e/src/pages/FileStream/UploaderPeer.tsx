@@ -16,11 +16,15 @@ export function UploaderPeer() {
   >(undefined);
   const [syncDuration, setSyncDuration] = useState<number | null>(null);
   const [bytes, setBytes] = useState(getDefaultFileSize);
+  const [synced, setSynced] = useState(false);
 
   const testFile = useCoState(UploadedFile, uploadedFileId, {});
 
   async function uploadTestFile() {
     if (!account) return;
+
+    setUploadedFileId(undefined);
+    setSynced(false);
 
     // Mark the sync start
     performance.mark("sync-start");
@@ -33,6 +37,10 @@ export function UploaderPeer() {
 
     setSyncDuration(null);
     setUploadedFileId(file.id);
+
+    account.me.waitForAllCoValuesSync().then(() => {
+      setSynced(true);
+    });
 
     // The downloader peer will set the syncCompleted to true when the download is complete.
     // We use this to measure the sync duration.
@@ -63,15 +71,23 @@ export function UploaderPeer() {
       <BytesRadioGroup selectedValue={bytes} onChange={setBytes} />
 
       <button onClick={uploadTestFile}>Upload Test File</button>
-      {uploadedFileId && <div>{uploadedFileId}</div>}
+      {uploadedFileId && (
+        <>
+          <div>{uploadedFileId}</div>
+          <div data-testid="synced-with-server">
+            Synced with the server: {String(synced)}
+          </div>
+        </>
+      )}
+
       {syncDuration && (
         <div data-testid="sync-duration">
-          Sync Duration: {syncDuration.toFixed(2)}ms
+          Two way sync duration: {syncDuration.toFixed(2)}ms
         </div>
       )}
       {uploadedFileId && (
         <div data-testid="result">
-          Sync Completed: {String(Boolean(syncDuration))}
+          Two way sync completed: {String(Boolean(syncDuration))}
         </div>
       )}
       {testFile?.coMapDownloaded && (

@@ -14,7 +14,14 @@ export class PeerState {
     knownStates: PeerKnownStates | undefined,
   ) {
     this.optimisticKnownStates = knownStates?.clone() ?? new PeerKnownStates();
-    this.knownStates = knownStates?.clone() ?? new PeerKnownStates();
+
+    // We assume that exchanges with storage peers are always successful
+    // hence we don't need to differentiate between knownStates and optimisticKnownStates
+    if (peer.role === "storage") {
+      this.knownStates = this.optimisticKnownStates;
+    } else {
+      this.knownStates = knownStates?.clone() ?? new PeerKnownStates();
+    }
   }
 
   /**
@@ -36,7 +43,10 @@ export class PeerState {
 
   dispatchToKnownStates(action: PeerKnownStateActions) {
     this.knownStates.dispatch(action);
-    this.optimisticKnownStates.dispatch(action);
+
+    if (this.role !== "storage") {
+      this.optimisticKnownStates.dispatch(action);
+    }
   }
 
   readonly erroredCoValues: Map<RawCoID, TryAddTransactionsError> = new Map();

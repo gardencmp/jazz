@@ -15,7 +15,7 @@ export function Sharing() {
   const [inviteLinks, setInviteLinks] = useState<Record<string, string>>({});
   const coMap = useCoState(SharedCoMap, id, {});
 
-  const createCoMap = () => {
+  const createCoMap = async () => {
     if (!me || id) return;
 
     const group = Group.create({ owner: me });
@@ -32,6 +32,9 @@ export function Sharing() {
       reader: createInviteLink(coMap, "reader"),
       admin: createInviteLink(coMap, "admin"),
     });
+
+    await group.waitForSync();
+    await group.waitForSync();
 
     setId(coMap.id);
   };

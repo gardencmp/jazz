@@ -370,6 +370,17 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
   ): () => void {
     return subscribeToExistingCoValue(this, depth, listener);
   }
+
+  /**
+   * Wait for the `CoFeed` to be uploaded to the other peers.
+   *
+   * @category Subscription & Loading
+   */
+  waitForSync(options?: {
+    timeout?: number;
+  }) {
+    return this._raw.core.waitForSync(options);
+  }
 }
 
 /**
@@ -862,5 +873,14 @@ export class FileStream extends CoValueBase implements CoValue {
     listener: (value: DeeplyLoaded<B, Depth>) => void,
   ): () => void {
     return subscribeToExistingCoValue(this, depth, listener);
+  }
+
+  /**
+   * Wait for the `FileStream` to be uploaded to the other peers.
+   *
+   * @category Subscription & Loading
+   */
+  waitForSync(options?: { timeout?: number }) {
+    return this._raw.core.waitForSync(options);
   }
 }

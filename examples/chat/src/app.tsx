@@ -18,7 +18,7 @@ export function App() {
     router.navigate("/#/chat/" + chat.id);
 
     // for https://jazz.tools marketing site demo only
-    onChatLoad(chat, me);
+    onChatLoad(chat);
   };
 
   return (

@@ -9,7 +9,13 @@ test.describe("FileStream - Sync", () => {
 
     await page.getByTestId("sync-duration").waitFor();
 
-    await expect(page.getByTestId("result")).toHaveText("Sync Completed: true");
+    await expect(page.getByTestId("synced-with-server")).toHaveText(
+      "Synced with the server: true",
+    );
+
+    await expect(page.getByTestId("result")).toHaveText(
+      "Two way sync completed: true",
+    );
   });
 
   test("should handle reconnections", async ({ page, browser }) => {
@@ -17,6 +23,10 @@ test.describe("FileStream - Sync", () => {
     await page.goto("/file-stream?fileSize=" + 1e6); // 1MB file
 
     await page.getByRole("button", { name: "Upload Test File" }).click();
+
+    await expect(page.getByTestId("synced-with-server")).toHaveText(
+      "Synced with the server: false",
+    );
 
     // Wait for the coMapDonwloaded signal to ensure that the iframe is loaded
     await page.getByTestId("co-map-downloaded").waitFor();
@@ -31,6 +41,12 @@ test.describe("FileStream - Sync", () => {
     // Wait for the sync to complete
     await page.getByTestId("sync-duration").waitFor();
 
-    await expect(page.getByTestId("result")).toHaveText("Sync Completed: true");
+    await expect(page.getByTestId("synced-with-server")).toHaveText(
+      "Synced with the server: true",
+    );
+
+    await expect(page.getByTestId("result")).toHaveText(
+      "Two way sync completed: true",
+    );
   });
 });

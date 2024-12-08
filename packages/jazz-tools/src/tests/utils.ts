@@ -1,5 +1,6 @@
 import { isControlledAccount } from "../coValues/account";
 
+import { CoID, LocalNode, RawCoValue } from "cojson";
 import { connectedPeers } from "cojson/src/streamUtils.js";
 import {
   Account,
@@ -39,6 +40,40 @@ export async function setupAccount() {
   return { me, meOnSecondPeer };
 }
 
+export async function setupTwoNodes() {
+  const [serverAsPeer, clientAsPeer] = connectedPeers(
+    "clientToServer",
+    "serverToClient",
+    {
+      peer1role: "server",
+      peer2role: "client",
+    },
+  );
+
+  const client = await LocalNode.withNewlyCreatedAccount({
+    peersToLoadFrom: [serverAsPeer],
+    crypto: Crypto,
+    creationProps: { name: "Client" },
+  });
+
+  const server = await LocalNode.withNewlyCreatedAccount({
+    peersToLoadFrom: [clientAsPeer],
+    crypto: Crypto,
+    creationProps: { name: "Server" },
+  });
+
+  return {
+    clientNode: client.node,
+    serverNode: server.node,
+    clientAccount: Account.fromRaw(
+      await loadCoValueOrFail(client.node, client.accountID),
+    ),
+    serverAccount: Account.fromRaw(
+      await loadCoValueOrFail(server.node, server.accountID),
+    ),
+  };
+}
+
 export function waitFor(callback: () => boolean | void) {
   return new Promise<void>((resolve, reject) => {
     const checkPassed = () => {
@@ -65,4 +100,15 @@ export function waitFor(callback: () => boolean | void) {
       }
     }, 100);
   });
+}
+
+export async function loadCoValueOrFail<V extends RawCoValue>(
+  node: LocalNode,
+  id: CoID<V>,
+): Promise<V> {
+  const value = await node.load(id);
+  if (value === "unavailable") {
+    throw new Error("CoValue not found");
+  }
+  return value;
 }

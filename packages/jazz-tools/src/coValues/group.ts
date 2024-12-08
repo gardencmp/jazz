@@ -219,4 +219,13 @@ export class Group extends CoValueBase implements CoValue {
   ): () => void {
     return subscribeToExistingCoValue(this, depth, listener);
   }
+
+  /**
+   * Wait for the `Group` to be uploaded to the other peers.
+   *
+   * @category Subscription & Loading
+   */
+  waitForSync(options?: { timeout?: number }) {
+    return this._raw.core.waitForSync(options);
+  }
 }
