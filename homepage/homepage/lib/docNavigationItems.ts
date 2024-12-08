@@ -15,7 +15,7 @@ export const docNavigationItems = [
         done: {
           react: 100,
           "react-native": 0,
-          vue: 0,
+          vue: 100,
           svelte: 0,
         },
       },
