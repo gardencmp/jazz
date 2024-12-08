@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CoValue - Web Client</title>
+        <style>
+            h1 {
+                margin: 0px;
+            }
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 5px;
+            }
+            select,
+            button {
+                margin: 10px 0;
+                padding: 5px;
+            }
+            .container {
+                display: flex;
+                align-items: center;
+            }
+            .fixed-width-span {
+                display: inline-block;
+                width: 100px;
+                background-color: #e0e0e0;
+                text-align: right;
+            }
+            #status {
+                margin-top: 20px;
+                font-weight: normal;
+            }
+            #messageLog {
+                height: 300px;
+                overflow-y: scroll;
+                border: 1px solid #ccc;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            #fileInput {
+                border: 2px solid #f20909;
+            }
+            /* pre { white-space: pre-wrap; } */
+        </style>
+    </head>
+    <body>
+        <h1>CoValue - Web Client</h1>
+
+        <div>
+            Please select a CoValue:
+            <select id="coValueSelect">
+                <option value="">Loading CoValue UUIDs...</option>
+            </select>
+        </div>
+        <div>
+            <span class="fixed-width-span">Text:</span>
+            <button id="loadCoValueText" onclick="loadCoValue(false)">
+                1. Load CoValue (Text)
+            </button>
+            <button id="createCoValueText" onclick="createCoValue(false)">
+                2. Create CoValue (Text)
+            </button>
+            <button id="mutateCoValueText" onclick="mutateCoValue(false)">
+                3. Mutate CoValue (Text)
+            </button>
+        </div>
+        <div class="container">
+            <span class="fixed-width-span">Binary:</span>
+            <div>
+                <button id="loadCoValueBinary" onclick="loadCoValue(true)">
+                    1. Load CoValue (Binary)
+                </button>
+                <button id="createCoValueBinary" onclick="createCoValue(true)">
+                    2. Create CoValue (Binary)
+                </button>
+                <button id="mutateCoValueBinary" onclick="mutateCoValue(true)">
+                    3. Mutate CoValue (Binary)
+                </button>
+                <input id="fileInput" type="file" />
+            </div>
+        </div>
+        <div id="messageLog"></div>
+        <div id="status"></div>
+        <button id="disconnectButton">Disconnect from Server</button>
+
+        <script>
+            const SERVER = "localhost:3000";
+            const SERVER_WSS = `wss://${SERVER}`;
+            const SERVER_WEB = `https://${SERVER}`;
+            const SERVER_API = `${SERVER_WEB}/covalue`;
+            const messageLog = document.getElementById("messageLog");
+            const coValueSelect = document.getElementById("coValueSelect");
+            const statusDiv = document.getElementById("status");
+            const disconnectButton =
+                document.getElementById("disconnectButton");
+            const useWebSocket = true;
+            let binaryFlag = false;
+            let isEnabled = true;
+            let currentCoValue = null;
+            let source = null;
+
+            const RECONNECT_INTERVAL = 5000; // 5 seconds
+            let socket;
+            let isConnected = false;
+            let reconnectTimeout;
+
+            // websocket file streaming vars
+            let receivedSize = 0;
+            let totalSize = 0;
+            let fileName = "";
+            let fileBlobs = [];
+
+            function sendWhenReady(data) {
+                const ws = getWebSocket();
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify(data));
+                } else {
+                    ws.addEventListener("open", function onOpen() {
+                        ws.send(JSON.stringify(data));
+                        ws.removeEventListener("open", onOpen);
+                    });
+                }
+            }
+
+            function getWebSocket() {
+                if (!socket) {
+                    socket = new WebSocket(SERVER_WSS);
+                    socket.onopen = (event) => {
+                        log(
+                            `Connected to WebSocket server at: ${new Date().toISOString()}`,
+                        );
+                        log(`${JSON.stringify(event)}`);
+                        isConnected = true;
+                        clearTimeout(reconnectTimeout);
+                    };
+
+                    socket.onclose = (event) => {
+                        log(
+                            `Disconnected from WebSocket server at: ${new Date().toISOString()}`,
+                        );
+                        isConnected = false;
+                        reconnect();
+                    };
+
+                    socket.onerror = (event) => {
+                        log(`WebSocket error: ${JSON.stringify(event)}`);
+                        isConnected = false;
+                    };
+
+                    socket.onmessage = (event) => {
+                        if (typeof event.data !== "string") {
+                            fileBlobs.push(event.data);
+                            receivedSize += event.data.size;
+                            log(
+                                `WebSocket chunk received: ${receivedSize} of ${totalSize} for ${fileName}.`,
+                            );
+                            return;
+                        }
+
+                        try {
+                            const response = JSON.parse(event.data);
+                            if (response.code <= 206) {
+                                switch (response.action) {
+                                    case "LIST":
+                                        handleCoValueList(response.payload);
+                                        break;
+                                    case "GET":
+                                        log(
+                                            `Websocket chunk streaming metadata: ${JSON.stringify(
+                                                response,
+                                            )} ...`,
+                                        );
+                                        loadCoValueViaWS(response);
+                                        break;
+                                    case "POST":
+                                        createCoValueViaWS(response);
+                                        break;
+                                    case "PATCH":
+                                        mutateCoValueViaWS(response.payload);
+                                        break;
+                                    case "SUBSCRIBE":
+                                        log(
+                                            `Websocket subscription started: ${JSON.stringify(
+                                                response,
+                                            )}`,
+                                        );
+                                        break;
+                                    case "MUTATION":
+                                        handleMutation(
+                                            getEventType(),
+                                            response.payload,
+                                        );
+                                        break;
+                                    default:
+                                        log(
+                                            `Websocket method unknown: ${response.action}`,
+                                        );
+                                }
+                            } else {
+                                log(
+                                    `Websocket request failed: ${JSON.stringify(
+                                        response,
+                                    )}`,
+                                );
+                            }
+                        } catch (error) {
+                            log(`Websocket processing error: ${error.message}`);
+                        }
+                    };
+                }
+                return socket;
+            }
+
+            function handleCoValueList(uuids) {
+                uuids.forEach((uuid) => {
+                    const option = document.createElement("option");
+                    option.value = uuid;
+                    option.textContent = uuid;
+                    coValueSelect.appendChild(option);
+                });
+
+                log("CoValue UUIDs loaded successfully.");
+            }
+
+            function loadCoValueViaWS(response) {
+                if (response.code === 200) {
+                    // 200 - OK: here signifies a successful response for text CoValue
+                    currentCoValue = response.payload;
+                    log(`Loaded (JSON) data for: ${currentCoValue.uuid}.`);
+                    logCoValue(currentCoValue);
+                } else if (response.code === 202) {
+                    // 202 - Accepted: here signifies the start of a binary download
+                    fileName = response.payload.fileName;
+                    totalSize = response.payload.fileSize;
+                } else if (response.code === 204) {
+                    // 204 - No Content: here signifies the end of a binary download
+                    handleBinaryCoValue(
+                        currentCoValue.uuid,
+                        receivedSize,
+                        totalSize,
+                        fileBlobs,
+                    );
+                    // reset for subsequent downloads
+                    fileName = "";
+                    fileBlobs = [];
+                    receivedSize = 0;
+                    totalSize = 0;
+                }
+            }
+
+            function createCoValueViaWS(response) {
+                if (response.code === 200) {
+                    // 200 - OK: here means an acknowledgement of (an in progress) binary chunk
+                    log(
+                        `Chunked upload via websocket acknowledged for: ${currentCoValue.uuid}.`,
+                    );
+                } else if (response.code === 201) {
+                    // 201 - Created: here is an acknowledgement of a textual covalue / the final chunk of a binary covalue
+                    appendCoValue(currentCoValue);
+                    logCoValue(currentCoValue);
+                    log(
+                        `Created (${
+                            isBinary() ? "binary" : "JSON"
+                        }) data for: ${currentCoValue.uuid}.`,
+                    );
+                }
+            }
+
+            function mutateCoValueViaWS(payload) {
+                if (isBinary()) {
+                    log(`Mutated (binary) data for: ${currentCoValue.uuid}.`);
+                } else {
+                    log(`Mutated (JSON) data for: ${currentCoValue.uuid}.`);
+                }
+            }
+
+            function disconnect() {
+                if (isWS()) {
+                    if (socket) {
+                        log("Closing the web socket connection.");
+                        socket.close();
+                    }
+                } else {
+                    if (source) {
+                        log("Closing the event stream connection.");
+                        source.close();
+                    }
+                }
+            }
+
+            async function onPageLoad() {
+                console.log(`isBinary flag was set to: ${isBinary()}.`);
+                console.log(`WebSocket support flag was set to: ${isWS()}.`);
+                const uuid = getMutationUUID();
+
+                if (uuid) {
+                    // Subscribe to Server-Sent Events (SSE) of the CoValue specified by its uuid.
+                    connect(uuid);
+                    appendCoValue({ uuid: uuid });
+                    // Allow the connection to be closed.
+                    disconnectButton.addEventListener("click", () => {
+                        isEnabled = !isEnabled;
+
+                        if (isEnabled) {
+                            connect(uuid);
+                            disconnectButton.innerText =
+                                "Disconnect from Server";
+                        } else {
+                            disconnect();
+                            disconnectButton.innerText = "Reconnect to Server";
+                        }
+                    });
+                } else {
+                    // Load all CoValue uuids.
+                    try {
+                        if (isWS()) {
+                            sendWhenReady({
+                                action: "LIST",
+                                binary: isBinary(),
+                            });
+                        } else {
+                            const response = await fetch(SERVER_API); // Appending '?all=1' will fetch all.
+                            const uuids = await response.json();
+                            handleCoValueList(uuids);
+                        }
+                    } catch (error) {
+                        log(
+                            `Error trying to load CoValue UUIDs: ${error.message}`,
+                        );
+                    }
+                    disconnectButton.disabled = true;
+                }
+            }
+
+            function getMutationUUID() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get("uuid");
+            }
+
+            function getMutationUserAgent() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get("ua");
+            }
+
+            function isBinary() {
+                if (
+                    !binaryFlag &&
+                    new URLSearchParams(window.location.search).get(
+                        "binary",
+                    ) === "true"
+                ) {
+                    binaryFlag = true;
+                }
+                return binaryFlag;
+            }
+
+            function isWS() {
+                return useWebSocket;
+            }
+
+            function getEndpoint(uuid, isBinary) {
+                if (uuid) {
+                    return isBinary
+                        ? `${SERVER_API}/${uuid}/binary`
+                        : `${SERVER_API}/${uuid}`;
+                } else {
+                    return isBinary ? `${SERVER_API}/binary` : `${SERVER_API}`;
+                }
+            }
+
+            function log(text) {
+                statusDiv.textContent = text;
+                console.log(text);
+            }
+
+            function logCoValue(coValue) {
+                const messageElement = document.createElement("pre");
+                const codeElement = document.createElement("code");
+
+                if (Object.hasOwn(coValue, "file") && coValue.file.bindata) {
+                    const copy = Object.assign(
+                        {},
+                        {
+                            uuid: coValue.uuid,
+                            file: {
+                                name: coValue.file.name,
+                                size: coValue.file.size,
+                                note: coValue.file.note,
+                            },
+                        },
+                    );
+                    codeElement.innerHTML = JSON.stringify(copy, null, 5);
+                } else {
+                    codeElement.innerHTML = JSON.stringify(coValue, null, 5);
+                }
+                messageElement.appendChild(codeElement);
+                messageLog.appendChild(messageElement);
+                messageLog.scrollTop = messageLog.scrollHeight;
+            }
+
+            function appendCoValue(coValue) {
+                if (
+                    ![...coValueSelect.children].some(
+                        (option) => option.value === coValue.uuid,
+                    )
+                ) {
+                    const option = document.createElement("option");
+                    option.value = coValue.uuid;
+                    option.text = coValue.uuid;
+                    coValueSelect.appendChild(option);
+                    coValueSelect.value = option.value;
+                    setCurrentCoValue(coValue);
+                }
+            }
+
+            function setCurrentCoValue(coValue) {
+                currentCoValue = coValue;
+            }
+
+            function connect(uuid) {
+                if (!uuid) {
+                    return;
+                }
+
+                const ua = getMutationUserAgent();
+                currentCoValue = { uuid: uuid };
+
+                if (isWS()) {
+                    sendWhenReady({
+                        action: "SUBSCRIBE",
+                        binary: isBinary(),
+                        payload: { uuid: `${uuid}`, ua: `${ua ?? "0"}` },
+                    });
+                } else {
+                    source = new EventSource(
+                        `${SERVER_API}/${uuid}/subscribe/${ua ?? "0"}`,
+                    );
+                    source.onopen = (event) => {
+                        log(
+                            `Connection to the event stream was opened: ${JSON.stringify(
+                                event,
+                            )}`,
+                        );
+                    };
+
+                    source.onerror = (event) => {
+                        console.error(
+                            "Connection to the event stream raised an error: ",
+                            event,
+                        );
+                    };
+
+                    const eventType = getEventType();
+                    source.addEventListener(eventType, (event) => {
+                        const data = JSON.parse(event.data);
+                        handleMutation(eventType, data);
+                    });
+                }
+            }
+
+            function getEventType() {
+                return isBinary() ? "binary" : "text";
+            }
+
+            function handleMutation(eventType, data) {
+                if (data.field === "file.data") {
+                    currentCoValue.file = { data: data.value };
+                } else {
+                    currentCoValue[data.field] = data.value;
+                }
+                logCoValue(currentCoValue);
+                log(
+                    `Mutation event => CoValue ${currentCoValue.uuid} '${
+                        data.field
+                    }' was updated to '${
+                        eventType === "binary"
+                            ? "** 100KB binary (in base64) **"
+                            : data.value
+                    }'.`,
+                );
+            }
+
+            function reconnect() {
+                if (!isConnected && isEnabled) {
+                    log(
+                        `Attempting to reconnect in ${
+                            RECONNECT_INTERVAL / 1000
+                        } seconds...`,
+                    );
+                    reconnectTimeout = setTimeout(() => {
+                        log("Attempting to reconnect...");
+                        connect();
+                    }, RECONNECT_INTERVAL);
+                }
+            }
+
+            async function createCoValueJSON(url = "", coValue = {}) {
+                if (isWS()) {
+                    sendWhenReady({
+                        action: "POST",
+                        binary: false,
+                        payload: coValue,
+                    });
+                } else {
+                    const response = await fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(coValue),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP error! Status: ${response.status}`,
+                        );
+                    }
+                    appendCoValue(coValue);
+                    logCoValue(coValue);
+                    log(`Created (JSON) data for: ${coValue.uuid}.`);
+                }
+            }
+
+            async function loadCoValueViaHTTP(uuid, isBinary) {
+                const url = getEndpoint(uuid, isBinary);
+                log(`Loading ${uuid} via ${url}...`);
+                if (isBinary) {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.log(
+                            `Binary CoValue download failed: ${JSON.stringify(
+                                errorData,
+                            )}`,
+                        );
+                        throw new Error(
+                            `HTTP Status: ${
+                                response.status
+                            }. Error: ${JSON.stringify(errorData)}.`,
+                        );
+                    }
+
+                    const reader = response.body.getReader();
+                    const contentLength =
+                        +response.headers.get("Content-Length");
+                    let receivedLength = 0;
+                    let chunks = [];
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            break;
+                        }
+                        chunks.push(value);
+                        receivedLength += value.length;
+                        log(
+                            `Received ${receivedLength} of ${contentLength} bytes for: ${uuid}.`,
+                        );
+                    }
+                    handleBinaryCoValue(
+                        uuid,
+                        receivedLength,
+                        contentLength,
+                        chunks,
+                    );
+                } else {
+                    const response = await fetch(url);
+                    currentCoValue = await response.json();
+                    log(`Loaded (JSON) data for: ${uuid}.`);
+                    logCoValue(currentCoValue);
+                }
+            }
+
+            function handleBinaryCoValue(
+                uuid,
+                receivedLength,
+                contentLength,
+                chunks,
+            ) {
+                let binaryData = new Uint8Array(receivedLength);
+                let position = 0;
+                for (let chunk of chunks) {
+                    binaryData.set(chunk, position);
+                    position += chunk.length;
+                }
+
+                if (!currentCoValue) {
+                    currentCoValue = { uuid: uuid };
+                }
+                currentCoValue.file = {
+                    name: `${currentCoValue.uuid}.bin`,
+                    size: contentLength,
+                    note: "** 50MB binary **",
+                    bindata: binaryData,
+                };
+                log(
+                    `Loaded (binary) data for: ${uuid} (${receivedLength} bytes).`,
+                );
+                logCoValue(currentCoValue);
+            }
+
+            async function loadCoValue(isBinary) {
+                binaryFlag = isBinary;
+                const uuid = coValueSelect.value;
+
+                if (!uuid) {
+                    log("Please, select a CoValue first.");
+                    return;
+                }
+                setCurrentCoValue({ uuid: uuid });
+
+                try {
+                    if (isWS()) {
+                        sendWhenReady({
+                            action: "GET",
+                            binary: isBinary,
+                            payload: { uuid: `${uuid}` },
+                        });
+                    } else {
+                        await loadCoValueViaHTTP(uuid, isBinary);
+                    }
+                } catch (error) {
+                    log(`Error loading CoValue: ${error.message}`);
+                }
+            }
+
+            async function createCoValue(isBinary) {
+                binaryFlag = isBinary;
+                const url = getEndpoint(undefined, isBinary);
+                const coValue = { uuid: crypto.randomUUID() };
+                coValue.lastUpdated = new Date();
+                setCurrentCoValue(coValue);
+
+                log(
+                    `Attempting to add new CoValue with UUID: ${coValue.uuid} via ${url}.`,
+                );
+
+                try {
+                    if (isBinary) {
+                        const file =
+                            document.getElementById("fileInput").files[0];
+                        if (!file) {
+                            alert("Please select a binary file for upload.");
+                            return;
+                        }
+
+                        await createCoValueBinary(url, coValue, file);
+                        coValue.file = {
+                            name: file.name,
+                            size: file.size,
+                            note: "** 50MB binary **",
+                        };
+
+                        if (!isWS()) {
+                            console.log(
+                                `Creating (binary) data for ${coValue.uuid} ... file upload complete.`,
+                            );
+                            appendCoValue(coValue);
+                            logCoValue(coValue);
+                            log(`Created (binary) data for: ${coValue.uuid}.`);
+                        }
+                    } else {
+                        if (window.faker) {
+                            coValue.author = faker.person.fullName();
+                            coValue.title = faker.lorem.words({
+                                min: 3,
+                                max: 5,
+                            });
+                            coValue.summary = faker.lorem.sentence();
+                            coValue.preview = faker.lorem.lines({
+                                min: 200,
+                                max: 200,
+                            }); // 200 lines ~= 10KB of text
+                        } else {
+                            coValue.author = generateTextData();
+                            coValue.title = generateTextData();
+                            coValue.summary = generateTextData();
+                            coValue.preview = generateTextData();
+                        }
+
+                        await createCoValueJSON(url, coValue);
+                    }
+                } catch (error) {
+                    log(
+                        `Error creating CoValue (isBinary: ${isBinary}): ${error.message}`,
+                    );
+                }
+            }
+
+            async function base64EncodeChunk(chunk) {
+                try {
+                    const arrayBuffer = await chunk.arrayBuffer();
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    return btoa(String.fromCharCode.apply(null, uint8Array));
+                } catch (error) {
+                    console.error("Error encoding to base64:", error);
+                }
+            }
+
+            async function createCoValueBinary(url = "", coValue = {}, file) {
+                const chunkSize = 100 * 1024; // 100KB chunks
+                const totalChunks = Math.ceil(file.size / chunkSize);
+
+                for (
+                    let chunkIndex = 0;
+                    chunkIndex < totalChunks;
+                    chunkIndex++
+                ) {
+                    const start = chunkIndex * chunkSize;
+                    const end = Math.min(file.size, start + chunkSize);
+                    const chunk = file.slice(start, end);
+                    const base64Chunk = await base64EncodeChunk(chunk);
+                    const payload = {
+                        uuid: coValue.uuid,
+                        filename: file.name,
+                        chunk: chunkIndex,
+                        chunks: totalChunks,
+                        base64: base64Chunk,
+                    };
+
+                    try {
+                        if (isWS()) {
+                            sendWhenReady({
+                                action: "POST",
+                                binary: true,
+                                payload: payload,
+                            });
+                        } else {
+                            const response = await fetch(url, {
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                method: "POST",
+                                body: JSON.stringify(payload),
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(
+                                    `HTTP status: ${response.status}`,
+                                );
+                            } else {
+                                console.log(
+                                    `Chunk ${
+                                        chunkIndex + 1
+                                    }/${totalChunks} uploaded successfully`,
+                                );
+                            }
+                        }
+                    } catch (error) {
+                        console.error(
+                            `Upload failed at chunk: ${
+                                chunkIndex + 1
+                            }/${totalChunks}`,
+                            error,
+                        );
+                        throw error;
+                    }
+                }
+            }
+
+            async function mutateCoValue(isBinary) {
+                binaryFlag = isBinary;
+                const uuid = coValueSelect.value;
+
+                if (!uuid) {
+                    log("Please, select a CoValue first.");
+                    return;
+                }
+
+                const url = getEndpoint(uuid, isBinary);
+                currentCoValue = { uuid: uuid };
+                log(
+                    `Mutating CoValue with UUID: ${currentCoValue.uuid} via ${url}...`,
+                );
+
+                try {
+                    if (isBinary) {
+                        const blob = generateBinaryData(); // ~100KB CoValue mutation
+                        const blobInBase64 = await blobToBase64(blob);
+                        currentCoValue.file = {
+                            data: blobInBase64,
+                            size: blobInBase64.length,
+                            note: "** 100KB binary **",
+                        };
+
+                        if (isWS()) {
+                            sendWhenReady({
+                                action: "PATCH",
+                                binary: isBinary,
+                                payload: {
+                                    uuid: currentCoValue.uuid,
+                                    file: currentCoValue.file,
+                                },
+                            });
+                        } else {
+                            const response = await fetch(url, {
+                                method: "PATCH",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                    file: currentCoValue.file,
+                                }),
+                            });
+                            if (!response.ok) {
+                                throw new Error(
+                                    `HTTP error! status: ${response.status}`,
+                                );
+                            }
+                            log(
+                                `Mutated (binary) data for: ${currentCoValue.uuid}.`,
+                            );
+                        }
+                    } else {
+                        currentCoValue.title = window.faker
+                            ? faker.lorem.words({ min: 4, max: 5 }) // ~50-byte CoValue mutation
+                            : generateTextData();
+
+                        if (isWS()) {
+                            sendWhenReady({
+                                action: "PATCH",
+                                binary: isBinary,
+                                payload: currentCoValue,
+                            });
+                        } else {
+                            const response = await fetch(url, {
+                                method: "PATCH",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                    title: currentCoValue.title,
+                                }),
+                            });
+                            if (!response.ok) {
+                                throw new Error(
+                                    `HTTP error! status: ${response.status}`,
+                                );
+                            }
+                            log(
+                                `Mutated (JSON) data for: ${currentCoValue.uuid}.`,
+                            );
+                        }
+                    }
+                    logCoValue(currentCoValue);
+                } catch (error) {
+                    log(`Error mutating CoValue: ${error.message}`);
+                }
+            }
+
+            function generateTextData() {
+                const chars =
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                let result = "";
+                for (let i = 0; i < 50; i++) {
+                    result += chars.charAt(
+                        Math.floor(Math.random() * chars.length),
+                    );
+                }
+                return result;
+            }
+
+            function generateBinaryData() {
+                const chunkSize = 100 * 1024; // 100 KB
+                const binaryData = new Uint8Array(chunkSize);
+                for (let i = 0; i < chunkSize; i++) {
+                    binaryData[i] = Math.floor(Math.random() * 256);
+                }
+                return new Blob([binaryData], {
+                    type: "application/octet-stream",
+                });
+            }
+
+            function blobToBase64(blob) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+
+                    // Convert the Blob to a base64 encoded string
+                    reader.onloadend = () => {
+                        const base64String = reader.result.split(",")[1]; // remove "data:..." part
+                        resolve(base64String);
+                    };
+
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob); // read blob as data URL, base64 encoded
+                });
+            }
+
+            // Load CoValue UUIDs or subscribe to SSE on page load
+            window.onload = onPageLoad;
+        </script>
+        <script type="module">
+            document.addEventListener("DOMContentLoaded", async () => {
+                if (!getMutationUUID()) {
+                    const { faker } = await import(
+                        `${SERVER_WEB}/faker/index.mjs`
+                    );
+                    window.faker = faker;
+                }
+            });
+        </script>
+    </body>
+</html>
