@@ -126,15 +126,14 @@ export class RawCoMapView<
           keyof Shape & string,
           Shape[keyof Shape & string]
         >;
-        let entry = latest[change.key];
+        const entry = latest[change.key];
         if (!entry) {
-          entry = {
+          latest[change.key] = {
             txID,
             madeAt,
             changeIdx,
             change,
           };
-          latest[change.key] = entry;
         } else if (madeAt >= entry.madeAt) {
           entry.txID = txID;
           entry.madeAt = madeAt;
