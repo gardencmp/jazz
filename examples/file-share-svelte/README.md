@@ -1,14 +1,15 @@
-# Passkey Authentication (Svelte)
+# File share example with Jazz and Svelte
 
-This example app demonstrates how to implement passkey authentication in a Svelte application using Jazz.
+This example app demonstrates how to implement secure file sharing in a Svelte application using Jazz.
 
 ## Features
 
 This example showcases how to:
-- Set up passkey authentication in a Svelte application
-- Handle user registration with passkeys
-- Manage authentication state
-- Implement secure login/logout flows
+- Upload files securely with end-to-end encryption
+- Generate and manage sharing links
+- Handle file downloads with decryption
+- Manage file access permissions
+- Authenticate users using passkeys
 
 ## Getting Started
 
@@ -21,7 +22,7 @@ git clone https://github.com/garden-co/jazz.git
 2. Navigate to the example directory:
 
 ```sh
-cd examples/passkey-svelte
+cd examples/file-share-svelte
 ```
 
 3. Install dependencies:
@@ -38,9 +39,8 @@ pnpm dev
 
 5. Open your browser and visit [http://localhost:5173](http://localhost:5173)
 
-
 ## Learn More
 
 - [Jazz Documentation](https://jazz.tools/docs/svelte)
-- [WebAuthn API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API)
 - [Svelte Documentation](https://svelte.dev)
+- [WebAuthn API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Authentication_API)
