@@ -10,6 +10,7 @@
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
     "test": "playwright test",
+    "sync": "jazz-run sync",
     "test:ui": "playwright test --ui"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "@vitejs/plugin-react-swc": "^3.3.2",
     "jstat": "^1.9.6",
     "typescript": "^5.3.3",
+    "jazz-run": "workspace:*",
     "vite": "^5.0.10"
   }
 }

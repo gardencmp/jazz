@@ -49,5 +49,10 @@ export default defineConfig({
       url: "http://localhost:5173/",
       reuseExistingServer: !isCI,
     },
+    {
+      command: "pnpm sync --in-memory",
+      url: "http://localhost:4200/health",
+      reuseExistingServer: !isCI,
+    },
   ],
 });

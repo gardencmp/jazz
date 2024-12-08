@@ -13,6 +13,10 @@ if (url.searchParams.has("local")) {
   peer = `ws://localhost:4200/?key=${key}`;
 }
 
+if (import.meta.env.VITE_WS_PEER) {
+  peer = import.meta.env.VITE_WS_PEER;
+}
+
 const Jazz = createJazzReactApp();
 
 export const { useAccount, useCoState, useAcceptInvite } = Jazz;
