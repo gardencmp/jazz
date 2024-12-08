@@ -11,11 +11,18 @@ import {
     addCoValue,
     updateCoValue,
     updateCoValueBinary,
+    parseUUIDAndUAFromCookie,
+    formatClientNumber,
     PORT,
 } from "../util";
 import logger from "../util/logger";
 import { tlsCertPath } from "../util/tls";
 import { FileStreamManager } from "../node-js/filestream-manager";
+
+interface UserData {
+    uuid?: string;
+    ua?: string;
+}
 
 // Serve up the client folder on page load
 const rootDir = path.resolve(__dirname, "../..");
@@ -30,6 +37,20 @@ const app = uWS.SSLApp({
     key_file_name: tlsCertPath.tlsKeyName,
     cert_file_name: tlsCertPath.tlsCertName
 }).any("/*", (res, req) => {
+
+    const query = req.getQuery();
+    const params = query?.split('&') || [];
+
+    if (params.length === 3 && params[0].startsWith("uuid") && params[2].startsWith("ua")) {
+        const uuid = params[0].substring("uuid".length + 1);
+        const ua = params[2].substring("ua".length + 1);
+        res.writeHeader('Set-Cookie', `uuid=${uuid}; Path=/; HttpOnly`)
+            .writeHeader('Set-Cookie', `ua=${ua}; Path=/; HttpOnly`);
+    } else {
+        // Remove the cookies, if no pertinent params are present
+        res.writeHeader('Set-Cookie', `uuid=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly; Secure`)
+            .writeHeader('Set-Cookie', `ua=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly; Secure`);
+    }
 
     const url = req.getUrl();
     const prefix = "/faker";
@@ -71,11 +92,32 @@ const app = uWS.SSLApp({
     idleTimeout: 10,
     /* maxBackpressure: 1024, */
 
-    open: (ws: uWS.WebSocket<{}>) => {
-        logger.debug("[Event-Open] New WebSocket connection");
+    // Upgrade handler - called prior to establishing a WebSocket connection
+    upgrade: (res, req, context) => {
+        const userData: UserData = parseUUIDAndUAFromCookie(req);
 
-        // FIXME: broadcasts will only work if registered here
-        ws.subscribe("9cab6ad3-eefd-4a19-95a3-f0f0d86e1e32");
+        // Complete the WebSocket upgrade and pass along the UUID
+        res.upgrade(
+            userData,
+            req.getHeader('sec-websocket-key'),
+            req.getHeader('sec-websocket-protocol'),
+            req.getHeader('sec-websocket-extensions'),
+            context
+        );
+    },
+
+    open: (ws: uWS.WebSocket<{}>) => {
+        const userData: UserData = ws.getUserData();
+        const clientNum = formatClientNumber(userData);
+        logger.debug(`[Event-Open] [Client-#${clientNum}] New WebSocket connection`);
+
+        if (userData && userData?.uuid && userData?.ua) {
+            ws.subscribe(userData?.uuid);
+            logger.debug(`[Event-Open] [Client-#${clientNum}] Subscribing to mutation events on: ${userData?.uuid}`);
+        } else {
+            ws.subscribe("b108a08f-1663-4755-b254-5bd07e5c5074");
+            logger.debug(`[Event-Open] [Client-#${clientNum}] Subscribing to mutation events on HARDCODED: b108a08f-1663-4755-b254-5bd07e5c5074`);
+        }
     },
 
     message: (ws: uWS.WebSocket<{}>, message: ArrayBuffer, isBinary: boolean) => {
@@ -173,16 +215,14 @@ const app = uWS.SSLApp({
                 case "SUBSCRIBE":
                     res.action("SUBSCRIBE");
                     const subscriptionUuid = payload.uuid;
-                    const ua =
-                        payload.ua && payload.ua.length == 2
-                            ? payload.ua
-                            : `0${payload.ua}`;
+                    const ua = formatClientNumber(payload);
                     logger.debug(
-                        `[Client-#${ua}] Opening a subscription on: ${subscriptionUuid}.`,
+                        `[Client-#${ua}] Subscribed to mutation events on: ${subscriptionUuid}.`,
                     );
 
                     // Subscribe to events for this UUID
-                    ws.subscribe(subscriptionUuid);
+                    // ws.subscribe(subscriptionUuid);
+                    // ws.subscribe() is a no-op here (i.e. inside `message:` handler). Only works in `open:` handler
 
                     res.status(200).json({ m: "OK" });
                     break;
@@ -206,8 +246,9 @@ const app = uWS.SSLApp({
     },
 
     close: (ws: uWS.WebSocket<{}>, code: number, message: ArrayBuffer) => {
-        logger.debug('[Event-Close] WebSocket closed');
-        // ws.getUserData();
+        const userData: UserData = ws.getUserData();
+        const clientNum = formatClientNumber(userData);
+        logger.debug(`[Event-Close] [Client-#${clientNum}] WebSocket closed`);
     },
 
     dropped: (ws: uWS.WebSocket<{}>, message: ArrayBuffer, isBinary: boolean) => {

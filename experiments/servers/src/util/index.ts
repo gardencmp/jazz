@@ -144,6 +144,38 @@ export function updateCoValueBinary(
     _updateCoValue(covalue, event);
 }
 
+export function formatClientNumber(object:any, width: number = 2) {
+    if (!object) {
+        return "00";
+    }
+
+    if (object && object.ua) {
+        if (object.ua.length == width) {
+            return object.ua;
+        } else if (object.ua.length < width) {
+            return `0${object.ua}`;
+        }
+    } else {
+        return "00";
+    }
+}
+
+export function parseUUIDAndUAFromCookie(req: any) {
+    const cookieHeader = req.getHeader('cookie');
+
+    if (!cookieHeader) {
+        return { uuid: null, ua: null };
+    }
+
+    const uuidMatch = cookieHeader.match(/uuid=([^;]+)/);
+    const uaMatch = cookieHeader.match(/ua=([^;]+)/);
+
+    return {
+        uuid: uuidMatch ? uuidMatch[1] : null,
+        ua: uaMatch ? uaMatch[1] : null
+    };
+}
+
 // BufferLike partial copy from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/ac8b76bf4ccc707b38e8b2ec8b0a3cb42bd83bf5/types/ws/index.d.ts#L20
 type BufferLike =
     | string

@@ -5,7 +5,7 @@ export const SERVER_URL = 'https://localhost:3000';
 const NUM_BROWSERS: number = 10;
 
 export function getRandomCoValueIndex(): number {
-    return 5;
+    return 1;
     // return Math.floor(Math.random() * 5) + 1;
 }
 

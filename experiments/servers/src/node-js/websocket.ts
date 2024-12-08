@@ -9,6 +9,7 @@ import {
     addCoValue,
     updateCoValue,
     updateCoValueBinary,
+    formatClientNumber,
     PORT,
 } from "../util";
 import logger from "../util/logger";
@@ -178,12 +179,9 @@ wss.on("connection", (ws: WebSocket) => {
                 case "SUBSCRIBE":
                     res.action("SUBSCRIBE");
                     const subscriptionUuid = payload.uuid;
-                    const ua =
-                        payload.ua && payload.ua.length == 2
-                            ? payload.ua
-                            : `0${payload.ua}`;
+                    const ua = formatClientNumber(payload);
                     logger.debug(
-                        `[Client-#${ua}] Opening a subscription on: ${subscriptionUuid}.`,
+                        `[Client-#${ua}] Subscribed to mutation events on: ${subscriptionUuid}.`,
                     );
 
                     // Clean up on close
