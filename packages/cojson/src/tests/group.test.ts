@@ -7,10 +7,8 @@ import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { LocalNode } from "../localNode.js";
 import {
   createThreeConnectedNodes,
-  createTwoConnectedNodes,
   loadCoValueOrFail,
   randomAnonymousAccountAndSessionID,
-  waitFor,
 } from "./testUtils.js";
 
 const Crypto = await WasmCrypto.create();
