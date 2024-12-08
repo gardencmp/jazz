@@ -27,5 +27,21 @@
     "rules": {
       "recommended": true
     }
-  }
+  },
+  "overrides": [
+    {
+      "include": ["packages/cojson-storage-indexeddb/**"],
+      "linter": {
+        "enabled": true,
+        "rules": {
+          "correctness": {
+            "useImportExtensions": "error"
+          },
+          "suspicious": {
+            "noExplicitAny": "info"
+          }
+        }
+      }
+    }
+  ]
 }

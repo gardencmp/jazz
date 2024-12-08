@@ -1,6 +1,6 @@
-import { CojsonInternalTypes, SessionID, Stringified } from "cojson";
-import { describe, expect, it, vi } from "vitest";
-import { getDependedOnCoValues } from "../syncUtils";
+import type { CojsonInternalTypes, SessionID, Stringified } from "cojson";
+import { describe, expect, it } from "vitest";
+import { getDependedOnCoValues } from "../syncUtils.js";
 
 function getMockedSessionID(accountId?: `co_z${string}`) {
   return `${accountId ?? getMockedCoValueId()}_session_z${Math.random().toString(36).substring(2, 15)}`;
