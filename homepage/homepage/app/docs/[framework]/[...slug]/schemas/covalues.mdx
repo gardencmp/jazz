@@ -10,7 +10,7 @@ As their name suggests, CoValues are inherently collaborative, meaning **multipl
 
 - CoValues keep their full edit histories, from which they derive their "current state".
 - The fact that this happens in an eventually-consistent way makes them [CRDTs](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type).
-- Having the full history also means that you often don't need explicit timestamps and author info - you get this for free as part of a CoValue's [edit metadata](/docs/coming-soon).
+- Having the full history also means that you often don't need explicit timestamps and author info - you get this for free as part of a CoValue's [edit metadata](/docs/using-covalues/metadata).
 
 CoValues model JSON with CoMaps and CoLists, but also offer CoFeeds for simple per-user value feeds, and let you represent binary data with FileStreams.
 
@@ -250,7 +250,7 @@ To represent complex structured data with Jazz, you form trees or graphs of CoVa
 
 Internally, this is represented by storing the IDs of the referenced CoValues in the corresponding fields, but Jazz abstracts this away, making it look like nested CoValues you can get or assign/insert.
 
-The important caveat here is that **a referenced CoValue might or might not be loaded yet,** but we'll see what exactly that means in [Subscribing and Deep Loading](/docs/coming-soon).
+The important caveat here is that **a referenced CoValue might or might not be loaded yet,** but we'll see what exactly that means in [Subscribing and Deep Loading](/docs/using-covalues/subscription-and-loading).
 
 In Schemas, you declare Refs using the `co.ref<T>()` declarer:
 

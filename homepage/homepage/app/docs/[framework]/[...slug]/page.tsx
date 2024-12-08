@@ -1,33 +1,21 @@
+import DocsLayout from "@/app/docs/[framework]/(others)/layout";
 import { TableOfContents } from "@/components/docs/TableOfContents";
+import ComingSoonPage from "@/components/docs/coming-soon.mdx";
 import { docNavigationItems } from "@/lib/docNavigationItems";
 import { Framework, frameworks, isValidFramework } from "@/lib/framework";
 import type { Toc } from "@stefanprobst/rehype-extract-toc";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
-
-function Error({ slugPath }: { slugPath: string }) {
-  return (
-    <Prose className="overflow-x-hidden lg:flex-1">
-      <h3>Error loading page: {slugPath}</h3>
-    </Prose>
-  );
-}
 
 export default async function Page({
   params: { slug, framework },
 }: { params: { slug: string[]; framework: string } }) {
   const slugPath = slug.join("/");
 
-  // if the route ends in a framework name, return 404
-  // because we want the framework name to be in /docs/[framework]/[...slug]
-  if (isValidFramework(slug[slug.length - 1]))
-    return <Error slugPath={slugPath} />;
-
   try {
     let mdxSource;
     try {
       mdxSource = await import(`./${slugPath}.mdx`);
     } catch (error) {
-      console.log("Error loading MDX file:" + slugPath, error);
       mdxSource = await import(`./${slugPath}/${framework}.mdx`);
     }
 
@@ -42,8 +30,11 @@ export default async function Page({
       </>
     );
   } catch (error) {
-    console.error("Error loading MDX file:" + slugPath, error);
-    return <Error slugPath={slugPath} />;
+    return (
+      <DocsLayout>
+        <ComingSoonPage />
+      </DocsLayout>
+    );
   }
 }
 
@@ -57,7 +48,7 @@ export async function generateStaticParams() {
   for (const framework of frameworks) {
     for (const heading of docNavigationItems) {
       for (const item of heading?.items) {
-        if (item.href && item.href.startsWith("/docs") && item.done) {
+        if (item.href && item.href.startsWith("/docs")) {
           const slug = item.href
             .replace("/docs", "")
             .split("/")
