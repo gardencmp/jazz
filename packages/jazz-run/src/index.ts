@@ -67,7 +67,9 @@ export const startSyncServerCommand = Command.make(
     return Effect.gen(function* () {
       yield* Effect.promise(() => startSyncServer({ port, inMemory, db }));
 
-      Console.log(`COJSON sync server listening on ws://127.0.0.1:${port}`);
+      yield* Console.log(
+        `COJSON sync server listening on ws://127.0.0.1:${port}`,
+      );
 
       // Keep the server up
       yield* Effect.never;
