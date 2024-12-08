@@ -208,6 +208,9 @@ test.describe("Sharing", () => {
     await otherAdminPage.goto(adminInviteLink!);
     await readerPage.goto(readerInviteLink!);
 
+    await otherAdminPage.reload();
+    await readerPage.reload();
+
     await expect(otherAdminPage.getByTestId("values")).toContainText(
       "CoValue root",
       {
@@ -326,6 +329,9 @@ test.describe("Sharing", () => {
 
     await otherAdminPage.goto(adminInviteLink!);
     await readerPage.goto(readerInviteLink!);
+
+    await otherAdminPage.reload();
+    await readerPage.reload();
 
     await expect(otherAdminPage.getByTestId("values")).toContainText(
       "CoValue root",
