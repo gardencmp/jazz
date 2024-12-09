@@ -33,9 +33,6 @@ export function ChatScreen(props: { chatID: ID<Chat> }) {
 
     if (file) {
       createImage(file, { owner: me.profile._owner }).then((image) => {
-        console.log(image);
-        if (!chat) return;
-
         chat.push(
           Message.create(
             { text: file.name, image: image },

@@ -133,7 +133,7 @@ export function ChatDemoSection() {
         title="See it for yourself"
         slogan={
           <>
-            A chat app in 174 lines of client-side code.{" "}
+            A chat app with image upload in ~300 lines of client-side code.{" "}
             <Link href="https://github.com/garden-co/jazz/tree/main/examples/chat">
               View code
             </Link>
