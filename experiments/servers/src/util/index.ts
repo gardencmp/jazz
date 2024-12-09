@@ -56,6 +56,15 @@ export const covalues: Record<string, CoValue> = _covalues.reduce(
     {} as Record<string, CoValue>,
 );
 
+export const firstCoValue = (() => {
+    const keys = Object.keys(covalues);
+    const index = 0;
+    return {
+        uuid: keys[index],
+        index: index + 1
+    };
+})();
+
 export const events = new Map<string, MutationEvent>();
 
 export function addCoValue(

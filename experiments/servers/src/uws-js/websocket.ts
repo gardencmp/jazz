@@ -7,6 +7,7 @@ import {
     uWebSocketResponse,
     MutationEvent,
     covalues,
+    firstCoValue,
     events,
     addCoValue,
     updateCoValue,
@@ -115,8 +116,8 @@ const app = uWS.SSLApp({
             ws.subscribe(userData?.uuid);
             logger.debug(`[Event-Open] [Client-#${clientNum}] Subscribing to mutation events on: ${userData?.uuid}`);
         } else {
-            ws.subscribe("b108a08f-1663-4755-b254-5bd07e5c5074");
-            logger.debug(`[Event-Open] [Client-#${clientNum}] Subscribing to mutation events on HARDCODED: b108a08f-1663-4755-b254-5bd07e5c5074`);
+            ws.subscribe(firstCoValue.uuid);
+            logger.debug(`[Event-Open] [Client-#${clientNum}] Subscribing to mutation events on (1st CoValue): ${firstCoValue.uuid}`);
         }
     },
 
