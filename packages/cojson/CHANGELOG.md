@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.38
+
+### Patch Changes
+
+- b00ee91: Apply time travel when checking the roles on a parent group
+
 ## 0.8.37
 
 ### Patch Changes

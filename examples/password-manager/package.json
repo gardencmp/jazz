@@ -1,7 +1,7 @@
 {
   "name": "jazz-password-manager",
   "private": true,
-  "version": "0.0.34",
+  "version": "0.0.35",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,8 +12,8 @@
     "clean-install": "rm -rf node_modules pnpm-lock.yaml && pnpm install"
   },
   "dependencies": {
-    "jazz-react": "workspace:0.8.37",
-    "jazz-tools": "workspace:0.8.37",
+    "jazz-react": "workspace:0.8.38",
+    "jazz-tools": "workspace:0.8.38",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.41.5",
