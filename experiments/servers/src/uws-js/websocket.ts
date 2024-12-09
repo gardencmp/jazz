@@ -44,12 +44,12 @@ const app = uWS.SSLApp({
     if (params.length === 3 && params[0].startsWith("uuid") && params[2].startsWith("ua")) {
         const uuid = params[0].substring("uuid".length + 1);
         const ua = params[2].substring("ua".length + 1);
-        res.writeHeader('Set-Cookie', `uuid=${uuid}; Path=/; HttpOnly`)
-            .writeHeader('Set-Cookie', `ua=${ua}; Path=/; HttpOnly`);
+        res.writeHeader('Set-Cookie', `uuid=${uuid}; Path=/; HttpOnly; Secure; SameSite=Strict`)
+            .writeHeader('Set-Cookie', `ua=${ua}; Path=/; HttpOnly; Secure; SameSite=Strict`);
     } else {
         // Remove the cookies, if no pertinent params are present
-        res.writeHeader('Set-Cookie', `uuid=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly; Secure`)
-            .writeHeader('Set-Cookie', `ua=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly; Secure`);
+        res.writeHeader('Set-Cookie', `uuid=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly; Secure; SameSite=Strict`)
+            .writeHeader('Set-Cookie', `ua=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly; Secure; SameSite=Strict`);
     }
 
     const url = req.getUrl();
@@ -205,7 +205,6 @@ const app = uWS.SSLApp({
                         logger.debug(
                             `[Broadcast] Mutation event of type: '${type}' was found for: ${uuid}.`,
                         );
-                        // res.broadcast(event);
                         res.status(200).action("MUTATION").broadcast(event);
                     } else {
                         res.status(404).json({ m: "CoValue not found" });
