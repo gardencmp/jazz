@@ -31,16 +31,21 @@ export function ChatScreen(props: { chatID: ID<Chat> }) {
 
     const file = event.currentTarget.files?.[0];
 
-    if (file) {
-      createImage(file, { owner: me.profile._owner }).then((image) => {
-        chat.push(
-          Message.create(
-            { text: file.name, image: image },
-            { owner: chat._owner },
-          ),
-        );
-      });
+    if (!file) return;
+
+    if (file.size > 5000000) {
+      alert("Please upload an image less than 5MB.");
+      return;
     }
+
+    createImage(file, { owner: me.profile._owner }).then((image) => {
+      chat.push(
+        Message.create(
+          { text: file.name, image: image },
+          { owner: chat._owner },
+        ),
+      );
+    });
   };
 
   return (
