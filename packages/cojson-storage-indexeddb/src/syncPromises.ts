@@ -1,4 +1,3 @@
-/* eslint @typescript-eslint/no-explicit-any: 0 */
 const isFunction = (func: any) => typeof func === "function";
 
 const isObject = (supposedObject: any) =>
@@ -10,7 +9,7 @@ const isThenable = (obj: any) => isObject(obj) && isFunction(obj.then);
 
 const identity = (co: any) => co;
 
-export { isObject, isThenable, identity, isFunction };
+export { identity, isFunction, isObject, isThenable };
 
 enum States {
   PENDING = "PENDING",
@@ -86,13 +85,13 @@ export class SyncPromise<T> {
       return null;
     }
 
-    this.handlers.forEach((handler) => {
+    for (const handler of this.handlers) {
       if (this.state === States.REJECTED) {
-        return handler.onFail(this.value);
+        handler.onFail(this.value);
+      } else {
+        handler.onSuccess(this.value);
       }
-
-      return handler.onSuccess(this.value);
-    });
+    }
 
     this.handlers = [];
   };
@@ -103,6 +102,7 @@ export class SyncPromise<T> {
     this.executeHandlers();
   };
 
+  // biome-ignore lint/suspicious/noThenProperty: TODO(JAZZ-561): Review
   public then<U>(onSuccess: HandlerOnSuccess<T, U>, onFail?: HandlerOnFail<U>) {
     return new SyncPromise<U>((resolve, reject) => {
       return this.attachHandler({
@@ -135,7 +135,7 @@ export class SyncPromise<T> {
   // methods
 
   public toString() {
-    return `[object SyncPromise]`;
+    return "[object SyncPromise]";
   }
 
   public finally<U>(cb: Finally<U>) {

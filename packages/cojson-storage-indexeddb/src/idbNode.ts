@@ -1,7 +1,7 @@
 import {
-  IncomingSyncStream,
-  OutgoingSyncQueue,
-  Peer,
+  type IncomingSyncStream,
+  type OutgoingSyncQueue,
+  type Peer,
   cojsonInternals,
 } from "cojson";
 import { SyncManager } from "cojson-storage";
@@ -33,7 +33,7 @@ export class IDBNode {
                 msg,
                 (k, v) =>
                   k === "changes" || k === "encryptedChanges"
-                    ? v.slice(0, 20) + "..."
+                    ? `${v.slice(0, 20)}...`
                     : v,
               )}`,
               { cause: e },
