@@ -154,7 +154,7 @@ function CoValueCoreDiagram({
           ) : (
             <div className="relative">
               <SimplifiedGroup group={group} />
-              <div className="text-xs p-2 absolute -bottom-8">
+              <div className="text-xs py-2 absolute -bottom-8">
                 {fakeCoID(headerForGroup(group))}
               </div>
             </div>
@@ -173,9 +173,9 @@ function CoValueCoreDiagram({
 
 function HeaderContent({ header }: { header: object }) {
   return (
-    <div className="bg-stone-900 h-full px-4 py-3 rounded-lg rounded-l-xl">
-      <div className="flex justify-between text-stone-600 mb-4 ">header</div>
-      <pre className="text-xs">
+    <div className="bg-stone-950 h-full px-4 py-3 rounded-lg">
+      <div className="flex justify-between text-stone-600 mb-2">header</div>
+      <pre className="text-xs leading-6">
         {JSON.stringify(header, null, 2)
           .replace(/\n\s+/g, "\n")
           .replace(/,/g, "")
@@ -194,22 +194,31 @@ function SimplifiedGroup({
   };
 }) {
   return (
-    <div className="bg-stone-900 p-2 rounded-lg rounded-l-xl max-w-[30rem]">
+    <div className="bg-stone-950 py-3 px-4 rounded-lg max-w-[30rem] leading-relaxed">
       {Object.entries(group.roles).map(([user, role]) => (
         <div key={user}>
-          <span className={clsx("font-bold", userColors[user])}>{user}</span>:{" "}
-          {role}
+          <span className={clsx("font-semibold", userColors[user])}>
+            {user}
+          </span>
+          : {role}
         </div>
       ))}
       <div>
         readKey:{" "}
-        <span className="font-bold text-fuchsia-500">{group.currentKey}</span>
+        <span className="font-semibold text-fuchsia-500">
+          {group.currentKey}
+        </span>
       </div>
       {Object.keys(group.roles).map((user) => (
         <div key={user}>
-          <span className="font-bold text-fuchsia-500">{group.currentKey}</span>
+          <span className="font-semibold text-fuchsia-500">
+            {group.currentKey}
+          </span>
           _for_
-          <span className={clsx("font-bold", userColors[user])}>{user}</span>:{" "}
+          <span className={clsx("font-semibold", userColors[user])}>
+            {user}
+          </span>
+          :{" "}
           {
             fakeEncryptedPayload({
               encrKey: group.currentKey + user,
@@ -271,8 +280,13 @@ function sessionsForGroup(group: {
 
 function SessionHeader({ sessionKey }: { sessionKey: string }) {
   return (
-    <div className="bg-stone-900 p-2 rounded rounded-l-lg min-w-[8rem]">
-      <span className={userColors[sessionKey.split("_")[0]]}>
+    <div className="bg-stone-950 py-2 px-3 flex justify-between items-baseline rounded-lg min-w-[8rem]">
+      <span
+        className={clsx([
+          userColors[sessionKey.split("_")[0]],
+          "font-semibold",
+        ])}
+      >
         {sessionKey.split("_")[0]}
       </span>{" "}
       <span className="text-xs">
@@ -298,16 +312,16 @@ function CoValueContent({
   encryptedItems: boolean;
 }) {
   return (
-    <div className="flex gap-3 not-prose relative">
-      <div className="flex-1 ">
+    <div className="flex gap-5 not-prose relative">
+      <div className="flex-1 min-w-[19rem]">
         <HeaderContent header={header} />
-        <div className="text-xs p-2 absolute -bottom-8">
+        <div className="text-xs py-2 absolute -bottom-8">
           h(header) = {fakeCoID(header)} ("CoValue ID")
         </div>
       </div>
-      <div className="flex-[6] flex flex-col gap-3">
+      <div className="flex-[6] flex flex-col gap-5">
         {Object.entries(sessions).map(([key, log]) => (
-          <div key={key} className="flex gap-1">
+          <div key={key} className="flex gap-0.5">
             <SessionHeader sessionKey={key} />
             {log.map((item, idx) => {
               const isLastPerKey =
@@ -321,31 +335,34 @@ function CoValueContent({
                 <div
                   key={JSON.stringify(item)}
                   className={clsx(
-                    "bg-stone-900 rounded min-w-[9.5rem]",
+                    "bg-stone-950 min-w-[9.5rem]",
                     isLastPerKey ? "outline outline-amber-500" : "",
+                    {
+                      "rounded-l-lg ml-1.5": idx === 0,
+                    },
                   )}
                 >
                   {encryptedItems ? (
-                    <pre className="text-sm p-2 border-b border-stone-700 text-fuchsia-500">
+                    <pre className="text-sm leading-6 py-2 px-3 border-b border-stone-800 text-fuchsia-500">
                       {fakeEncryptedPayload(item.payload)}
                     </pre>
                   ) : (
-                    <pre className="text-sm p-2 border-b border-stone-700">
+                    <pre className="text-sm leading-6 py-2 px-3 border-b border-stone-800">
                       {JSON.stringify(item.payload, null, 2)
                         .replace(/\n\s+/g, "\n")
                         .replace(/,/g, "")
                         .replace(/[{}]\n?/g, "")}
                     </pre>
                   )}
-                  <div className="flex justify-between">
-                    <pre className="text-xs p-2 text-stone-600">idx={idx}</pre>
-                    <pre className="text-xs p-2 font-bold">t={item.t}</pre>
+                  <div className="flex py-2 px-3 gap-2 justify-between">
+                    <pre className="text-xs text-stone-600">idx={idx}</pre>
+                    <pre className="text-xs font-semibold">t={item.t}</pre>
                   </div>
                 </div>
               );
             })}
             {showHashAndSignature && (
-              <div className="p-2 rounded min-w-[9.5rem]">
+              <div className="p-3 -mt-px rounded min-w-[9.5rem]">
                 <pre className="text-xs">→ {fakeHash(log)}</pre>
                 <pre
                   className={clsx(
