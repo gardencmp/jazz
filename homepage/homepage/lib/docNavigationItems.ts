@@ -57,7 +57,7 @@ export const docNavigationItems = [
       },
       {
         name: "Accounts & migrations",
-        href: "/docs/schemas/accounts",
+        href: "/docs/schemas/accounts-and-migrations",
         done: 0,
       },
     ],
