@@ -15,7 +15,7 @@ export default function Page() {
     ],
     bob_session_1: [
       {
-        payload: { key: "color", value: "blue" },
+        payload: { key: "color", value: "amber" },
         t: 5,
       },
       {
@@ -336,7 +336,7 @@ function CoValueContent({
                   key={JSON.stringify(item)}
                   className={clsx(
                     "bg-stone-900 min-w-[9.5rem]",
-                    isLastPerKey ? "outline outline-amber-500" : "",
+                    isLastPerKey ? "outline outline-blue-500" : "",
                     {
                       "rounded-l-lg ml-1.5": idx === 0,
                     },
@@ -384,7 +384,7 @@ function CoValueContent({
 
 const userColors: { [user: string]: string } = {
   alice: "text-emerald-500",
-  bob: "text-blue-500",
+  bob: "text-amber-500",
 };
 
 function fakeHash(session: { payload: object; t: number }[]) {
