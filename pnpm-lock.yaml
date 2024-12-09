@@ -20,7 +20,7 @@ importers:
         version: 2.27.10
       '@vitest/coverage-istanbul':
         specifier: 1.5.3
-        version: 1.5.3(vitest@1.5.3)
+        version: 1.5.3(vitest@1.5.3(@types/node@22.5.1)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(lightningcss@1.27.0)(terser@5.33.0))
       '@vitest/ui':
         specifier: 1.5.3
         version: 1.5.3(vitest@1.5.3)
@@ -109,6 +109,9 @@ importers:
       hash-slash:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
+      jazz-browser-media-images:
+        specifier: ^0.8.37
+        version: 0.8.37
       jazz-react:
         specifier: workspace:0.8.37
         version: link:../../packages/jazz-react
@@ -3887,7 +3890,7 @@ packages:
   '@radix-ui/react-compose-refs@1.1.0':
     resolution: {integrity: sha512-b4inOtiaOnYf9KWyO3jAeeCG6FeyfY6ldiEPanbUjWd+xIk5wZeHa8yVwmrJ2vderhu/BQvzCrJI0lHd+wIiqw==}
     peerDependencies:
-      '@types/react': ^18.2.32
+      '@types/react': '*'
       react: 18.3.1
     peerDependenciesMeta:
       '@types/react':
@@ -3971,8 +3974,8 @@ packages:
   '@radix-ui/react-focus-scope@1.1.0':
     resolution: {integrity: sha512-200UD8zylvEyL8Bx+z76RJnASR2gRMuxlgFCPAe/Q/679a/r0eK3MBVYMb7vZODZcffZBdob1EGnky78xmVvcA==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -3984,7 +3987,7 @@ packages:
   '@radix-ui/react-id@1.1.0':
     resolution: {integrity: sha512-EJUrI8yYh7WOjNOqpoJaf1jlFIH2LvtgAl+YcFqNCa+4hj64ZXmPkAKOFs/ukjz3byN6bdb/AVUqHkI8/uWWMA==}
     peerDependencies:
-      '@types/react': ^18.2.32
+      '@types/react': '*'
       react: 18.3.1
     peerDependenciesMeta:
       '@types/react':
@@ -4006,8 +4009,8 @@ packages:
   '@radix-ui/react-popper@1.2.0':
     resolution: {integrity: sha512-ZnRMshKF43aBxVWPWvbj21+7TQCvhuULWJ4gNIKYpRlQt5xGRhLx66tMp8pya2UkGHTSlhpXwmjqltDYHhw7Vg==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -4084,8 +4087,8 @@ packages:
   '@radix-ui/react-primitive@2.0.0':
     resolution: {integrity: sha512-ZSpFm0/uHa8zTvKBDjLFWLo8dkr4MBsiDLz0g3gMUwqgLHz9rTaRRGYDgvZPtBJgYCBKXkS9fzmoySgr8CO6Cw==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -6147,6 +6150,18 @@ packages:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
     engines: {iojs: '>= 1.0.0', node: '>= 0.12.0'}
 
+  cojson-storage-indexeddb@0.8.37:
+    resolution: {integrity: sha512-z6llKrYvKCtCWiMI3U9qp6IXAXBuzs5Qy0hs/27xT1M+PX+hASC8N+56cMidLBm5P1R2lL6C/0I0CHB6J94ANQ==}
+
+  cojson-storage@0.8.37:
+    resolution: {integrity: sha512-eiYO3vT0dE7Fbtmd15OWjoSO8RVVKxZvM+vSyNKBcV06ht4jtj5ygz5bFcaE4u1oSA1yFSNuMzDrAWFPoNKjQQ==}
+
+  cojson-transport-ws@0.8.37:
+    resolution: {integrity: sha512-Qq/FpylHHU2PtrNBqH4dAE5HdbR5Db6mTmqQOW7pjuHFzCKvskVb0hqZYb++GvizS3kGXv+KG5cAluyuYjYYyQ==}
+
+  cojson@0.8.37:
+    resolution: {integrity: sha512-DNK3RHrpmOJXBrk1Ms0MvzcqOYvMbjqyd6LLnrO/p6KyPITuAWIzs1kkDiePvwRhVec/fM/Gd1TDn4bge5azgw==}
+
   collect-v8-coverage@1.0.2:
     resolution: {integrity: sha512-lHl4d5/ONEbLlJvaJNtsF/Lz+WvB07u2ycqTYbdrq7UypDXailES4valYb2eWiJFxZlVmpGekfqoxQhzyFdT4Q==}
 
@@ -7929,6 +7944,15 @@ packages:
 
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
+
+  jazz-browser-media-images@0.8.37:
+    resolution: {integrity: sha512-TigJs5jDYyuAS0wRa2QS4PM865dMCc74Pgfi+2rspkYMGR65ShJDbCnkn3Ql98ezOrbT8YRuXJOEynecHTcJQQ==}
+
+  jazz-browser@0.8.37:
+    resolution: {integrity: sha512-NAYP8GoCssxfQcHs7zUBP6UX3aDYxSkXg08eQOia5HTEOYFLarX3wi0V32SJB161k8aYj112Aga/u4IoKlAZSw==}
+
+  jazz-tools@0.8.37:
+    resolution: {integrity: sha512-jF2UDMDoyxbkXbBXq99UydnvDOtUGFT2oSFqVjPPc3E3kzF5Vps2wdwCqXjc99XsMrmREUA9QNlmYV7v1+8gSw==}
 
   jest-changed-files@29.7.0:
     resolution: {integrity: sha512-fEArFiwf1BpQ+4bXSprcDc3/x4HSzL4al2tozwVpDFpsxALjLYdyiIK4e5Vz66GQJIbXJ82+35PtysofptNX2w==}
@@ -15745,7 +15769,7 @@ snapshots:
       - esbuild
       - rollup
 
-  '@vitest/coverage-istanbul@1.5.3(vitest@1.5.3)':
+  '@vitest/coverage-istanbul@1.5.3(vitest@1.5.3(@types/node@22.5.1)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(lightningcss@1.27.0)(terser@5.33.0))':
     dependencies:
       debug: 4.3.7
       istanbul-lib-coverage: 3.2.2
@@ -16844,6 +16868,31 @@ snapshots:
   clsx@2.0.0: {}
 
   co@4.6.0: {}
+
+  cojson-storage-indexeddb@0.8.37:
+    dependencies:
+      cojson: 0.8.37
+      cojson-storage: 0.8.37
+
+  cojson-storage@0.8.37:
+    dependencies:
+      cojson: 0.8.37
+
+  cojson-transport-ws@0.8.37:
+    dependencies:
+      cojson: 0.8.37
+      typescript: 5.6.3
+
+  cojson@0.8.37:
+    dependencies:
+      '@hazae41/berith': 1.2.6
+      '@noble/ciphers': 0.1.4
+      '@noble/curves': 1.3.0
+      '@noble/hashes': 1.4.0
+      '@scure/base': 1.1.6
+      hash-wasm: 4.11.0
+      neverthrow: 7.0.1
+      queueueue: 4.1.2
 
   collect-v8-coverage@1.0.2: {}
 
@@ -18858,6 +18907,29 @@ snapshots:
       '@isaacs/cliui': 8.0.2
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
+
+  jazz-browser-media-images@0.8.37:
+    dependencies:
+      '@types/image-blob-reduce': 4.1.4
+      image-blob-reduce: 4.1.0
+      jazz-browser: 0.8.37
+      jazz-tools: 0.8.37
+      pica: 9.0.1
+      typescript: 5.6.3
+
+  jazz-browser@0.8.37:
+    dependencies:
+      '@scure/bip39': 1.3.0
+      cojson: 0.8.37
+      cojson-storage-indexeddb: 0.8.37
+      cojson-transport-ws: 0.8.37
+      jazz-tools: 0.8.37
+      typescript: 5.6.3
+
+  jazz-tools@0.8.37:
+    dependencies:
+      cojson: 0.8.37
+      fast-check: 3.21.0
 
   jest-changed-files@29.7.0:
     dependencies:
