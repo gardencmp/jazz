@@ -59,7 +59,7 @@ importers:
         version: link:../../packages/jazz-tools
       next:
         specifier: 14.2.5
-        version: 14.2.5(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -1243,6 +1243,9 @@ importers:
       '@noble/hashes':
         specifier: ^1.4.0
         version: 1.4.0
+      '@opentelemetry/api':
+        specifier: ^1.0.0
+        version: 1.9.0
       '@scure/base':
         specifier: ^1.1.1
         version: 1.1.5
@@ -3709,6 +3712,10 @@ packages:
     resolution: {integrity: sha512-q9CRWjpHCMIh5sVyefoD1cA7PkvILqCZsnSOEUUivORLjxCO/Irmue2DprETiNgEqktDBZaM1Bi+jrarx1XdCg==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
+  '@opentelemetry/api@1.9.0':
+    resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
+    engines: {node: '>=8.0.0'}
+
   '@parcel/watcher-android-arm64@2.4.1':
     resolution: {integrity: sha512-LOi/WTbbh3aTn2RYddrO8pnapixAziFl6SMxHM69r3tvdSm94JtCenaKgk1GRg5FJ5wpMCpHeW+7yqPlvZv7kg==}
     engines: {node: '>= 10.0.0'}
@@ -3887,7 +3894,7 @@ packages:
   '@radix-ui/react-compose-refs@1.1.0':
     resolution: {integrity: sha512-b4inOtiaOnYf9KWyO3jAeeCG6FeyfY6ldiEPanbUjWd+xIk5wZeHa8yVwmrJ2vderhu/BQvzCrJI0lHd+wIiqw==}
     peerDependencies:
-      '@types/react': ^18.2.32
+      '@types/react': '*'
       react: 18.3.1
     peerDependenciesMeta:
       '@types/react':
@@ -3971,8 +3978,8 @@ packages:
   '@radix-ui/react-focus-scope@1.1.0':
     resolution: {integrity: sha512-200UD8zylvEyL8Bx+z76RJnASR2gRMuxlgFCPAe/Q/679a/r0eK3MBVYMb7vZODZcffZBdob1EGnky78xmVvcA==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -3984,7 +3991,7 @@ packages:
   '@radix-ui/react-id@1.1.0':
     resolution: {integrity: sha512-EJUrI8yYh7WOjNOqpoJaf1jlFIH2LvtgAl+YcFqNCa+4hj64ZXmPkAKOFs/ukjz3byN6bdb/AVUqHkI8/uWWMA==}
     peerDependencies:
-      '@types/react': ^18.2.32
+      '@types/react': '*'
       react: 18.3.1
     peerDependenciesMeta:
       '@types/react':
@@ -4006,8 +4013,8 @@ packages:
   '@radix-ui/react-popper@1.2.0':
     resolution: {integrity: sha512-ZnRMshKF43aBxVWPWvbj21+7TQCvhuULWJ4gNIKYpRlQt5xGRhLx66tMp8pya2UkGHTSlhpXwmjqltDYHhw7Vg==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -4084,8 +4091,8 @@ packages:
   '@radix-ui/react-primitive@2.0.0':
     resolution: {integrity: sha512-ZSpFm0/uHa8zTvKBDjLFWLo8dkr4MBsiDLz0g3gMUwqgLHz9rTaRRGYDgvZPtBJgYCBKXkS9fzmoySgr8CO6Cw==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -13916,6 +13923,8 @@ snapshots:
     dependencies:
       semver: 7.6.3
 
+  '@opentelemetry/api@1.9.0': {}
+
   '@parcel/watcher-android-arm64@2.4.1':
     optional: true
 
@@ -15016,7 +15025,7 @@ snapshots:
 
   '@remix-run/web-stream@1.1.0':
     dependencies:
-      web-streams-polyfill: 3.2.1
+      web-streams-polyfill: 3.3.3
 
   '@rnx-kit/chromium-edge-launcher@1.0.0':
     dependencies:
@@ -20201,7 +20210,7 @@ snapshots:
 
   neverthrow@7.0.1: {}
 
-  next@14.2.5(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@next/env': 14.2.5
       '@swc/helpers': 0.5.5
@@ -20222,6 +20231,7 @@ snapshots:
       '@next/swc-win32-arm64-msvc': 14.2.5
       '@next/swc-win32-ia32-msvc': 14.2.5
       '@next/swc-win32-x64-msvc': 14.2.5
+      '@opentelemetry/api': 1.9.0
       '@playwright/test': 1.46.1
     transitivePeerDependencies:
       - '@babel/core'
