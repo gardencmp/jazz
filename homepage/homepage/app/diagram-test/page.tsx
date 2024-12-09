@@ -43,7 +43,7 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col justify-center gap-5 p-5">
+    <div className="flex flex-col justify-center gap-5 p-5 text-stone-300">
       <div>Under the hood</div>
       <p>Basic setup</p>
       <CoValueCoreDiagram
@@ -173,8 +173,8 @@ function CoValueCoreDiagram({
 
 function HeaderContent({ header }: { header: object }) {
   return (
-    <div className="bg-stone-950 h-full px-4 py-3 rounded-lg">
-      <div className="flex justify-between text-stone-600 mb-2">header</div>
+    <div className="bg-stone-900 h-full px-4 py-3 rounded-lg">
+      <div className="flex justify-between text-stone-500 mb-2">header</div>
       <pre className="text-xs leading-6">
         {JSON.stringify(header, null, 2)
           .replace(/\n\s+/g, "\n")
@@ -194,7 +194,7 @@ function SimplifiedGroup({
   };
 }) {
   return (
-    <div className="bg-stone-950 py-3 px-4 rounded-lg max-w-[30rem] leading-relaxed">
+    <div className="bg-stone-900 py-3 px-4 rounded-lg max-w-[30rem] leading-relaxed">
       {Object.entries(group.roles).map(([user, role]) => (
         <div key={user}>
           <span className={clsx("font-semibold", userColors[user])}>
@@ -280,7 +280,7 @@ function sessionsForGroup(group: {
 
 function SessionHeader({ sessionKey }: { sessionKey: string }) {
   return (
-    <div className="bg-stone-950 py-2 px-3 flex justify-between items-baseline rounded-lg min-w-[8rem]">
+    <div className="bg-stone-900 py-2 px-3 flex justify-between items-baseline rounded-lg min-w-[8rem]">
       <span
         className={clsx([
           userColors[sessionKey.split("_")[0]],
@@ -321,7 +321,7 @@ function CoValueContent({
       </div>
       <div className="flex-[6] flex flex-col gap-5">
         {Object.entries(sessions).map(([key, log]) => (
-          <div key={key} className="flex gap-0.5">
+          <div key={key} className="flex gap-1">
             <SessionHeader sessionKey={key} />
             {log.map((item, idx) => {
               const isLastPerKey =
@@ -335,7 +335,7 @@ function CoValueContent({
                 <div
                   key={JSON.stringify(item)}
                   className={clsx(
-                    "bg-stone-950 min-w-[9.5rem]",
+                    "bg-stone-900 min-w-[9.5rem]",
                     isLastPerKey ? "outline outline-amber-500" : "",
                     {
                       "rounded-l-lg ml-1.5": idx === 0,
@@ -343,11 +343,11 @@ function CoValueContent({
                   )}
                 >
                   {encryptedItems ? (
-                    <pre className="text-sm leading-6 py-2 px-3 border-b border-stone-800 text-fuchsia-500">
+                    <pre className="text-sm leading-6 py-2 px-3 border-b border-stone-600 text-fuchsia-500">
                       {fakeEncryptedPayload(item.payload)}
                     </pre>
                   ) : (
-                    <pre className="text-sm leading-6 py-2 px-3 border-b border-stone-800">
+                    <pre className="text-sm leading-6 py-2 px-3 border-b border-stone-600">
                       {JSON.stringify(item.payload, null, 2)
                         .replace(/\n\s+/g, "\n")
                         .replace(/,/g, "")
@@ -355,7 +355,7 @@ function CoValueContent({
                     </pre>
                   )}
                   <div className="flex py-2 px-3 gap-2 justify-between">
-                    <pre className="text-xs text-stone-600">idx={idx}</pre>
+                    <pre className="text-xs text-stone-500">idx={idx}</pre>
                     <pre className="text-xs font-semibold">t={item.t}</pre>
                   </div>
                 </div>
