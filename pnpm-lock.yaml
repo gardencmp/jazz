@@ -1244,7 +1244,7 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       '@opentelemetry/api':
-        specifier: ^1.9.0
+        specifier: ^1.0.0
         version: 1.9.0
       '@scure/base':
         specifier: ^1.1.1

@@ -30,11 +30,13 @@
     "@noble/ciphers": "^0.1.3",
     "@noble/curves": "^1.3.0",
     "@noble/hashes": "^1.4.0",
-    "@opentelemetry/api": "^1.9.0",
     "@scure/base": "^1.1.1",
     "hash-wasm": "^4.9.0",
     "neverthrow": "^7.0.1",
     "queueueue": "^4.1.2"
+  },
+  "peerDependencies": {
+    "@opentelemetry/api": "^1.0.0"
   },
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist/web -p tsconfig.web.json",
