@@ -7,6 +7,8 @@ import {
   createTwoConnectedNodes,
   groupWithTwoAdmins,
   groupWithTwoAdminsHighLevel,
+  hotSleep,
+  loadCoValueOrFail,
   newGroup,
   newGroupHighLevel,
 } from "./testUtils.js";
@@ -1802,29 +1804,25 @@ test("Admins can set child extensions", () => {
 });
 
 test("Admins can set child extensions when the admin role is inherited", async () => {
-  const { node1, node2 } = createTwoConnectedNodes("server", "server");
+  const { node1, node2 } = await createTwoConnectedNodes("server", "server");
 
-  const node2Account = node2.account;
-  const group = node1.createGroup();
+  const node2AccountOnNode1 = await loadCoValueOrFail(
+    node1.node,
+    node2.accountID,
+  );
 
-  group.addMember(node2Account, "admin");
+  const group = node1.node.createGroup();
 
-  const groupOnNode2 = await node2.load(group.id);
+  group.addMember(node2AccountOnNode1, "admin");
 
-  if (groupOnNode2 === "unavailable") {
-    throw new Error("Group not found on node2");
-  }
+  const groupOnNode2 = await loadCoValueOrFail(node2.node, group.id);
 
-  const childGroup = node2.createGroup();
+  const childGroup = node2.node.createGroup();
   childGroup.extend(groupOnNode2);
 
-  const childGroupOnNode1 = await node1.load(childGroup.id);
+  const childGroupOnNode1 = await loadCoValueOrFail(node1.node, childGroup.id);
 
-  if (childGroupOnNode1 === "unavailable") {
-    throw new Error("Child group not found on node1");
-  }
-
-  const grandChildGroup = node2.createGroup();
+  const grandChildGroup = node2.node.createGroup();
   grandChildGroup.extend(childGroupOnNode1);
 
   expect(childGroupOnNode1.get(`child_${grandChildGroup.id}`)).toEqual(
@@ -2313,6 +2311,38 @@ test("When rotating the key of a parent group, the keys of all child groups are 
   }
 
   expect(newChildReadKeyID).not.toEqual(currentChildReadKeyID);
+});
+
+test("When rotating the key of a parent group, the old transactions should still be valid", async () => {
+  const { node1, node2 } = await createTwoConnectedNodes("server", "server");
+
+  const group = node1.node.createGroup();
+  const parentGroup = node1.node.createGroup();
+
+  group.extend(parentGroup);
+
+  const node2AccountOnNode1 = await loadCoValueOrFail(
+    node1.node,
+    node2.accountID,
+  );
+
+  parentGroup.addMember(node2AccountOnNode1, "writer");
+
+  const map = group.createMap();
+  map.set("from", "node1", "private");
+
+  const mapOnNode2 = await loadCoValueOrFail(node2.node, map.id);
+  mapOnNode2.set("from", "node2", "private");
+
+  await new Promise((resolve) => setTimeout(resolve, 10));
+
+  parentGroup.removeMember(node2AccountOnNode1);
+
+  await new Promise((resolve) => setTimeout(resolve, 10));
+
+  const mapOnNode1 = await loadCoValueOrFail(node1.node, map.id);
+
+  expect(mapOnNode1.get("from")).toEqual("node2");
 });
 
 test("When rotating the key of a grand-parent group, the keys of all child and grand-child groups are also rotated", () => {

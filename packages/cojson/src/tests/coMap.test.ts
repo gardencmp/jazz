@@ -4,7 +4,7 @@ import { operationToEditEntry } from "../coValues/coMap.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { LocalNode } from "../localNode.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
-import { randomAnonymousAccountAndSessionID } from "./testUtils.js";
+import { hotSleep, randomAnonymousAccountAndSessionID } from "./testUtils.js";
 
 const Crypto = await WasmCrypto.create();
 
@@ -63,20 +63,11 @@ test("Can get CoMap entry values at different points in time", () => {
 
   expect(content.type).toEqual("comap");
 
-  const beforeA = Date.now();
-  while (Date.now() < beforeA + 10) {
-    /* hot sleep */
-  }
+  const beforeA = hotSleep(10);
   content.set("hello", "A", "trusting");
-  const beforeB = Date.now();
-  while (Date.now() < beforeB + 10) {
-    /* hot sleep */
-  }
+  const beforeB = hotSleep(10);
   content.set("hello", "B", "trusting");
-  const beforeC = Date.now();
-  while (Date.now() < beforeC + 10) {
-    /* hot sleep */
-  }
+  const beforeC = hotSleep(10);
   content.set("hello", "C", "trusting");
   expect(content.get("hello")).toEqual("C");
   expect(content.atTime(Date.now()).get("hello")).toEqual("C");
