@@ -174,21 +174,19 @@ export function createJazzApp<Acc extends Account = Account>({
     const observable = $state.raw(createCoValueObservable());
 
     // Effect to handle subscription
+    // TODO: Possibly memoise this, to avoid re-subscribing
     $effect(() => {
       // Reset state when dependencies change
       state = undefined;
 
-      // Get latest values
-      const currentCtx = ctx.current;
-
       // Return early if no context or id, effectively cleaning up any previous subscription
-      if (!currentCtx || !id) return;
+      if (!ctx?.current || !id) return;
 
       // Setup subscription with current values
       return observable.subscribe(
         Schema,
         id,
-        'me' in currentCtx ? currentCtx.me : currentCtx.guest,
+        'me' in ctx.current ? ctx.current.me : ctx.current.guest,
         depth,
         () => {
           // Get current value from our stable observable
