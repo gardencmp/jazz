@@ -7,7 +7,7 @@ import {
   type MetricReaderOptions,
   type PushMetricExporter,
 } from "@opentelemetry/sdk-metrics";
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test } from "vitest";
 import { PriorityBasedMessageQueue } from "../PriorityBasedMessageQueue.js";
 import { CO_VALUE_PRIORITY } from "../priority.js";
 import type { SyncMessage } from "../sync.js";
@@ -81,6 +81,10 @@ function setup() {
 }
 
 describe("PriorityBasedMessageQueue", () => {
+  afterEach(() => {
+    metrics.disable();
+  });
+
   test("should initialize with correct properties", () => {
     const { queue } = setup();
     expect(queue["defaultPriority"]).toBe(CO_VALUE_PRIORITY.MEDIUM);
