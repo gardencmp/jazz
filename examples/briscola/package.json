@@ -1,0 +1,37 @@
+{
+  "name": "jazz-example-briscola",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "vite --port=3001",
+    "build": "vite build",
+    "serve": "vite preview",
+    "start": "vite"
+  },
+  "devDependencies": {
+    "@tanstack/router-plugin": "^1.87.4",
+    "@types/node": "^22.10.1",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "vite": "^6.0.3"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "^1.87.3",
+    "@tanstack/router-devtools": "^1.87.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "jazz-react": "^0.8.37",
+    "jazz-tools": "^0.8.37",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^2.5.5",
+    "tailwindcss-animate": "^1.0.7"
+  }
+}
