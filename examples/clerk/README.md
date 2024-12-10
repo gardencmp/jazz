@@ -1,4 +1,4 @@
-# Passkey authentication example with Jazz and React
+# Clerk authentication example with Jazz and React
 
 This is an example of how to use clerk authentication with Jazz.
 

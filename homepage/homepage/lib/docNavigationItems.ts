@@ -57,7 +57,7 @@ export const docNavigationItems = [
       },
       {
         name: "Accounts & migrations",
-        href: "/docs/schemas/accounts",
+        href: "/docs/schemas/accounts-and-migrations",
         done: 0,
       },
     ],
@@ -67,22 +67,27 @@ export const docNavigationItems = [
     items: [
       {
         name: "Creation & ownership",
-        href: "/docs/covalues/creation",
+        href: "/docs/using-covalues/creation",
+        done: 0,
+      },
+      {
+        name: "Reading",
+        href: "/docs/using-covalues/reading",
         done: 0,
       },
       {
         name: "Subscribing & deep loading",
-        href: "/docs/covalues/reading",
+        href: "/docs/using-covalues/subscription-and-loading",
         done: 0,
       },
       {
-        name: "Updating & deleting",
-        href: "/docs/covalues/updating",
+        name: "Writing & deleting",
+        href: "/docs/using-covalues/writing",
         done: 0,
       },
       {
         name: "Metadata & time-travel",
-        href: "/docs/covalues/metadata",
+        href: "/docs/using-covalues/metadata",
         done: 0,
       },
     ],

@@ -26,14 +26,10 @@ export function createTestNode() {
   return new LocalNode(admin, session, Crypto);
 }
 
-export function createTwoConnectedNodes(
+export async function createTwoConnectedNodes(
   node1Role: Peer["role"],
   node2Role: Peer["role"],
 ) {
-  // Setup nodes
-  const node1 = createTestNode();
-  const node2 = createTestNode();
-
   // Connect nodes initially
   const [node1ToNode2Peer, node2ToNode1Peer] = connectedPeers(
     "node1ToNode2",
@@ -44,8 +40,17 @@ export function createTwoConnectedNodes(
     },
   );
 
-  node1.syncManager.addPeer(node1ToNode2Peer);
-  node2.syncManager.addPeer(node2ToNode1Peer);
+  const node1 = await LocalNode.withNewlyCreatedAccount({
+    peersToLoadFrom: [node1ToNode2Peer],
+    crypto: Crypto,
+    creationProps: { name: "Client" },
+  });
+
+  const node2 = await LocalNode.withNewlyCreatedAccount({
+    peersToLoadFrom: [node2ToNode1Peer],
+    crypto: Crypto,
+    creationProps: { name: "Server" },
+  });
 
   return {
     node1,
@@ -255,4 +260,12 @@ export function blockMessageTypeOnOutgoingPeer(
     },
     unblock: () => pushSpy.mockRestore(),
   };
+}
+
+export function hotSleep(ms: number) {
+  const before = Date.now();
+  while (Date.now() < before + ms) {
+    /* hot sleep */
+  }
+  return before;
 }

@@ -17,9 +17,7 @@ export function DocNav({ className }: { className?: string }) {
 
         let done =
           typeof item.done === "number" ? item.done : item.done[framework];
-        let href = !!done
-          ? item.href.replace("/docs", `/docs/${framework}`)
-          : `/docs/${framework}/coming-soon`;
+        let href = item.href.replace("/docs", `/docs/${framework}`);
 
         return {
           ...item,
