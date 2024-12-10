@@ -26,7 +26,7 @@ function App() {
       <main className="container py-8">
         {router.route({
           "/": () => <Orders />,
-          "/add": () => <CreateOrder />,
+          "/order": () => <CreateOrder />,
           "/order/:id": (id) => <EditOrder id={id as ID<BubbleTeaOrder>} />,
         })}
       </main>

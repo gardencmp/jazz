@@ -21,7 +21,7 @@ export function Orders() {
         <h1>Your orders 🧋</h1>
 
         {me?.profile?.orders.map((order) =>
-          order ? <Order order={order} /> : <></>,
+          order ? <Order key={order.id} order={order} /> : null,
         )}
       </section>
     </>

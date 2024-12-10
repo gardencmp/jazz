@@ -1,4 +1,5 @@
 import { ID } from "jazz-tools";
+import { OrderForm } from "./OrderForm.tsx";
 import { useCoState } from "./main.tsx";
 import { BubbleTeaOrder } from "./schema.ts";
 
@@ -7,11 +8,12 @@ export function EditOrder(props: { id: ID<BubbleTeaOrder> }) {
 
   if (!order) return;
 
-  console.log(order);
   return (
     <>
       <section>
         <h1>Edit your bubble tea order 🧋</h1>
+
+        <OrderForm order={order} />
       </section>
     </>
   );

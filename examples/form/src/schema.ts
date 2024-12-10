@@ -15,13 +15,13 @@ export const BubbleTeaBaseTeaTypes = [
   "Thai",
 ] as const;
 
-export class BubbleTeaAddOns extends CoList.Of(
+export class ListOfBubbleTeaAddOns extends CoList.Of(
   co.literal(...BubbleTeaAddOnTypes),
 ) {}
 
 export class BubbleTeaOrder extends CoMap {
   baseTea = co.literal(...BubbleTeaBaseTeaTypes);
-  addOns = co.ref(BubbleTeaAddOns);
+  addOns = co.ref(ListOfBubbleTeaAddOns);
   deliveryDate = co.Date;
   withMilk = co.boolean;
   instructions = co.optional.string;
