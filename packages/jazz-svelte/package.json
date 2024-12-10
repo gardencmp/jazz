@@ -14,7 +14,8 @@
     "format-and-lint": "pnpm run format && pnpm run lint",
     "format-and-lint:fix": "pnpm run format --write && pnpm run lint --fix",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest --coverage"
   },
   "files": [
     "dist",
@@ -44,6 +45,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/svelte": "^5.2.6",
     "@types/eslint": "^9.6.0",
+    "@vitest/coverage-v8": "2.1.8",
     "eslint": "^9.7.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.36.0",
