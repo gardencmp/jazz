@@ -18,7 +18,7 @@
   },
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build && cd homepage/homepage && pnpm run build",
+    "build": "turbo build && cd homepage/homepage && turbo build",
     "lint": "turbo lint && cd homepage/homepage && pnpm run lint",
     "test": "vitest",
     "test:ci": "vitest --coverage.enabled=true",
