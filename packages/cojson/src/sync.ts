@@ -1,3 +1,4 @@
+import { ValueType, metrics } from "@opentelemetry/api";
 import { PeerState } from "./PeerState.js";
 import { SyncStateManager } from "./SyncStateManager.js";
 import { CoValueHeader, Transaction } from "./coValueCore.js";
@@ -114,6 +115,12 @@ export class SyncManager {
       | { done: Promise<void>; nRequestsThisTick: number }
       | undefined;
   } = {};
+
+  peersCounter = metrics.getMeter("cojson").createUpDownCounter("jazz.peers", {
+    description: "Amount of connected peers",
+    valueType: ValueType.INT,
+    unit: "peer",
+  });
 
   constructor(local: LocalNode) {
     this.local = local;
@@ -296,6 +303,8 @@ export class SyncManager {
       prevPeer.gracefulShutdown();
     }
 
+    this.peersCounter.add(1, { role: peer.role });
+
     const unsubscribeFromKnownStatesUpdates = peerState.knownStates.subscribe(
       (id) => {
         this.syncState.triggerUpdate(peer.id, id);
@@ -367,6 +376,7 @@ export class SyncManager {
         const state = this.peers[peer.id];
         state?.gracefulShutdown();
         unsubscribeFromKnownStatesUpdates();
+        this.peersCounter.add(-1, { role: peer.role });
 
         if (peer.deletePeerStateOnClose) {
           delete this.peers[peer.id];
