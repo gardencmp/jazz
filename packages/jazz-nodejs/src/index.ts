@@ -55,6 +55,8 @@ export async function startWorker<Acc extends Account>({
   node = context.account._raw.core.node;
 
   async function done() {
+    await context.account.waitForAllCoValuesSync();
+
     wsPeer.done();
     context.done();
   }
