@@ -1,5 +1,18 @@
 # jazz-run
 
+## 0.8.38
+
+### Patch Changes
+
+- 28930ee: Log the server address when running the local sync server
+- Updated dependencies [da13eca]
+- Updated dependencies [b00ee91]
+- Updated dependencies [f488c09]
+  - cojson-storage-sqlite@0.8.38
+  - cojson@0.8.38
+  - cojson-transport-ws@0.8.38
+  - jazz-tools@0.8.38
+
 ## 0.8.37
 
 ### Patch Changes

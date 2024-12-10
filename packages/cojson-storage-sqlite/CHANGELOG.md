@@ -1,5 +1,15 @@
 # cojson-storage-sqlite
 
+## 0.8.38
+
+### Patch Changes
+
+- da13eca: Improve work scheduling under pressure
+- Updated dependencies [b00ee91]
+- Updated dependencies [f488c09]
+  - cojson@0.8.38
+  - cojson-storage@0.8.38
+
 ## 0.8.37
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 {
   "name": "jazz-example-chat",
   "private": true,
-  "version": "0.0.115",
+  "version": "0.0.116",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,10 +18,10 @@
     "@radix-ui/react-toast": "^1.1.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "cojson": "workspace:0.8.37",
+    "cojson": "workspace:0.8.38",
     "hash-slash": "workspace:0.2.1",
-    "jazz-react": "workspace:0.8.37",
-    "jazz-tools": "workspace:0.8.37",
+    "jazz-react": "workspace:0.8.38",
+    "jazz-tools": "workspace:0.8.38",
     "lucide-react": "^0.274.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
