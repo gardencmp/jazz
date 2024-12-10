@@ -7,6 +7,7 @@ export function EditOrder(props: { id: ID<BubbleTeaOrder> }) {
 
   if (!order) return;
 
+  console.log(order);
   return (
     <>
       <section>

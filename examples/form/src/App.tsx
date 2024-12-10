@@ -2,6 +2,7 @@ import { useIframeHashRouter } from "hash-slash";
 import { ID } from "jazz-tools";
 import { CreateOrder } from "./CreateOrder.tsx";
 import { EditOrder } from "./EditOrder.tsx";
+import { Orders } from "./Orders.tsx";
 import { useAccount } from "./main";
 import { BubbleTeaOrder } from "./schema.ts";
 
@@ -12,7 +13,7 @@ function App() {
   return (
     <>
       <header>
-        <nav className="container">
+        <nav className="container py-2 border-b flex justify-between">
           <span>
             You're logged in as <strong>{me?.profile?.name}</strong>
           </span>
@@ -22,9 +23,10 @@ function App() {
         </nav>
       </header>
 
-      <main className="container">
+      <main className="container py-8">
         {router.route({
-          "/": () => <CreateOrder />,
+          "/": () => <Orders />,
+          "/add": () => <CreateOrder />,
           "/order/:id": (id) => <EditOrder id={id as ID<BubbleTeaOrder>} />,
         })}
       </main>
