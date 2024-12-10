@@ -97,7 +97,7 @@ export function BubbleInfo(props: { by: string | undefined; madeAt: Date }) {
 
 export function InputBar(props: { children: React.ReactNode }) {
   return (
-    <div className="p-3 bg-white border-t shadow-2xl mt-auto flex gap-2 dark:bg-transparent dark:border-stone-800">
+    <div className="p-3 bg-white border-t shadow-2xl mt-auto flex gap-1 dark:bg-transparent dark:border-stone-800">
       {props.children}
     </div>
   );
@@ -119,12 +119,9 @@ export function ImageInput({
         aria-label="Send image"
         title="Send image"
         onClick={onUploadClick}
+        className="text-stone-500 p-1.5 rounded-full hover:bg-stone-100 hover:text-stone-800 dark:hover:bg-stone-800 dark:hover:text-stone-200 transition-colors"
       >
-        <ImageIcon
-          size={28}
-          strokeWidth={1.5}
-          className="text-stone-500  hover:text-stone-800 dark:hover:text-stone-200 transition-colors"
-        />
+        <ImageIcon size={24} strokeWidth={1.5} />
       </button>
 
       <label className="sr-only">
