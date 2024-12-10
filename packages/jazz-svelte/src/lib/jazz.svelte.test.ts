@@ -9,7 +9,7 @@ import ProviderTestComponent from './tests/ProviderTestComponent.svelte';
 // Mock svelte's getContext as we can't use it outside of a component
 vi.mock('svelte', async (importOriginal) => {
   return {
-    ...(await importOriginal()),
+    ...await importOriginal<typeof import('svelte')>(),
     getContext: vi.fn(),
     untrack: vi.fn((fn) => fn())
   };
@@ -43,7 +43,7 @@ const mockObservable = {
 
 // Mock jazz-tools as we don't want to actually subscribe to any coValues
 vi.mock('jazz-tools', async (importOriginal) => ({
-  ...(await importOriginal()),
+  ...await importOriginal<typeof import('jazz-tools')>(),
   createCoValueObservable: vi.fn(() => mockObservable)
 }));
 
