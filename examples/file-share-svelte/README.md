@@ -5,6 +5,7 @@ This example app demonstrates how to implement secure file sharing in a Svelte a
 ## Features
 
 This example showcases how to:
+
 - Upload files securely with end-to-end encryption
 - Generate and manage sharing links
 - Handle file downloads with decryption
@@ -31,13 +32,22 @@ cd examples/file-share-svelte
 pnpm install
 ```
 
-4. Start the development server:
+4. Run the development server:
 
 ```sh
-pnpm dev
+turbo dev
 ```
 
 5. Open your browser and visit [http://localhost:5173](http://localhost:5173)
+
+---
+
+Alternatively, you can build and preview the app:
+
+```sh
+turbo build
+pnpm preview
+```
 
 ## Learn More
 
