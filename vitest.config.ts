@@ -22,5 +22,9 @@ export default defineConfig({
     include: ["packages/*/tests/**/*.test.ts"],
     maxConcurrency: 5,
   },
-  server: { watch: { ignored: ["**/node_modules/**", "**/dist/**", "**/.svelte-kit/**"] } },
+  server: {
+    watch: {
+      ignored: ["**/node_modules/**", "**/dist/**", "**/.svelte-kit/**"],
+    },
+  },
 });
