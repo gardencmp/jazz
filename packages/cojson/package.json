@@ -21,6 +21,7 @@
   "license": "MIT",
   "version": "0.8.37",
   "devDependencies": {
+    "@opentelemetry/sdk-metrics": "^1.29.0",
     "@types/jest": "^29.5.3",
     "typescript": "^5.3.3",
     "vitest": "1.5.3"
