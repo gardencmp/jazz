@@ -7,7 +7,7 @@
     },
     "build:generate-docs": {
       "inputs": ["../../../packages/*/src/**"],
-      "outputs": ["app/docs/api/**"],
+      "outputs": ["typedocs/**"],
       "dependsOn": ["^build"]
     },
     "dev": {
