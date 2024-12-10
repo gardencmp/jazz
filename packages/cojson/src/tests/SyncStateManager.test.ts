@@ -248,17 +248,17 @@ describe("SyncStateManager", () => {
       node2: serverNode,
       node1ToNode2Peer: clientToServerPeer,
       node2ToNode1Peer: serverToClientPeer,
-    } = createTwoConnectedNodes("client", "server");
+    } = await createTwoConnectedNodes("client", "server");
 
     // Create test data
-    const group = clientNode.createGroup();
+    const group = clientNode.node.createGroup();
     const map = group.createMap();
     map.set("key1", "value1", "trusting");
     group.addMember("everyone", "writer");
 
     // Initially should not be synced
     expect(
-      clientNode.syncManager.syncState.getCurrentSyncState(
+      clientNode.node.syncManager.syncState.getCurrentSyncState(
         clientToServerPeer.id,
         map.core.id,
       ),
@@ -268,13 +268,13 @@ describe("SyncStateManager", () => {
     await map.core.waitForSync();
 
     expect(
-      clientNode.syncManager.syncState.getCurrentSyncState(
+      clientNode.node.syncManager.syncState.getCurrentSyncState(
         clientToServerPeer.id,
         map.core.id,
       ),
     ).toEqual({ uploaded: true });
 
-    const mapOnServer = await loadCoValueOrFail(serverNode, map.id);
+    const mapOnServer = await loadCoValueOrFail(serverNode.node, map.id);
 
     // Block the content messages so the client won't fully sync immediately
     const outgoing = blockMessageTypeOnOutgoingPeer(
@@ -285,14 +285,14 @@ describe("SyncStateManager", () => {
     mapOnServer.set("key2", "value2", "trusting");
 
     expect(
-      clientNode.syncManager.syncState.getCurrentSyncState(
+      clientNode.node.syncManager.syncState.getCurrentSyncState(
         clientToServerPeer.id,
         map.core.id,
       ),
     ).toEqual({ uploaded: true });
 
     expect(
-      serverNode.syncManager.syncState.getCurrentSyncState(
+      serverNode.node.syncManager.syncState.getCurrentSyncState(
         serverToClientPeer.id,
         map.core.id,
       ),
@@ -304,14 +304,14 @@ describe("SyncStateManager", () => {
     await mapOnServer.core.waitForSync();
 
     expect(
-      clientNode.syncManager.syncState.getCurrentSyncState(
+      clientNode.node.syncManager.syncState.getCurrentSyncState(
         clientToServerPeer.id,
         map.core.id,
       ),
     ).toEqual({ uploaded: true });
 
     expect(
-      serverNode.syncManager.syncState.getCurrentSyncState(
+      serverNode.node.syncManager.syncState.getCurrentSyncState(
         serverToClientPeer.id,
         map.core.id,
       ),
