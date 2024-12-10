@@ -50,7 +50,7 @@ import type {
 } from "./coValues/coStream.js";
 import type { InviteSecret } from "./coValues/group.js";
 import type { AgentSecret } from "./crypto/crypto.js";
-import type { AgentID, SessionID } from "./ids.js";
+import type { AgentID, RawCoID, SessionID } from "./ids.js";
 import type { JsonValue } from "./jsonValue.js";
 import type * as Media from "./media.js";
 import type {
@@ -104,6 +104,7 @@ export {
   RawCoStream,
   RawBinaryCoStream,
   RawCoValue,
+  RawCoID,
   CoID,
   AnyRawCoValue,
   RawAccount,
