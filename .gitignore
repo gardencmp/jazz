@@ -5,6 +5,7 @@ docsTmp
 .DS_Store
 .turbo
 coverage
+.direnv
 
 # Next.js
 **/.next
