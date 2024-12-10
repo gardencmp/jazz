@@ -35,6 +35,9 @@
     "neverthrow": "^7.0.1",
     "queueueue": "^4.1.2"
   },
+  "peerDependencies": {
+    "@opentelemetry/api": "^1.0.0"
+  },
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist/web -p tsconfig.web.json",
     "dev:native": "tsc --watch --sourceMap --outDir dist/native -p tsconfig.native.json",

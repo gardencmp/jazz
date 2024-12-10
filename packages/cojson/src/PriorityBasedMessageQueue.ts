@@ -1,5 +1,6 @@
-import { CoValuePriority } from "./priority.js";
-import { SyncMessage } from "./sync.js";
+import { ValueType, metrics } from "@opentelemetry/api";
+import type { CoValuePriority } from "./priority.js";
+import type { SyncMessage } from "./sync.js";
 
 function promiseWithResolvers<R>() {
   let resolve = (_: R) => {};
@@ -36,6 +37,13 @@ type QueueTuple = Tuple<QueueEntry[], 8>;
 
 export class PriorityBasedMessageQueue {
   private queues: QueueTuple = [[], [], [], [], [], [], [], []];
+  queueSizeCounter = metrics
+    .getMeter("cojson")
+    .createUpDownCounter("jazz.messagequeue.size", {
+      description: "Size of the message queue",
+      valueType: ValueType.INT,
+      unit: "entry",
+    });
 
   private getQueue(priority: CoValuePriority) {
     return this.queues[priority];
@@ -47,24 +55,28 @@ export class PriorityBasedMessageQueue {
     const { promise, resolve, reject } = promiseWithResolvers<void>();
     const entry: QueueEntry = { msg, promise, resolve, reject };
 
-    if ("priority" in msg) {
-      const queue = this.getQueue(msg.priority);
+    const priority = "priority" in msg ? msg.priority : this.defaultPriority;
 
-      queue?.push(entry);
-    } else {
-      this.getQueue(this.defaultPriority).push(entry);
-    }
+    this.getQueue(priority).push(entry);
+
+    this.queueSizeCounter.add(1, {
+      priority,
+    });
 
     return promise;
   }
 
   public pull() {
-    const activeQueue = this.queues.find((queue) => queue.length > 0);
+    const priority = this.queues.findIndex((queue) => queue.length > 0);
 
-    if (!activeQueue) {
-      return undefined;
+    if (priority === -1) {
+      return;
     }
 
-    return activeQueue.shift();
+    this.queueSizeCounter.add(-1, {
+      priority,
+    });
+
+    return this.queues[priority]?.shift();
   }
 }
