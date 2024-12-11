@@ -7,12 +7,11 @@ import { SvelteLogo } from "@/components/icons/SvelteLogo";
 import { SwiftLogo } from "@/components/icons/SwiftLogo";
 import { VueLogo } from "@/components/icons/VueLogo";
 import { GlobeIcon } from "lucide-react";
-import React from "react";
 
 export function SupportedEnvironmentsSection() {
   const supported = [
     {
-      name: "Browser (vanilla JS)",
+      name: "Vanilla JS",
       icon: (
         <GlobeIcon
           strokeWidth={1}
@@ -35,16 +34,16 @@ export function SupportedEnvironmentsSection() {
       icon: <VueLogo />,
     },
     {
+      name: "Svelte",
+      icon: <SvelteLogo />,
+    },
+    {
       name: "Node.js",
       icon: <NodejsLogo />,
     },
   ];
 
   const comingSoon = [
-    {
-      name: "Svelte",
-      icon: <SvelteLogo />,
-    },
     {
       name: "Swift",
       icon: <SwiftLogo />,
