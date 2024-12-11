@@ -63,14 +63,6 @@ export function idforHeader(
   return `co_z${hash.slice("shortHash_z".length)}`;
 }
 
-type SessionLog = {
-  transactions: Transaction[];
-  lastHash?: Hash;
-  streamingHash: StreamingHash;
-  signatureAfter: { [txIdx: number]: Signature | undefined };
-  lastSignature: Signature;
-};
-
 export type PrivateTransaction = {
   privacy: "private";
   madeAt: number;
@@ -84,996 +76,263 @@ export type TrustingTransaction = {
   changes: Stringified<JsonValue[]>;
 };
 
-export type Transaction = PrivateTransaction | TrustingTransaction;
+type UnverifiedTransactionState = {
+  type: "unverified";
+  tx: PrivateTransaction | TrustingTransaction;
+  receivedSignature?: Signature;
+}
 
-export type DecryptedTransaction = {
-  txID: TransactionID;
-  changes: JsonValue[];
-  madeAt: number;
-};
+type HashedTransactionState = {
+  type: "hashed";
+  tx: PrivateTransaction | TrustingTransaction;
+  hashAndReceivedSignature?: {
+    hash: StreamingHash;
+    signature: Signature;
+  };
+}
+
+type VerificationFailedTransactionState = {
+  type: "verificationFailed";
+  tx: PrivateTransaction | TrustingTransaction;
+  hashAndReceivedSignature: {
+    hash: StreamingHash;
+    signature: Signature;
+  };
+  error: Error;
+}
+
+type VerifiedTransactionState = {
+  type: "verified";
+  tx: PrivateTransaction | TrustingTransaction;
+  hashAndReceivedSignature: {
+    hash: StreamingHash;
+    signature: Signature;
+  };
+  validInViewVersionRanges: {
+    from: number;
+    to: number | undefined;
+  }[];
+}
+
+class TransactionEntry {
+  state: UnverifiedTransactionState | HashedTransactionState | VerificationFailedTransactionState | VerifiedTransactionState;
+  sessionID: SessionID;
+  txIdx: number;
+
+  constructor(sessionID: SessionID, txIdx: number, tx: PrivateTransaction | TrustingTransaction) {
+    this.state = {
+      type: "unverified",
+      tx,
+    };
+    this.sessionID = sessionID;
+    this.txIdx = txIdx;
+  }
+
+  hash(streamingHash: StreamingHash) {
+    if (this.state.type !== "unverified") {
+      throw new Error("Cannot hash transaction that is not unverified");
+    }
+
+    streamingHash.update(this.state.tx);
+
+    const hashAndReceivedSignature = this.state.receivedSignature ? {
+      hash: streamingHash.clone(),
+      signature: this.state.receivedSignature,
+    } : undefined;
+
+    this.state = {
+      type: "hashed",
+      tx: this.state.tx,
+      hashAndReceivedSignature,
+    };
+  }
+
+  verify(crypto: CryptoProvider, signerID: SignerID): boolean {
+    if (this.state.type !== "hashed") {
+      throw new Error("Cannot verify transaction that is not hashed");
+    }
+
+    if (!this.state.hashAndReceivedSignature) {
+      throw new Error("Cannot verify transaction that does not have a received signature");
+    }
+
+    const verified = crypto.verify(this.state.hashAndReceivedSignature.signature, this.state.hashAndReceivedSignature.hash.digest(), signerID);
+
+    if (verified) {
+      this.state = {
+        type: "verified",
+        tx: this.state.tx,
+        hashAndReceivedSignature: this.state.hashAndReceivedSignature,
+        validInViewVersionRanges: [],
+      };
+    } else {
+      this.state = {
+        type: "verificationFailed",
+        tx: this.state.tx,
+        hashAndReceivedSignature: this.state.hashAndReceivedSignature,
+        error: new Error("Verification failed"),
+      };
+    }
+
+    return verified;
+  }
+}
 
 const readKeyCache = new WeakMap<CoValueCore, { [id: KeyID]: KeySecret }>();
+
+type SessionLog = {
+  log: TransactionEntry[];
+  lastHashed: number | null;
+  lastWithSignature: number | null;
+  lastVerified: number | null;
+}
 
 export class CoValueCore {
   id: RawCoID;
   node: LocalNode;
   crypto: CryptoProvider;
-  header: CoValueHeader;
-  _sessionLogs: Map<SessionID, SessionLog>;
-  _cachedContent?: RawCoValue;
+  header: CoValueHeader | null;
+  sessionLogs: Map<SessionID, SessionLog>;
+  orderedTxs: TransactionEntry[];
   listeners: Set<(content?: RawCoValue) => void> = new Set();
-  _decryptionCache: {
-    [key: Encrypted<JsonValue[], JsonValue>]: JsonValue[] | undefined;
-  } = {};
-  _cachedKnownState?: CoValueKnownState;
-  _cachedDependentOn?: RawCoID[];
-  _cachedNewContentSinceEmpty?: NewContentMessage[] | undefined;
-  _currentAsyncAddTransaction?: Promise<void>;
 
-  constructor(
-    header: CoValueHeader,
-    node: LocalNode,
-    internalInitSessions: Map<SessionID, SessionLog> = new Map(),
-  ) {
-    this.crypto = node.crypto;
-    this.id = idforHeader(header, node.crypto);
-    this.header = header;
-    this._sessionLogs = internalInitSessions;
-    this.node = node;
+  addTransaction(sessionID: SessionID, after: number, tx: PrivateTransaction | TrustingTransaction, signature?: Signature): Result<boolean, Error> {
+    const entry = new TransactionEntry(sessionID, after, tx) as TransactionEntry & {state: UnverifiedTransactionState};
 
-    if (header.ruleset.type == "ownedByGroup") {
-      this.node
-        .expectCoValueLoaded(header.ruleset.group)
-        .subscribe((_groupUpdate) => {
-          this._cachedContent = undefined;
-          const newContent = this.getCurrentContent();
-          for (const listener of this.listeners) {
-            listener(newContent);
-          }
-        });
-    }
-  }
-
-  get sessionLogs(): Map<SessionID, SessionLog> {
-    return this._sessionLogs;
-  }
-
-  testWithDifferentAccount(
-    account: ControlledAccountOrAgent,
-    currentSessionID: SessionID,
-  ): CoValueCore {
-    const newNode = this.node.testWithDifferentAccount(
-      account,
-      currentSessionID,
-    );
-
-    return newNode.expectCoValueLoaded(this.id);
-  }
-
-  knownState(): CoValueKnownState {
-    if (this._cachedKnownState) {
-      return this._cachedKnownState;
-    } else {
-      const knownState = this.knownStateUncached();
-      this._cachedKnownState = knownState;
-      return knownState;
-    }
-  }
-
-  /** @internal */
-  knownStateUncached(): CoValueKnownState {
-    const sessions: CoValueKnownState["sessions"] = {};
-
-    for (const [sessionID, sessionLog] of this.sessionLogs.entries()) {
-      sessions[sessionID] = sessionLog.transactions.length;
-    }
-
-    return {
-      id: this.id,
-      header: true,
-      sessions,
-    };
-  }
-
-  get meta(): JsonValue {
-    return this.header?.meta ?? null;
-  }
-
-  nextTransactionID(): TransactionID {
-    // This is an ugly hack to get a unique but stable session ID for editing the current account
-    const sessionID =
-      this.header.meta?.type === "account"
-        ? (this.node.currentSessionID.replace(
-            this.node.account.id,
-            this.node.account
-              .currentAgentID()
-              ._unsafeUnwrap({ withStackTrace: true }),
-          ) as SessionID)
-        : this.node.currentSessionID;
-
-    return {
-      sessionID,
-      txIndex: this.sessionLogs.get(sessionID)?.transactions.length || 0,
-    };
-  }
-
-  tryAddTransactions(
-    sessionID: SessionID,
-    newTransactions: Transaction[],
-    givenExpectedNewHash: Hash | undefined,
-    newSignature: Signature,
-  ): Result<true, TryAddTransactionsError> {
-    return this.node
-      .resolveAccountAgent(
-        accountOrAgentIDfromSessionID(sessionID),
-        "Expected to know signer of transaction",
-      )
-      .andThen((agent) => {
-        const signerID = this.crypto.getAgentSignerID(agent);
-
-        // const beforeHash = performance.now();
-        const { expectedNewHash, newStreamingHash } = this.expectedNewHashAfter(
-          sessionID,
-          newTransactions,
-        );
-        // const afterHash = performance.now();
-        // console.log(
-        //     "Hashing took",
-        //     afterHash - beforeHash
-        // );
-
-        if (givenExpectedNewHash && givenExpectedNewHash !== expectedNewHash) {
-          return err({
-            type: "InvalidHash",
-            id: this.id,
-            expectedNewHash,
-            givenExpectedNewHash,
-          } satisfies InvalidHashError);
-        }
-
-        // const beforeVerify = performance.now();
-        if (!this.crypto.verify(newSignature, expectedNewHash, signerID)) {
-          return err({
-            type: "InvalidSignature",
-            id: this.id,
-            newSignature,
-            sessionID,
-            signerID,
-          } satisfies InvalidSignatureError);
-        }
-        // const afterVerify = performance.now();
-        // console.log(
-        //     "Verify took",
-        //     afterVerify - beforeVerify
-        // );
-
-        this.doAddTransactions(
-          sessionID,
-          newTransactions,
-          newSignature,
-          expectedNewHash,
-          newStreamingHash,
-          "immediate",
-        );
-
-        return ok(true as const);
-      });
-  }
-
-  /*tryAddTransactionsAsync(
-        sessionID: SessionID,
-        newTransactions: Transaction[],
-        givenExpectedNewHash: Hash | undefined,
-        newSignature: Signature,
-    ): ResultAsync<true, TryAddTransactionsError> {
-        const currentAsyncAddTransaction = this._currentAsyncAddTransaction;
-        let maybeAwaitPrevious:
-            | ResultAsync<void, TryAddTransactionsError>
-            | undefined;
-        let thisDone = () => {};
-
-        if (currentAsyncAddTransaction) {
-            // eslint-disable-next-line neverthrow/must-use-result
-            maybeAwaitPrevious = ResultAsync.fromSafePromise(
-                currentAsyncAddTransaction,
-            );
-        } else {
-            // eslint-disable-next-line neverthrow/must-use-result
-            maybeAwaitPrevious = ResultAsync.fromSafePromise(Promise.resolve());
-            this._currentAsyncAddTransaction = new Promise((resolve) => {
-                thisDone = resolve;
-            });
-        }
-
-        return maybeAwaitPrevious
-            .andThen((_previousDone) =>
-                this.node
-                    .resolveAccountAgentAsync(
-                        accountOrAgentIDfromSessionID(sessionID),
-                        "Expected to know signer of transaction",
-                    )
-                    .andThen((agent) => {
-                        const signerID = this.crypto.getAgentSignerID(agent);
-
-                        const nTxBefore =
-                            this.sessionLogs.get(sessionID)?.transactions
-                                .length ?? 0;
-
-                        // const beforeHash = performance.now();
-                        return ResultAsync.fromSafePromise(
-                            this.expectedNewHashAfterAsync(
-                                sessionID,
-                                newTransactions,
-                            ),
-                        ).andThen(({ expectedNewHash, newStreamingHash }) => {
-                            // const afterHash = performance.now();
-                            // console.log(
-                            //     "Hashing took",
-                            //     afterHash - beforeHash
-                            // );
-
-                            const nTxAfter =
-                                this.sessionLogs.get(sessionID)?.transactions
-                                    .length ?? 0;
-
-                            if (nTxAfter !== nTxBefore) {
-                                const newTransactionLengthBefore =
-                                    newTransactions.length;
-                                newTransactions = newTransactions.slice(
-                                    nTxAfter - nTxBefore,
-                                );
-                                console.warn(
-                                    "Transactions changed while async hashing",
-                                    {
-                                        nTxBefore,
-                                        nTxAfter,
-                                        newTransactionLengthBefore,
-                                        remainingNewTransactions:
-                                            newTransactions.length,
-                                    },
-                                );
-                            }
-
-                            if (
-                                givenExpectedNewHash &&
-                                givenExpectedNewHash !== expectedNewHash
-                            ) {
-                                return err({
-                                    type: "InvalidHash",
-                                    id: this.id,
-                                    expectedNewHash,
-                                    givenExpectedNewHash,
-                                } satisfies InvalidHashError);
-                            }
-
-                            performance.mark("verifyStart" + this.id);
-                            if (
-                                !this.crypto.verify(
-                                    newSignature,
-                                    expectedNewHash,
-                                    signerID,
-                                )
-                            ) {
-                                return err({
-                                    type: "InvalidSignature",
-                                    id: this.id,
-                                    newSignature,
-                                    sessionID,
-                                    signerID,
-                                } satisfies InvalidSignatureError);
-                            }
-                            performance.mark("verifyEnd" + this.id);
-                            performance.measure(
-                                "verify" + this.id,
-                                "verifyStart" + this.id,
-                                "verifyEnd" + this.id,
-                            );
-
-                            this.doAddTransactions(
-                                sessionID,
-                                newTransactions,
-                                newSignature,
-                                expectedNewHash,
-                                newStreamingHash,
-                                "deferred",
-                            );
-
-                            return ok(true as const);
-                        });
-                    }),
-            )
-            .map((trueResult) => {
-                thisDone();
-                return trueResult;
-            })
-            .mapErr((err) => {
-                thisDone();
-                return err;
-            });
-    }*/
-
-  private doAddTransactions(
-    sessionID: SessionID,
-    newTransactions: Transaction[],
-    newSignature: Signature,
-    expectedNewHash: Hash,
-    newStreamingHash: StreamingHash,
-    notifyMode: "immediate" | "deferred",
-  ) {
-    if (this.node.crashed) {
-      throw new Error("Trying to add transactions after node is crashed");
-    }
-    const transactions = this.sessionLogs.get(sessionID)?.transactions ?? [];
-    transactions.push(...newTransactions);
-
-    const signatureAfter =
-      this.sessionLogs.get(sessionID)?.signatureAfter ?? {};
-
-    const lastInbetweenSignatureIdx = Object.keys(signatureAfter).reduce(
-      (max, idx) => (parseInt(idx) > max ? parseInt(idx) : max),
-      -1,
-    );
-
-    const sizeOfTxsSinceLastInbetweenSignature = transactions
-      .slice(lastInbetweenSignatureIdx + 1)
-      .reduce(
-        (sum, tx) =>
-          sum +
-          (tx.privacy === "private"
-            ? tx.encryptedChanges.length
-            : tx.changes.length),
-        0,
-      );
-
-    if (sizeOfTxsSinceLastInbetweenSignature > MAX_RECOMMENDED_TX_SIZE) {
-      // console.log(
-      //     "Saving inbetween signature for tx ",
-      //     sessionID,
-      //     transactions.length - 1,
-      //     sizeOfTxsSinceLastInbetweenSignature
-      // );
-      signatureAfter[transactions.length - 1] = newSignature;
-    }
-
-    this._sessionLogs.set(sessionID, {
-      transactions,
-      lastHash: expectedNewHash,
-      streamingHash: newStreamingHash,
-      lastSignature: newSignature,
-      signatureAfter: signatureAfter,
-    });
-
-    this._cachedContent = undefined;
-    this._cachedKnownState = undefined;
-    this._cachedDependentOn = undefined;
-    this._cachedNewContentSinceEmpty = undefined;
-
-    if (this.listeners.size > 0) {
-      if (notifyMode === "immediate") {
-        const content = this.getCurrentContent();
-        for (const listener of this.listeners) {
-          listener(content);
-        }
+    let session = this.sessionLogs.get(sessionID);
+    if (!session) {
+      if (after === 0) {
+        session = {
+          log: [],
+          lastHashed: null,
+          lastWithSignature: null,
+          lastVerified: null,
+        };
+        this.sessionLogs.set(sessionID, session);
       } else {
-        if (!this.nextDeferredNotify) {
-          this.nextDeferredNotify = new Promise((resolve) => {
-            setTimeout(() => {
-              this.nextDeferredNotify = undefined;
-              this.deferredUpdates = 0;
-              const content = this.getCurrentContent();
-              for (const listener of this.listeners) {
-                listener(content);
-              }
-              resolve();
-            }, 0);
-          });
-        }
-        this.deferredUpdates++;
-      }
-    }
-  }
-
-  deferredUpdates = 0;
-  nextDeferredNotify: Promise<void> | undefined;
-
-  subscribe(listener: (content?: RawCoValue) => void): () => void {
-    this.listeners.add(listener);
-    listener(this.getCurrentContent());
-
-    return () => {
-      this.listeners.delete(listener);
-    };
-  }
-
-  expectedNewHashAfter(
-    sessionID: SessionID,
-    newTransactions: Transaction[],
-  ): { expectedNewHash: Hash; newStreamingHash: StreamingHash } {
-    const streamingHash =
-      this.sessionLogs.get(sessionID)?.streamingHash.clone() ??
-      new StreamingHash(this.crypto);
-    for (const transaction of newTransactions) {
-      streamingHash.update(transaction);
-    }
-
-    const newStreamingHash = streamingHash.clone();
-
-    return {
-      expectedNewHash: streamingHash.digest(),
-      newStreamingHash,
-    };
-  }
-
-  async expectedNewHashAfterAsync(
-    sessionID: SessionID,
-    newTransactions: Transaction[],
-  ): Promise<{ expectedNewHash: Hash; newStreamingHash: StreamingHash }> {
-    const streamingHash =
-      this.sessionLogs.get(sessionID)?.streamingHash.clone() ??
-      new StreamingHash(this.crypto);
-    let before = performance.now();
-    for (const transaction of newTransactions) {
-      streamingHash.update(transaction);
-      const after = performance.now();
-      if (after - before > 1) {
-        // console.log("Hashing blocked for", after - before);
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        before = performance.now();
+        return err(new Error("Cannot add transaction after a non-zero index when we don't have a session log yet"));
       }
     }
 
-    const newStreamingHash = streamingHash.clone();
-
-    return {
-      expectedNewHash: streamingHash.digest(),
-      newStreamingHash,
-    };
-  }
-
-  makeTransaction(
-    changes: JsonValue[],
-    privacy: "private" | "trusting",
-  ): boolean {
-    const madeAt = Date.now();
-
-    let transaction: Transaction;
-
-    if (privacy === "private") {
-      const { secret: keySecret, id: keyID } = this.getCurrentReadKey();
-
-      if (!keySecret) {
-        throw new Error("Can't make transaction without read key secret");
+    if (after < session.log.length) {
+      const currentTxAtIdx = session.log[after];
+      if (stableStringify(currentTxAtIdx?.state.tx) === stableStringify(tx)) {
+        // If the transaction is already in the log, we don't need to add it again
+        return ok(false);
+      } else {
+        // TODO: show details in the error message
+        // TODO: potentially allow new different transactions to "repair" existing transactions that failed to verify?
+        return err(new Error("Tried to add a different transaction at the same index"));
       }
+    } else if (after > session.log.length) {
+      // TODO: show details in the error message
+      return err(new Error("Missing transactions in session log"));
+    }
 
-      const encrypted = this.crypto.encryptForTransaction(changes, keySecret, {
-        in: this.id,
-        tx: this.nextTransactionID(),
-      });
+    session.log.push(entry);
+    if (signature) {
+      entry.state.receivedSignature = signature;
+      session.lastWithSignature = session.log.length - 1;
+    }
 
-      this._decryptionCache[encrypted] = changes;
-
-      transaction = {
-        privacy: "private",
-        madeAt,
-        keyUsed: keyID,
-        encryptedChanges: encrypted,
-      };
+    // fast-path: append
+    if (this.orderedTxs.length == 0 || isTxEntryEarlier(this.orderedTxs[this.orderedTxs.length - 1]!, entry)) {
+      this.orderedTxs.push(entry);
     } else {
-      transaction = {
-        privacy: "trusting",
-        madeAt,
-        changes: stableStringify(changes),
-      };
-    }
-
-    // This is an ugly hack to get a unique but stable session ID for editing the current account
-    const sessionID =
-      this.header.meta?.type === "account"
-        ? (this.node.currentSessionID.replace(
-            this.node.account.id,
-            this.node.account
-              .currentAgentID()
-              ._unsafeUnwrap({ withStackTrace: true }),
-          ) as SessionID)
-        : this.node.currentSessionID;
-
-    const { expectedNewHash } = this.expectedNewHashAfter(sessionID, [
-      transaction,
-    ]);
-
-    const signature = this.crypto.sign(
-      this.node.account.currentSignerSecret(),
-      expectedNewHash,
-    );
-
-    const success = this.tryAddTransactions(
-      sessionID,
-      [transaction],
-      expectedNewHash,
-      signature,
-    )._unsafeUnwrap({ withStackTrace: true });
-
-    if (success) {
-      void this.node.syncManager.syncCoValue(this);
-    }
-
-    return success;
-  }
-
-  getCurrentContent(options?: {
-    ignorePrivateTransactions: true;
-  }): RawCoValue {
-    if (!options?.ignorePrivateTransactions && this._cachedContent) {
-      return this._cachedContent;
-    }
-
-    const newContent = coreToCoValue(this, options);
-
-    if (!options?.ignorePrivateTransactions) {
-      this._cachedContent = newContent;
-    }
-
-    return newContent;
-  }
-
-  getValidSortedTransactions(options?: {
-    ignorePrivateTransactions: boolean;
-  }): DecryptedTransaction[] {
-    const validTransactions = determineValidTransactions(this);
-
-    const allTransactions: DecryptedTransaction[] = [];
-
-    for (const { txID, tx } of validTransactions) {
-      if (tx.privacy === "trusting") {
-        allTransactions.push({
-          txID,
-          madeAt: tx.madeAt,
-          changes: parseJSON(tx.changes),
-        });
-        continue;
-      }
-
-      if (options?.ignorePrivateTransactions) {
-        continue;
-      }
-
-      const readKey = this.getReadKey(tx.keyUsed);
-
-      if (!readKey) {
-        continue;
-      }
-
-      let decryptedChanges = this._decryptionCache[tx.encryptedChanges];
-
-      if (!decryptedChanges) {
-        const decryptedString = this.crypto.decryptRawForTransaction(
-          tx.encryptedChanges,
-          readKey,
-          {
-            in: this.id,
-            tx: txID,
-          },
-        );
-        decryptedChanges = decryptedString && parseJSON(decryptedString);
-        this._decryptionCache[tx.encryptedChanges] = decryptedChanges;
-      }
-
-      if (!decryptedChanges) {
-        console.error("Failed to decrypt transaction despite having key");
-        continue;
-      }
-
-      allTransactions.push({
-        txID,
-        madeAt: tx.madeAt,
-        changes: decryptedChanges,
-      });
-    }
-
-    allTransactions.sort(
-      (a, b) =>
-        a.madeAt - b.madeAt ||
-        (a.txID.sessionID < b.txID.sessionID ? -1 : 1) ||
-        a.txID.txIndex - b.txID.txIndex,
-    );
-
-    return allTransactions;
-  }
-
-  getCurrentReadKey(): { secret: KeySecret | undefined; id: KeyID } {
-    if (this.header.ruleset.type === "group") {
-      const content = expectGroup(this.getCurrentContent());
-
-      const currentKeyId = content.get("readKey");
-
-      if (!currentKeyId) {
-        throw new Error("No readKey set");
-      }
-
-      const secret = this.getReadKey(currentKeyId);
-
-      return {
-        secret: secret,
-        id: currentKeyId,
-      };
-    } else if (this.header.ruleset.type === "ownedByGroup") {
-      return this.node
-        .expectCoValueLoaded(this.header.ruleset.group)
-        .getCurrentReadKey();
-    } else {
-      throw new Error(
-        "Only groups or values owned by groups have read secrets",
-      );
-    }
-  }
-
-  getReadKey(keyID: KeyID): KeySecret | undefined {
-    let key = readKeyCache.get(this)?.[keyID];
-    if (!key) {
-      key = this.getUncachedReadKey(keyID);
-      if (key) {
-        let cache = readKeyCache.get(this);
-        if (!cache) {
-          cache = {};
-          readKeyCache.set(this, cache);
-        }
-        cache[keyID] = key;
-      }
-    }
-    return key;
-  }
-
-  getUncachedReadKey(keyID: KeyID): KeySecret | undefined {
-    if (this.header.ruleset.type === "group") {
-      const content = expectGroup(
-        this.getCurrentContent({ ignorePrivateTransactions: true }),
-      );
-
-      const keyForEveryone = content.get(`${keyID}_for_everyone`);
-      if (keyForEveryone) return keyForEveryone;
-
-      // Try to find key revelation for us
-      const lookupAccountOrAgentID =
-        this.header.meta?.type === "account"
-          ? this.node.account
-              .currentAgentID()
-              ._unsafeUnwrap({ withStackTrace: true })
-          : this.node.account.id;
-
-      const lastReadyKeyEdit = content.lastEditAt(
-        `${keyID}_for_${lookupAccountOrAgentID}`,
-      );
-
-      if (lastReadyKeyEdit?.value) {
-        const revealer = lastReadyKeyEdit.by;
-        const revealerAgent = this.node
-          .resolveAccountAgent(revealer, "Expected to know revealer")
-          ._unsafeUnwrap({ withStackTrace: true });
-
-        const secret = this.crypto.unseal(
-          lastReadyKeyEdit.value,
-          this.node.account.currentSealerSecret(),
-          this.crypto.getAgentSealerID(revealerAgent),
-          {
-            in: this.id,
-            tx: lastReadyKeyEdit.tx,
-          },
-        );
-
-        if (secret) {
-          return secret as KeySecret;
+      // binary search
+      let low = 0;
+      let high = this.orderedTxs.length;
+      while (low < high) {
+        const mid = Math.floor((low + high) / 2);
+        if (isTxEntryEarlier(this.orderedTxs[mid]!, entry)) {
+          low = mid + 1;
+        } else {
+          high = mid;
         }
       }
 
-      // Try to find indirect revelation through previousKeys
-
-      for (const co of content.keys()) {
-        if (isKeyForKeyField(co) && co.startsWith(keyID)) {
-          const encryptingKeyID = co.split("_for_")[1] as KeyID;
-          const encryptingKeySecret = this.getReadKey(encryptingKeyID);
-
-          if (!encryptingKeySecret) {
-            continue;
-          }
-
-          const encryptedPreviousKey = content.get(co)!;
-
-          const secret = this.crypto.decryptKeySecret(
-            {
-              encryptedID: keyID,
-              encryptingID: encryptingKeyID,
-              encrypted: encryptedPreviousKey,
-            },
-            encryptingKeySecret,
-          );
-
-          if (secret) {
-            return secret as KeySecret;
-          } else {
-            console.error(
-              `Encrypting ${encryptingKeyID} key didn't decrypt ${keyID}`,
-            );
-          }
-        }
-      }
-
-      // try to find revelation to parent group read keys
-      for (const co of content.keys()) {
-        if (isParentGroupReference(co)) {
-          const parentGroupID = getParentGroupId(co);
-          const parentGroup = this.node.expectCoValueLoaded(
-            parentGroupID,
-            "Expected parent group to be loaded",
-          );
-
-          const parentKeys = this.findValidParentKeys(
-            keyID,
-            content,
-            parentGroup,
-          );
-
-          for (const parentKey of parentKeys) {
-            const revelationForParentKey = content.get(
-              `${keyID}_for_${parentKey.id}`,
-            );
-
-            if (revelationForParentKey) {
-              const secret = parentGroup.crypto.decryptKeySecret(
-                {
-                  encryptedID: keyID,
-                  encryptingID: parentKey.id,
-                  encrypted: revelationForParentKey,
-                },
-                parentKey.secret,
-              );
-
-              if (secret) {
-                return secret as KeySecret;
-              } else {
-                console.error(
-                  `Encrypting parent ${parentKey.id} key didn't decrypt ${keyID}`,
-                );
-              }
-            }
-          }
-        }
-      }
-
-      return undefined;
-    } else if (this.header.ruleset.type === "ownedByGroup") {
-      return this.node
-        .expectCoValueLoaded(this.header.ruleset.group)
-        .getReadKey(keyID);
-    } else {
-      throw new Error(
-        "Only groups or values owned by groups have read secrets",
-      );
+      this.orderedTxs.splice(low, 0, entry);
     }
+
+    return ok(true);
   }
 
-  findValidParentKeys(keyID: KeyID, group: RawGroup, parentGroup: CoValueCore) {
-    const validParentKeys: { id: KeyID; secret: KeySecret }[] = [];
+  hashTransactions() {
+    for (const session of this.sessionLogs.values()) {
+      if (session.lastWithSignature === null) {
+        continue;
+      }
 
-    for (const co of group.keys()) {
-      if (isKeyForKeyField(co) && co.startsWith(keyID)) {
-        const encryptingKeyID = co.split("_for_")[1] as KeyID;
-        const encryptingKeySecret = parentGroup.getReadKey(encryptingKeyID);
+      let currentHash;
+      let startIdx = session.lastHashed === null ? 0 : session.lastHashed + 1;
 
-        if (!encryptingKeySecret) {
+      if (session.lastHashed === null) {
+        currentHash = new StreamingHash(this.crypto);
+      } else {
+        if (session.lastWithSignature === session.lastHashed) {
           continue;
         }
 
-        validParentKeys.push({
-          id: encryptingKeyID,
-          secret: encryptingKeySecret,
-        });
+        const lastHashedTx = session.log[session.lastHashed];
+        if (!lastHashedTx) {
+          throw new Error("Missing transaction in session log");
+        }
+        if (lastHashedTx.state.type === "unverified" || !lastHashedTx.state.hashAndReceivedSignature) {
+          throw new Error("Cannot continue hashing from transaction that is not hashed");
+        } else {
+          currentHash = lastHashedTx.state.hashAndReceivedSignature.hash.clone();
+        }
+      }
+
+      for (let i = startIdx; i <= session.lastWithSignature; i++) {
+        const entry = session.log[i]!;
+        entry.hash(currentHash);
+        if (entry.state.type === "hashed" && entry.state.hashAndReceivedSignature) {
+          session.lastHashed = i;
+        }
       }
     }
-
-    return validParentKeys;
   }
 
-  getGroup(): RawGroup {
-    if (this.header.ruleset.type !== "ownedByGroup") {
-      throw new Error("Only values owned by groups have groups");
-    }
-
-    return expectGroup(
-      this.node
-        .expectCoValueLoaded(this.header.ruleset.group)
-        .getCurrentContent(),
-    );
-  }
-
-  getTx(txID: TransactionID): Transaction | undefined {
-    return this.sessionLogs.get(txID.sessionID)?.transactions[txID.txIndex];
-  }
-
-  newContentSince(
-    knownState: CoValueKnownState | undefined,
-  ): NewContentMessage[] | undefined {
-    const isKnownStateEmpty = !knownState?.header && !knownState?.sessions;
-
-    if (isKnownStateEmpty && this._cachedNewContentSinceEmpty) {
-      return this._cachedNewContentSinceEmpty;
-    }
-
-    let currentPiece: NewContentMessage = {
-      action: "content",
-      id: this.id,
-      header: knownState?.header ? undefined : this.header,
-      priority: getPriorityFromHeader(this.header),
-      new: {},
-    };
-
-    const pieces = [currentPiece];
-
-    const sentState: CoValueKnownState["sessions"] = {};
-
-    let pieceSize = 0;
-
-    let sessionsTodoAgain: Set<SessionID> | undefined | "first" = "first";
-
-    while (sessionsTodoAgain === "first" || sessionsTodoAgain?.size || 0 > 0) {
-      if (sessionsTodoAgain === "first") {
-        sessionsTodoAgain = undefined;
+  verifyTransactions() {
+    for (const [sessionID, session] of this.sessionLogs.entries()) {
+      if (session.lastHashed === null) {
+        continue;
       }
-      const sessionsTodo = sessionsTodoAgain ?? this.sessionLogs.keys();
 
-      for (const sessionIDKey of sessionsTodo) {
-        const sessionID = sessionIDKey as SessionID;
-        const log = this.sessionLogs.get(sessionID)!;
-        const knownStateForSessionID = knownState?.sessions[sessionID];
-        const sentStateForSessionID = sentState[sessionID];
-        const nextKnownSignatureIdx = getNextKnownSignatureIdx(
-          log,
-          knownStateForSessionID,
-          sentStateForSessionID,
-        );
+      const agent = this.node.resolveAccountAgent(accountOrAgentIDfromSessionID(sessionID));
 
-        const firstNewTxIdx =
-          sentStateForSessionID ?? knownStateForSessionID ?? 0;
-        const afterLastNewTxIdx =
-          nextKnownSignatureIdx === undefined
-            ? log.transactions.length
-            : nextKnownSignatureIdx + 1;
-
-        const nNewTx = Math.max(0, afterLastNewTxIdx - firstNewTxIdx);
-
-        if (nNewTx === 0) {
-          sessionsTodoAgain?.delete(sessionID);
-          continue;
-        }
-
-        if (afterLastNewTxIdx < log.transactions.length) {
-          if (!sessionsTodoAgain) {
-            sessionsTodoAgain = new Set();
-          }
-          sessionsTodoAgain.add(sessionID);
-        }
-
-        const oldPieceSize = pieceSize;
-        for (let txIdx = firstNewTxIdx; txIdx < afterLastNewTxIdx; txIdx++) {
-          const tx = log.transactions[txIdx]!;
-          pieceSize +=
-            tx.privacy === "private"
-              ? tx.encryptedChanges.length
-              : tx.changes.length;
-        }
-
-        if (pieceSize >= MAX_RECOMMENDED_TX_SIZE) {
-          currentPiece = {
-            action: "content",
-            id: this.id,
-            header: undefined,
-            new: {},
-            priority: getPriorityFromHeader(this.header),
-          };
-          pieces.push(currentPiece);
-          pieceSize = pieceSize - oldPieceSize;
-        }
-
-        let sessionEntry = currentPiece.new[sessionID];
-        if (!sessionEntry) {
-          sessionEntry = {
-            after: sentStateForSessionID ?? knownStateForSessionID ?? 0,
-            newTransactions: [],
-            lastSignature: "WILL_BE_REPLACED" as Signature,
-          };
-          currentPiece.new[sessionID] = sessionEntry;
-        }
-
-        for (let txIdx = firstNewTxIdx; txIdx < afterLastNewTxIdx; txIdx++) {
-          const tx = log.transactions[txIdx]!;
-          sessionEntry.newTransactions.push(tx);
-        }
-
-        sessionEntry.lastSignature =
-          nextKnownSignatureIdx === undefined
-            ? log.lastSignature!
-            : log.signatureAfter[nextKnownSignatureIdx]!;
-
-        sentState[sessionID] =
-          (sentStateForSessionID ?? knownStateForSessionID ?? 0) + nNewTx;
+      if (agent.isErr()) {
+        console.error("Failed to resolve signer for session", sessionID, agent.error);
+        continue;
       }
+
+      // TODO: iterate over all transactions, verify hashed ones
+
+      const lastHashedTx = session.log[session.lastHashed]!;
+      if (lastHashedTx.state.type !== "hashed" || !lastHashedTx.state.hashAndReceivedSignature) {
+        throw new Error("Cannot verify transaction that is not hashed");
+      }
+
+      const hash = lastHashedTx.state.hashAndReceivedSignature.hash;
+      const signature = lastHashedTx.state.hashAndReceivedSignature.signature;
+
+      const signerID = this.crypto.getAgentSignerID(agent.value);
+      const verified =
     }
-
-    const piecesWithContent = pieces.filter(
-      (piece) => Object.keys(piece.new).length > 0 || piece.header,
-    );
-
-    if (piecesWithContent.length === 0) {
-      return undefined;
-    }
-
-    if (isKnownStateEmpty) {
-      this._cachedNewContentSinceEmpty = piecesWithContent;
-    }
-
-    return piecesWithContent;
-  }
-
-  getDependedOnCoValues(): RawCoID[] {
-    if (this._cachedDependentOn) {
-      return this._cachedDependentOn;
-    } else {
-      const dependentOn = this.getDependedOnCoValuesUncached();
-      this._cachedDependentOn = dependentOn;
-      return dependentOn;
-    }
-  }
-
-  /** @internal */
-  getDependedOnCoValuesUncached(): RawCoID[] {
-    return this.header.ruleset.type === "group"
-      ? getGroupDependentKeyList(expectGroup(this.getCurrentContent()).keys())
-      : this.header.ruleset.type === "ownedByGroup"
-        ? [
-            this.header.ruleset.group,
-            ...new Set(
-              [...this.sessionLogs.keys()]
-                .map((sessionID) =>
-                  accountOrAgentIDfromSessionID(sessionID as SessionID),
-                )
-                .filter(
-                  (session): session is RawAccountID =>
-                    isAccountID(session) && session !== this.id,
-                ),
-            ),
-          ]
-        : [];
   }
 }
 
-function getNextKnownSignatureIdx(
-  log: SessionLog,
-  knownStateForSessionID?: number,
-  sentStateForSessionID?: number,
-) {
-  return Object.keys(log.signatureAfter)
-    .map(Number)
-    .sort((a, b) => a - b)
-    .find(
-      (idx) => idx >= (sentStateForSessionID ?? knownStateForSessionID ?? -1),
-    );
+function isTxEntryEarlier(tx1: TransactionEntry, tx2: TransactionEntry) {
+  if (tx1.state.tx.madeAt < tx2.state.tx.madeAt) {
+    return true;
+  } else if (tx1.state.tx.madeAt > tx2.state.tx.madeAt) {
+    return false;
+  } else if (tx1.sessionID < tx2.sessionID) {
+    return true;
+  } else if (tx1.sessionID > tx2.sessionID) {
+    return false;
+  } else {
+    return tx1.txIdx < tx2.txIdx;
+  }
 }
-
-export type InvalidHashError = {
-  type: "InvalidHash";
-  id: RawCoID;
-  expectedNewHash: Hash;
-  givenExpectedNewHash: Hash;
-};
-
-export type InvalidSignatureError = {
-  type: "InvalidSignature";
-  id: RawCoID;
-  newSignature: Signature;
-  sessionID: SessionID;
-  signerID: SignerID;
-};
-
-export type TryAddTransactionsError =
-  | ResolveAccountAgentError
-  | InvalidHashError
-  | InvalidSignatureError;
