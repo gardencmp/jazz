@@ -13,7 +13,7 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        project: ["tests/e2e", "examples/chat", "examples/music-player", "examples/pets", "examples/onboarding"]
+        project: ["tests/e2e", "examples/chat", "examples/file-share-svelte", "examples/music-player", "examples/pets", "examples/onboarding"]
 
     steps:
       - uses: actions/checkout@v3
