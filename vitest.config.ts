@@ -8,7 +8,7 @@ export default defineConfig({
       enabled: false,
       provider: "istanbul",
       include: ["packages/*/src/**/*.ts"],
-      exclude: ["packages/*/src/tests"],
+      exclude: ["packages/*/src/tests", "packages/jazz-svelte/*"],
       reporter: ["html"],
       thresholds: {
         global: {
