@@ -109,6 +109,9 @@ importers:
       hash-slash:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
+      jazz-browser-media-images:
+        specifier: ^0.8.38
+        version: 0.8.38(@opentelemetry/api@1.9.0)
       jazz-react:
         specifier: workspace:0.8.38
         version: link:../../packages/jazz-react
@@ -4104,7 +4107,7 @@ packages:
   '@radix-ui/react-compose-refs@1.1.0':
     resolution: {integrity: sha512-b4inOtiaOnYf9KWyO3jAeeCG6FeyfY6ldiEPanbUjWd+xIk5wZeHa8yVwmrJ2vderhu/BQvzCrJI0lHd+wIiqw==}
     peerDependencies:
-      '@types/react': ^18.2.32
+      '@types/react': '*'
       react: 18.3.1
     peerDependenciesMeta:
       '@types/react':
@@ -4188,8 +4191,8 @@ packages:
   '@radix-ui/react-focus-scope@1.1.0':
     resolution: {integrity: sha512-200UD8zylvEyL8Bx+z76RJnASR2gRMuxlgFCPAe/Q/679a/r0eK3MBVYMb7vZODZcffZBdob1EGnky78xmVvcA==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -4201,7 +4204,7 @@ packages:
   '@radix-ui/react-id@1.1.0':
     resolution: {integrity: sha512-EJUrI8yYh7WOjNOqpoJaf1jlFIH2LvtgAl+YcFqNCa+4hj64ZXmPkAKOFs/ukjz3byN6bdb/AVUqHkI8/uWWMA==}
     peerDependencies:
-      '@types/react': ^18.2.32
+      '@types/react': '*'
       react: 18.3.1
     peerDependenciesMeta:
       '@types/react':
@@ -4223,8 +4226,8 @@ packages:
   '@radix-ui/react-popper@1.2.0':
     resolution: {integrity: sha512-ZnRMshKF43aBxVWPWvbj21+7TQCvhuULWJ4gNIKYpRlQt5xGRhLx66tMp8pya2UkGHTSlhpXwmjqltDYHhw7Vg==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -4301,8 +4304,8 @@ packages:
   '@radix-ui/react-primitive@2.0.0':
     resolution: {integrity: sha512-ZSpFm0/uHa8zTvKBDjLFWLo8dkr4MBsiDLz0g3gMUwqgLHz9rTaRRGYDgvZPtBJgYCBKXkS9fzmoySgr8CO6Cw==}
     peerDependencies:
-      '@types/react': ^18.2.32
-      '@types/react-dom': ^18.2.14
+      '@types/react': '*'
+      '@types/react-dom': '*'
       react: 18.3.1
       react-dom: 18.3.1
     peerDependenciesMeta:
@@ -6379,6 +6382,20 @@ packages:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
     engines: {iojs: '>= 1.0.0', node: '>= 0.12.0'}
 
+  cojson-storage-indexeddb@0.8.38:
+    resolution: {integrity: sha512-ifg3kI9O0x3CT0fV6HFYxVOaNoaQHrQYWUgsO11t3PhRdoO61w/wHxVX1LyWLGRL0F7GKyTXZfBthCJLf+6yGQ==}
+
+  cojson-storage@0.8.38:
+    resolution: {integrity: sha512-0KfR6AOx4MI7ULrVAuf+/fMAKZqwbJfJ04VaR/og0/wNzT1eg1AFsemAPZ0j5hDCALi1248MyyTsndalid9Lzw==}
+
+  cojson-transport-ws@0.8.38:
+    resolution: {integrity: sha512-mSP3GSB4SbadCZu5OJ33S4OqT/8Y6PVRBBPzpdcWrpxaulknVahZX0gMenuXWeLK96GfYLyS8T8J3KOqTWjXOQ==}
+
+  cojson@0.8.38:
+    resolution: {integrity: sha512-K5j2zsNIL1GdNK/gEUjO0m9bbAO96K39C4pKK0KiStMbOL7VFCJOyo87gOWyD9NSZzqT8cnEWcGeo4EEoZMdQA==}
+    peerDependencies:
+      '@opentelemetry/api': ^1.0.0
+
   collect-v8-coverage@1.0.2:
     resolution: {integrity: sha512-lHl4d5/ONEbLlJvaJNtsF/Lz+WvB07u2ycqTYbdrq7UypDXailES4valYb2eWiJFxZlVmpGekfqoxQhzyFdT4Q==}
 
@@ -8165,6 +8182,15 @@ packages:
 
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
+
+  jazz-browser-media-images@0.8.38:
+    resolution: {integrity: sha512-JurNKj120JVkQwzOHlZEePcC2Xb3/SXoViu8k/R0Fr54ODUcB8km2bNSVVmtKuauQMu18yXFDduxl/eSJTfMjw==}
+
+  jazz-browser@0.8.38:
+    resolution: {integrity: sha512-87pz/4Cw8kDiKGeik8f00k/kQ9e6+sFR59Q0nGUqCwF5PohuyFLMeRI2yVxFO2V82K4WeRRaXR6tV6qEiWeAKw==}
+
+  jazz-tools@0.8.38:
+    resolution: {integrity: sha512-pR5ZwtHX5uYK/FQ7A3guO8mNLxy84nr/iIU52dCR3wGHfeFZgPMteWVqMqMLYu8Ax2NR/WzE4nMyv3DCLoPkcQ==}
 
   jest-changed-files@29.7.0:
     resolution: {integrity: sha512-fEArFiwf1BpQ+4bXSprcDc3/x4HSzL4al2tozwVpDFpsxALjLYdyiIK4e5Vz66GQJIbXJ82+35PtysofptNX2w==}
@@ -17218,6 +17244,38 @@ snapshots:
 
   co@4.6.0: {}
 
+  cojson-storage-indexeddb@0.8.38(@opentelemetry/api@1.9.0):
+    dependencies:
+      cojson: 0.8.38(@opentelemetry/api@1.9.0)
+      cojson-storage: 0.8.38(@opentelemetry/api@1.9.0)
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+
+  cojson-storage@0.8.38(@opentelemetry/api@1.9.0):
+    dependencies:
+      cojson: 0.8.38(@opentelemetry/api@1.9.0)
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+
+  cojson-transport-ws@0.8.38(@opentelemetry/api@1.9.0):
+    dependencies:
+      cojson: 0.8.38(@opentelemetry/api@1.9.0)
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+
+  cojson@0.8.38(@opentelemetry/api@1.9.0):
+    dependencies:
+      '@hazae41/berith': 1.2.6
+      '@noble/ciphers': 0.1.4
+      '@noble/curves': 1.3.0
+      '@noble/hashes': 1.4.0
+      '@opentelemetry/api': 1.9.0
+      '@scure/base': 1.1.6
+      hash-wasm: 4.11.0
+      neverthrow: 7.0.1
+      queueueue: 4.1.2
+
   collect-v8-coverage@1.0.2: {}
 
   color-convert@1.9.3:
@@ -19235,6 +19293,35 @@ snapshots:
       '@isaacs/cliui': 8.0.2
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
+
+  jazz-browser-media-images@0.8.38(@opentelemetry/api@1.9.0):
+    dependencies:
+      '@types/image-blob-reduce': 4.1.4
+      image-blob-reduce: 4.1.0
+      jazz-browser: 0.8.38(@opentelemetry/api@1.9.0)
+      jazz-tools: 0.8.38(@opentelemetry/api@1.9.0)
+      pica: 9.0.1
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+
+  jazz-browser@0.8.38(@opentelemetry/api@1.9.0):
+    dependencies:
+      '@scure/bip39': 1.3.0
+      cojson: 0.8.38(@opentelemetry/api@1.9.0)
+      cojson-storage-indexeddb: 0.8.38(@opentelemetry/api@1.9.0)
+      cojson-transport-ws: 0.8.38(@opentelemetry/api@1.9.0)
+      jazz-tools: 0.8.38(@opentelemetry/api@1.9.0)
+      typescript: 5.6.3
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+
+  jazz-tools@0.8.38(@opentelemetry/api@1.9.0):
+    dependencies:
+      cojson: 0.8.38(@opentelemetry/api@1.9.0)
+      fast-check: 3.21.0
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
 
   jest-changed-files@29.7.0:
     dependencies:

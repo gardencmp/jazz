@@ -1,5 +1,8 @@
 import clsx from "clsx";
-import { useId } from "react";
+import { ProgressiveImg } from "jazz-react";
+import { ImageDefinition } from "jazz-tools";
+import { ImageIcon } from "lucide-react";
+import { useId, useRef } from "react";
 
 export function AppContainer(props: { children: React.ReactNode }) {
   return (
@@ -56,7 +59,7 @@ export function BubbleBody(props: {
     <div
       className={clsx(
         "line-clamp-10 text-ellipsis whitespace-pre-wrap",
-        "rounded-2xl max-w-full py-1 px-3 shadow-sm",
+        "rounded-2xl overflow-hidden max-w-[calc(100%-5rem)] shadow-sm p-1",
         props.fromMe
           ? "bg-white dark:bg-stone-700 dark:text-white"
           : "bg-blue text-white",
@@ -64,6 +67,23 @@ export function BubbleBody(props: {
     >
       {props.children}
     </div>
+  );
+}
+
+export function BubbleText(props: { text: string }) {
+  return <p className="px-2 leading-relaxed">{props.text}</p>;
+}
+
+export function BubbleImage(props: { image: ImageDefinition }) {
+  return (
+    <ProgressiveImg image={props.image}>
+      {({ src }) => (
+        <img
+          className="h-auto max-h-[20rem] max-w-full rounded-t-xl mb-1"
+          src={src}
+        />
+      )}
+    </ProgressiveImg>
   );
 }
 
@@ -75,17 +95,59 @@ export function BubbleInfo(props: { by: string | undefined; madeAt: Date }) {
   );
 }
 
-export function ChatInput(props: { onSubmit: (text: string) => void }) {
+export function InputBar(props: { children: React.ReactNode }) {
+  return (
+    <div className="p-3 bg-white border-t shadow-2xl mt-auto flex gap-1 dark:bg-transparent dark:border-stone-800">
+      {props.children}
+    </div>
+  );
+}
+
+export function ImageInput({
+  onImageChange,
+}: { onImageChange?: (event: React.ChangeEvent<HTMLInputElement>) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const onUploadClick = () => {
+    inputRef.current?.click();
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Send image"
+        title="Send image"
+        onClick={onUploadClick}
+        className="text-stone-500 p-1.5 rounded-full hover:bg-stone-100 hover:text-stone-800 dark:hover:bg-stone-800 dark:hover:text-stone-200 transition-colors"
+      >
+        <ImageIcon size={24} strokeWidth={1.5} />
+      </button>
+
+      <label className="sr-only">
+        Image
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/png, image/jpeg, image/gif"
+          onChange={onImageChange}
+        />
+      </label>
+    </>
+  );
+}
+
+export function TextInput(props: { onSubmit: (text: string) => void }) {
   const inputId = useId();
 
   return (
-    <div className="p-3 bg-white border-t shadow-2xl mt-auto dark:bg-transparent dark:border-stone-800">
+    <div className="flex-1">
       <label className="sr-only" htmlFor={inputId}>
         Type a message and press Enter
       </label>
       <input
         id={inputId}
-        className="rounded-full py-2 px-4 border block w-full dark:bg-black dark:text-white dark:border-stone-700"
+        className="rounded-full py-1 px-3 border block w-full placeholder:text-stone-500 dark:bg-black dark:text-white dark:border-stone-700"
         placeholder="Type a message and press Enter"
         maxLength={2048}
         onKeyDown={({ key, currentTarget: input }) => {
