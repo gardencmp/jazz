@@ -13,18 +13,20 @@
     "lint": "prettier --check . && eslint .",
     "format-and-lint": "pnpm run format && pnpm run lint",
     "format-and-lint:fix": "pnpm run format --write && pnpm run lint --fix",
-    "test:unit": "vitest",
-    "test": "npm run test:unit -- --run"
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
   },
   "devDependencies": {
     "@sveltejs/adapter-vercel": "^5.5.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@types/is-ci": "^3.0.4",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.7.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.36.0",
     "globals": "^15.0.0",
+    "is-ci": "^3.0.1",
     "prettier": "^3.3.2",
     "prettier-plugin-svelte": "^3.2.6",
     "prettier-plugin-tailwindcss": "^0.6.5",
@@ -33,8 +35,7 @@
     "tailwindcss": "^3.4.9",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.0.0",
-    "vite": "^5.0.3",
-    "vitest": "^2.0.4"
+    "vite": "^5.0.3"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.15",

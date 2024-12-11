@@ -15,6 +15,7 @@ export class FileShareProfile extends Profile {
 export class ListOfSharedFiles extends CoList.Of(co.ref(SharedFile)) {}
 
 export class FileShareAccountRoot extends CoMap {
+  type = co.string;
   sharedFiles = co.ref(ListOfSharedFiles);
   publicGroup = co.ref(Group);
 }
@@ -26,35 +27,25 @@ export class FileShareAccount extends Account {
   /** The account migration is run on account creation and on every log-in.
    *  You can use it to set up the account root and any other initial CoValues you need.
    */
-  async migrate(this: FileShareAccount, creationProps?: { name: string }) {
+  async migrate(creationProps?: { name: string }) {
     super.migrate(creationProps);
 
     await this._refs.root?.load();
 
     // Initialize root if it doesn't exist
-    if (!this.root) {
+    if (!this.root || this.root.type !== 'file-share-account') {
       // Create a group that will own all shared files
       const publicGroup = Group.create({ owner: this });
-      publicGroup.addMember(this, 'admin');
       publicGroup.addMember('everyone', 'reader');
 
       this.root = FileShareAccountRoot.create(
         {
+          type: 'file-share-account',
           sharedFiles: ListOfSharedFiles.create([], { owner: publicGroup }),
           publicGroup
         },
         { owner: this }
       );
-    }
-
-    console.log('root', this.root);
-
-    // Ensure the group exists and has everyone as reader
-    if (!this.root.publicGroup) {
-      const publicGroup = Group.create({ owner: this });
-      publicGroup.addMember(this, 'admin');
-      publicGroup.addMember('everyone', 'reader');
-      this.root.publicGroup = publicGroup;
     }
   }
 }
