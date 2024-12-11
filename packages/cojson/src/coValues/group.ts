@@ -364,7 +364,7 @@ export class RawGroup<
     return keys;
   }
 
-  getCurrentKeyReadId() {
+  getCurrentReadKeyId() {
     if (this.myRole() === "writeOnly") {
       const accountId = this.core.node.account.id;
 
