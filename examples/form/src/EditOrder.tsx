@@ -1,5 +1,7 @@
 import { ID } from "jazz-tools";
+import { LinkToHome } from "./LinkToHome.tsx";
 import { OrderForm } from "./OrderForm.tsx";
+import { OrderThumbnail } from "./OrderThumbnail.tsx";
 import { useCoState } from "./main.tsx";
 import { BubbleTeaOrder } from "./schema.ts";
 
@@ -10,11 +12,15 @@ export function EditOrder(props: { id: ID<BubbleTeaOrder> }) {
 
   return (
     <>
-      <section>
-        <h1>Edit your bubble tea order 🧋</h1>
+      <LinkToHome />
 
-        <OrderForm order={order} />
-      </section>
+      <OrderThumbnail order={order} />
+
+      <h1 className="font-semibold text-lg dark:text-white">
+        Edit your bubble tea order 🧋
+      </h1>
+
+      <OrderForm order={order} />
     </>
   );
 }

@@ -13,17 +13,20 @@ function App() {
   return (
     <>
       <header>
-        <nav className="container py-2 border-b flex justify-between">
+        <nav className="container py-2 border-b flex items-center justify-between">
           <span>
             You're logged in as <strong>{me?.profile?.name}</strong>
           </span>
-          <button className="btn" onClick={() => logOut()}>
+          <button
+            className="bg-stone-100 py-1.5 px-2 text-sm rounded-md dark:bg-stone-950"
+            onClick={() => logOut()}
+          >
             Log out
           </button>
         </nav>
       </header>
 
-      <main className="container py-8">
+      <main className="container py-8 space-y-8">
         {router.route({
           "/": () => <Orders />,
           "/order": () => <CreateOrder />,

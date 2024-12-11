@@ -1,4 +1,6 @@
+import { useIframeHashRouter } from "hash-slash";
 import { ID } from "jazz-tools";
+import { LinkToHome } from "./LinkToHome.tsx";
 import { OrderForm } from "./OrderForm.tsx";
 import { useAccount, useCoState } from "./main.tsx";
 import {
@@ -9,6 +11,7 @@ import {
 
 export function CreateOrder() {
   const { me } = useAccount({ profile: { draft: {}, orders: [] } });
+  const router = useIframeHashRouter();
 
   if (!me?.profile) return;
 
@@ -23,9 +26,21 @@ export function CreateOrder() {
       },
       { owner: me.profile._owner },
     );
+
+    router.navigate("/");
   };
 
-  return <CreateOrderForm id={me?.profile?.draft.id} onSave={onSave} />;
+  return (
+    <>
+      <LinkToHome />
+
+      <h1 className="font-semibold text-lg dark:text-white">
+        Make a new bubble tea order 🧋
+      </h1>
+
+      <CreateOrderForm id={me?.profile?.draft.id} onSave={onSave} />
+    </>
+  );
 }
 
 function CreateOrderForm({
