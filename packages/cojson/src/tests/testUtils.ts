@@ -1,11 +1,11 @@
-import { expect } from "vitest";
+import { expect, vi } from "vitest";
 import { ControlledAgent } from "../coValues/account.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { CoID, RawCoValue } from "../exports.js";
 import { SessionID } from "../ids.js";
 import { LocalNode } from "../localNode.js";
 import { connectedPeers } from "../streamUtils.js";
-import { Peer } from "../sync.js";
+import { Peer, SyncMessage } from "../sync.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 
 const Crypto = await WasmCrypto.create();
@@ -231,6 +231,35 @@ export async function loadCoValueOrFail<V extends RawCoValue>(
     throw new Error("CoValue not found");
   }
   return value;
+}
+
+export function blockMessageTypeOnOutgoingPeer(
+  peer: Peer,
+  messageType: SyncMessage["action"],
+) {
+  const push = peer.outgoing.push;
+  const pushSpy = vi.spyOn(peer.outgoing, "push");
+
+  const blockedMessages: SyncMessage[] = [];
+
+  pushSpy.mockImplementation(async (msg) => {
+    if (msg.action === messageType) {
+      blockedMessages.push(msg);
+      return Promise.resolve();
+    }
+
+    return push.call(peer.outgoing, msg);
+  });
+
+  return {
+    sendBlockedMessages: async () => {
+      for (const msg of blockedMessages) {
+        await push.call(peer.outgoing, msg);
+      }
+      blockedMessages.length = 0;
+    },
+    unblock: () => pushSpy.mockRestore(),
+  };
 }
 
 export function hotSleep(ms: number) {

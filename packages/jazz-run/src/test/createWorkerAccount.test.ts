@@ -1,4 +1,8 @@
+import { LocalNode } from "cojson";
+import { createWebSocketPeer } from "cojson-transport-ws";
+import { WasmCrypto } from "jazz-tools";
 import { describe, expect, it, onTestFinished } from "vitest";
+import { WebSocket } from "ws";
 import { createWorkerAccount } from "../createWorkerAccount.js";
 import { startSyncServer } from "../startSyncServer.js";
 
@@ -28,6 +32,21 @@ describe("createWorkerAccount - integration tests", () => {
 
     expect(accountId).toBeDefined();
     expect(agentSecret).toBeDefined();
+
+    const peer = createWebSocketPeer({
+      id: "upstream",
+      websocket: new WebSocket(`ws://localhost:${address.port}`),
+      role: "server",
+    });
+
+    const crypto = await WasmCrypto.create();
+    const { node } = await LocalNode.withNewlyCreatedAccount({
+      creationProps: { name: "test" },
+      peersToLoadFrom: [peer],
+      crypto,
+    });
+
+    expect(await node.load(accountId as any)).not.toBe("unavailable");
   });
 
   it("should create a worker account using the Jazz cloud", async () => {
@@ -38,5 +57,20 @@ describe("createWorkerAccount - integration tests", () => {
 
     expect(accountId).toBeDefined();
     expect(agentSecret).toBeDefined();
+
+    const peer = createWebSocketPeer({
+      id: "upstream",
+      websocket: new WebSocket(`wss://cloud.jazz.tools`),
+      role: "server",
+    });
+
+    const crypto = await WasmCrypto.create();
+    const { node } = await LocalNode.withNewlyCreatedAccount({
+      creationProps: { name: "test" },
+      peersToLoadFrom: [peer],
+      crypto,
+    });
+
+    expect(await node.load(accountId as any)).not.toBe("unavailable");
   });
 });

@@ -1,5 +1,5 @@
 import { PeerState } from "./PeerState.js";
-import { SyncStateSubscriptionManager } from "./SyncStateSubscriptionManager.js";
+import { SyncStateManager } from "./SyncStateManager.js";
 import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
 import { Signature } from "./crypto/crypto.js";
@@ -117,10 +117,10 @@ export class SyncManager {
 
   constructor(local: LocalNode) {
     this.local = local;
-    this.syncStateSubscriptionManager = new SyncStateSubscriptionManager(this);
+    this.syncState = new SyncStateManager(this);
   }
 
-  syncStateSubscriptionManager: SyncStateSubscriptionManager;
+  syncState: SyncStateManager;
 
   peersInPriorityOrder(): PeerState[] {
     return Object.values(this.peers).sort((a, b) => {
@@ -298,7 +298,7 @@ export class SyncManager {
 
     const unsubscribeFromKnownStatesUpdates = peerState.knownStates.subscribe(
       (id) => {
-        this.syncStateSubscriptionManager.triggerUpdate(peer.id, id);
+        this.syncState.triggerUpdate(peer.id, id);
       },
     );
 
@@ -708,33 +708,57 @@ export class SyncManager {
     }
 
     for (const peer of this.getPeers()) {
-      this.syncStateSubscriptionManager.triggerUpdate(peer.id, coValue.id);
+      this.syncState.triggerUpdate(peer.id, coValue.id);
     }
   }
 
-  async waitForUploadIntoPeer(peerId: PeerID, id: RawCoID) {
-    const isAlreadyUploaded =
-      this.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
-        peerId,
-        id,
-      );
+  async waitForSyncWithPeer(peerId: PeerID, id: RawCoID, timeout: number) {
+    const { syncState } = this;
+    const currentSyncState = syncState.getCurrentSyncState(peerId, id);
 
-    if (isAlreadyUploaded) {
+    const isTheConditionAlreadyMet = currentSyncState.uploaded;
+
+    if (isTheConditionAlreadyMet) {
       return true;
     }
 
-    return new Promise((resolve) => {
-      const unsubscribe =
-        this.syncStateSubscriptionManager.subscribeToPeerUpdates(
-          peerId,
-          (knownState, syncState) => {
-            if (syncState.isUploaded && knownState.id === id) {
-              resolve(true);
-              unsubscribe?.();
-            }
-          },
-        );
+    return new Promise((resolve, reject) => {
+      const unsubscribe = this.syncState.subscribeToPeerUpdates(
+        peerId,
+        (knownState, syncState) => {
+          if (syncState.uploaded && knownState.id === id) {
+            resolve(true);
+            unsubscribe?.();
+            clearTimeout(timeoutId);
+          }
+        },
+      );
+
+      const timeoutId = setTimeout(() => {
+        reject(new Error(`Timeout waiting for sync on ${peerId}/${id}`));
+        unsubscribe?.();
+      }, timeout);
     });
+  }
+
+  async waitForSync(id: RawCoID, timeout = 30_000) {
+    const peers = this.getPeers();
+
+    return Promise.all(
+      peers.map((peer) => this.waitForSyncWithPeer(peer.id, id, timeout)),
+    );
+  }
+
+  async waitForAllCoValuesSync(timeout = 60_000) {
+    const coValues = this.local.coValuesStore.getValues();
+    const validCoValues = Array.from(coValues).filter(
+      (coValue) =>
+        coValue.state.type === "available" || coValue.state.type === "loading",
+    );
+
+    return Promise.all(
+      validCoValues.map((coValue) => this.waitForSync(coValue.id, timeout)),
+    );
   }
 
   gracefulShutdown() {

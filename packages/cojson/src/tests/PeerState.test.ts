@@ -188,4 +188,53 @@ describe("PeerState", () => {
     expect(knownStatesSpy).toHaveBeenCalledWith(action);
     expect(optimisticKnownStatesSpy).toHaveBeenCalledWith(action);
   });
+
+  test("should use same reference for knownStates and optimisticKnownStates for storage peers", () => {
+    const mockStoragePeer: Peer = {
+      id: "test-storage-peer",
+      role: "storage",
+      priority: 1,
+      crashOnClose: false,
+      incoming: (async function* () {})(),
+      outgoing: {
+        push: vi.fn().mockResolvedValue(undefined),
+        close: vi.fn(),
+      },
+    };
+    const peerState = new PeerState(mockStoragePeer, undefined);
+
+    // Verify they are the same reference
+    expect(peerState.knownStates).toBe(peerState.optimisticKnownStates);
+
+    // Verify that dispatching only updates one state
+    const knownStatesSpy = vi.spyOn(peerState.knownStates, "dispatch");
+    const optimisticKnownStatesSpy = vi.spyOn(
+      peerState.optimisticKnownStates,
+      "dispatch",
+    );
+
+    const action: PeerKnownStateActions = {
+      type: "SET",
+      id: "co_z1",
+      value: {
+        id: "co_z1",
+        header: false,
+        sessions: {},
+      },
+    };
+    peerState.dispatchToKnownStates(action);
+
+    // Only one dispatch should happen since they're the same reference
+    expect(knownStatesSpy).toHaveBeenCalledTimes(1);
+    expect(knownStatesSpy).toHaveBeenCalledWith(action);
+    expect(optimisticKnownStatesSpy).toHaveBeenCalledTimes(1);
+    expect(optimisticKnownStatesSpy).toHaveBeenCalledWith(action);
+  });
+
+  test("should use separate references for knownStates and optimisticKnownStates for non-storage peers", () => {
+    const { peerState } = setup(); // Uses a regular peer
+
+    // Verify they are different references
+    expect(peerState.knownStates).not.toBe(peerState.optimisticKnownStates);
+  });
 });

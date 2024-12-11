@@ -87,12 +87,12 @@ test("Remove a member from a group where the admin role is inherited", async () 
   // The reader should be automatically kicked out of the child group
   await group.removeMember(node3.account);
 
-  await node1.syncManager.waitForUploadIntoPeer(node1ToNode2Peer.id, group.id);
+  await group.core.waitForSync();
 
   // Update the map to check that node3 can't read updates anymore
   map.set("test", "Hidden to node3");
 
-  await node2.syncManager.waitForUploadIntoPeer(node2ToNode3Peer.id, map.id);
+  await map.core.waitForSync();
 
   // Check that the value has not been updated on node3
   expect(mapOnNode3.get("test")).toEqual("Available to everyone");
@@ -119,16 +119,13 @@ test("An admin should be able to rotate the readKey on child groups and keep acc
   const childGroup = node2.createGroup();
   childGroup.extend(groupOnNode2);
 
-  await node2.syncManager.waitForUploadIntoPeer(
-    node2ToNode1Peer.id,
-    childGroup.id,
-  );
+  await childGroup.core.waitForSync();
 
   // The node1 account removes the reader from the group
   // In this case we want to ensure that node1 is still able to read new coValues
   // Even if some childs are not available when the readKey is rotated
   await group.removeMember(node3.account);
-  await node1.syncManager.waitForUploadIntoPeer(node1ToNode2Peer.id, group.id);
+  await group.core.waitForSync();
 
   const map = childGroup.createMap();
   map.set("test", "Available to node1");
@@ -158,7 +155,7 @@ test("An admin should be able to rotate the readKey on child groups even if it w
   // In this case we want to ensure that node1 is still able to read new coValues
   // Even if some childs are not available when the readKey is rotated
   await group.removeMember(node3.account);
-  await node1.syncManager.waitForUploadIntoPeer(node1ToNode2Peer.id, group.id);
+  await group.core.waitForSync();
 
   const map = childGroup.createMap();
   map.set("test", "Available to node1");
@@ -193,7 +190,7 @@ test("An admin should be able to rotate the readKey on child groups even if it w
   // In this case we want to ensure that node1 is still able to read new coValues
   // Even if some childs are not available when the readKey is rotated
   await group.removeMember(node3.account);
-  await node1.syncManager.waitForUploadIntoPeer(node1ToNode2Peer.id, group.id);
+  await group.core.waitForSync();
 
   const map = childGroup.createMap();
   map.set("test", "Available to node1");

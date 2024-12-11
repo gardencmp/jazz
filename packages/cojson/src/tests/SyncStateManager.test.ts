@@ -2,12 +2,19 @@ import { describe, expect, onTestFinished, test, vi } from "vitest";
 import {
   GlobalSyncStateListenerCallback,
   PeerSyncStateListenerCallback,
-} from "../SyncStateSubscriptionManager.js";
+} from "../SyncStateManager.js";
+import { accountHeaderForInitialAgentSecret } from "../coValues/account.js";
 import { connectedPeers } from "../streamUtils.js";
 import { emptyKnownState } from "../sync.js";
-import { createTestNode, waitFor } from "./testUtils.js";
+import {
+  blockMessageTypeOnOutgoingPeer,
+  createTestNode,
+  createTwoConnectedNodes,
+  loadCoValueOrFail,
+  waitFor,
+} from "./testUtils.js";
 
-describe("SyncStateSubscriptionManager", () => {
+describe("SyncStateManager", () => {
   test("subscribeToUpdates receives updates when peer state changes", async () => {
     // Setup nodes
     const client = createTestNode();
@@ -31,7 +38,7 @@ describe("SyncStateSubscriptionManager", () => {
     client.syncManager.addPeer(jazzCloudAsPeer);
     jazzCloud.syncManager.addPeer(clientAsPeer);
 
-    const subscriptionManager = client.syncManager.syncStateSubscriptionManager;
+    const subscriptionManager = client.syncManager.syncState;
 
     const updateSpy: GlobalSyncStateListenerCallback = vi.fn();
     const unsubscribe = subscriptionManager.subscribeToUpdates(updateSpy);
@@ -41,14 +48,14 @@ describe("SyncStateSubscriptionManager", () => {
     expect(updateSpy).toHaveBeenCalledWith(
       "jazzCloudConnection",
       emptyKnownState(map.core.id),
-      { isUploaded: false },
+      { uploaded: false },
     );
 
     await waitFor(() => {
-      return subscriptionManager.getIsCoValueFullyUploadedIntoPeer(
+      return subscriptionManager.getCurrentSyncState(
         "jazzCloudConnection",
         map.core.id,
-      );
+      ).uploaded;
     });
 
     expect(updateSpy).toHaveBeenCalledWith(
@@ -56,7 +63,7 @@ describe("SyncStateSubscriptionManager", () => {
       client.syncManager.peers["jazzCloudConnection"]!.knownStates.get(
         map.core.id,
       )!,
-      { isUploaded: true },
+      { uploaded: true },
     );
 
     // Cleanup
@@ -92,7 +99,7 @@ describe("SyncStateSubscriptionManager", () => {
     client.syncManager.addPeer(clientStoragePeer);
     jazzCloud.syncManager.addPeer(clientAsPeer);
 
-    const subscriptionManager = client.syncManager.syncStateSubscriptionManager;
+    const subscriptionManager = client.syncManager.syncState;
 
     const updateToJazzCloudSpy: PeerSyncStateListenerCallback = vi.fn();
     const updateToStorageSpy: PeerSyncStateListenerCallback = vi.fn();
@@ -114,26 +121,26 @@ describe("SyncStateSubscriptionManager", () => {
 
     expect(updateToJazzCloudSpy).toHaveBeenCalledWith(
       emptyKnownState(map.core.id),
-      { isUploaded: false },
+      { uploaded: false },
     );
 
     await waitFor(() => {
-      return subscriptionManager.getIsCoValueFullyUploadedIntoPeer(
+      return subscriptionManager.getCurrentSyncState(
         "jazzCloudConnection",
         map.core.id,
-      );
+      ).uploaded;
     });
 
     expect(updateToJazzCloudSpy).toHaveBeenLastCalledWith(
       client.syncManager.peers["jazzCloudConnection"]!.knownStates.get(
         map.core.id,
       )!,
-      { isUploaded: true },
+      { uploaded: true },
     );
 
     expect(updateToStorageSpy).toHaveBeenLastCalledWith(
       emptyKnownState(map.core.id),
-      { isUploaded: false },
+      { uploaded: false },
     );
   });
 
@@ -162,27 +169,27 @@ describe("SyncStateSubscriptionManager", () => {
 
     await client.syncManager.actuallySyncCoValue(map.core);
 
-    const subscriptionManager = client.syncManager.syncStateSubscriptionManager;
+    const subscriptionManager = client.syncManager.syncState;
 
     expect(
-      subscriptionManager.getIsCoValueFullyUploadedIntoPeer(
+      subscriptionManager.getCurrentSyncState(
         "jazzCloudConnection",
         map.core.id,
-      ),
+      ).uploaded,
     ).toBe(false);
 
     await waitFor(() => {
-      return subscriptionManager.getIsCoValueFullyUploadedIntoPeer(
+      return subscriptionManager.getCurrentSyncState(
         "jazzCloudConnection",
         map.core.id,
-      );
+      ).uploaded;
     });
 
     expect(
-      subscriptionManager.getIsCoValueFullyUploadedIntoPeer(
+      subscriptionManager.getCurrentSyncState(
         "jazzCloudConnection",
         map.core.id,
-      ),
+      ).uploaded,
     ).toBe(true);
   });
 
@@ -209,7 +216,7 @@ describe("SyncStateSubscriptionManager", () => {
     client.syncManager.addPeer(jazzCloudAsPeer);
     jazzCloud.syncManager.addPeer(clientAsPeer);
 
-    const subscriptionManager = client.syncManager.syncStateSubscriptionManager;
+    const subscriptionManager = client.syncManager.syncState;
     const anyUpdateSpy = vi.fn();
     const unsubscribe1 = subscriptionManager.subscribeToUpdates(anyUpdateSpy);
     const unsubscribe2 = subscriptionManager.subscribeToPeerUpdates(
@@ -225,12 +232,89 @@ describe("SyncStateSubscriptionManager", () => {
     anyUpdateSpy.mockClear();
 
     await waitFor(() => {
-      return client.syncManager.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
+      return subscriptionManager.getCurrentSyncState(
         "jazzCloudConnection",
         map.core.id,
-      );
+      ).uploaded;
     });
 
     expect(anyUpdateSpy).not.toHaveBeenCalled();
+  });
+
+  test("getCurrentSyncState should return the correct state", async () => {
+    // Setup nodes
+    const {
+      node1: clientNode,
+      node2: serverNode,
+      node1ToNode2Peer: clientToServerPeer,
+      node2ToNode1Peer: serverToClientPeer,
+    } = await createTwoConnectedNodes("client", "server");
+
+    // Create test data
+    const group = clientNode.node.createGroup();
+    const map = group.createMap();
+    map.set("key1", "value1", "trusting");
+    group.addMember("everyone", "writer");
+
+    // Initially should not be synced
+    expect(
+      clientNode.node.syncManager.syncState.getCurrentSyncState(
+        clientToServerPeer.id,
+        map.core.id,
+      ),
+    ).toEqual({ uploaded: false });
+
+    // Wait for full sync
+    await map.core.waitForSync();
+
+    expect(
+      clientNode.node.syncManager.syncState.getCurrentSyncState(
+        clientToServerPeer.id,
+        map.core.id,
+      ),
+    ).toEqual({ uploaded: true });
+
+    const mapOnServer = await loadCoValueOrFail(serverNode.node, map.id);
+
+    // Block the content messages so the client won't fully sync immediately
+    const outgoing = blockMessageTypeOnOutgoingPeer(
+      serverToClientPeer,
+      "content",
+    );
+
+    mapOnServer.set("key2", "value2", "trusting");
+
+    expect(
+      clientNode.node.syncManager.syncState.getCurrentSyncState(
+        clientToServerPeer.id,
+        map.core.id,
+      ),
+    ).toEqual({ uploaded: true });
+
+    expect(
+      serverNode.node.syncManager.syncState.getCurrentSyncState(
+        serverToClientPeer.id,
+        map.core.id,
+      ),
+    ).toEqual({ uploaded: false });
+
+    await outgoing.sendBlockedMessages();
+    outgoing.unblock();
+
+    await mapOnServer.core.waitForSync();
+
+    expect(
+      clientNode.node.syncManager.syncState.getCurrentSyncState(
+        clientToServerPeer.id,
+        map.core.id,
+      ),
+    ).toEqual({ uploaded: true });
+
+    expect(
+      serverNode.node.syncManager.syncState.getCurrentSyncState(
+        serverToClientPeer.id,
+        map.core.id,
+      ),
+    ).toEqual({ uploaded: true });
   });
 });
