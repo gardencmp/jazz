@@ -1,88 +1,21 @@
-import { metrics } from "@opentelemetry/api";
-import {
-  AggregationTemporality,
-  InMemoryMetricExporter,
-  MeterProvider,
-  MetricReader,
-  type MetricReaderOptions,
-  type PushMetricExporter,
-} from "@opentelemetry/sdk-metrics";
 import { afterEach, describe, expect, test } from "vitest";
 import { PriorityBasedMessageQueue } from "../PriorityBasedMessageQueue.js";
 import { CO_VALUE_PRIORITY } from "../priority.js";
 import type { SyncMessage } from "../sync.js";
-
-interface A extends MetricReaderOptions {
-  exporter: PushMetricExporter;
-}
-
-/**
- * This is a test metric reader that uses an in-memory metric exporter and exposes a method to get the value of a metric given its name and attributes.
- *
- * This is useful for testing the values of metrics that are collected by the SDK.
- *
- * TODO: We could move this to a separate file and make it a utility class that can be used in other tests.
- * TODO: We may want to rethink how we access metrics (see `getMetricValue` method) to make it more flexible.
- */
-class TestMetricReader extends MetricReader {
-  private _exporter = new InMemoryMetricExporter(
-    AggregationTemporality.CUMULATIVE,
-  );
-
-  protected onShutdown(): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-  protected onForceFlush(): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-
-  async getMetricValue(
-    name: string,
-    attributes: { [key: string]: string | number } = {},
-  ) {
-    await this.collectAndExport();
-    const metric = this._exporter
-      .getMetrics()[0]
-      ?.scopeMetrics[0]?.metrics.find((m) => m.descriptor.name === name);
-
-    const dp = metric?.dataPoints.find(
-      (dp) => JSON.stringify(dp.attributes) === JSON.stringify(attributes),
-    );
-
-    this._exporter.reset();
-
-    return dp?.value;
-  }
-
-  async collectAndExport(): Promise<void> {
-    const result = await this.collect();
-    await new Promise<void>((resolve, reject) => {
-      this._exporter.export(result.resourceMetrics, (result) => {
-        if (result.error != null) {
-          reject(result.error);
-        } else {
-          resolve();
-        }
-      });
-    });
-  }
-}
+import {
+  createTestMetricReader,
+  tearDownTestMetricReader,
+} from "./testUtils.js";
 
 function setup() {
-  const metricReader = new TestMetricReader();
-  metrics.setGlobalMeterProvider(
-    new MeterProvider({
-      readers: [metricReader],
-    }),
-  );
-
+  const metricReader = createTestMetricReader();
   const queue = new PriorityBasedMessageQueue(CO_VALUE_PRIORITY.MEDIUM);
   return { queue, metricReader };
 }
 
 describe("PriorityBasedMessageQueue", () => {
   afterEach(() => {
-    metrics.disable();
+    tearDownTestMetricReader();
   });
 
   test("should initialize with correct properties", () => {
