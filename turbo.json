@@ -5,7 +5,7 @@
     "build": {
       "env": ["RESEND_API_KEY", "RESEND_AUDIENCE_ID"],
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**", ".svelte-kit/output/**"]
     },
     "dev": {
       "cache": false,

@@ -1,9 +1,5 @@
 import { CojsonInternalTypes } from "cojson";
-import { SyncPromise } from "./syncPromises";
-import RawCoID = CojsonInternalTypes.RawCoID;
-import Transaction = CojsonInternalTypes.Transaction;
-import Signature = CojsonInternalTypes.Signature;
-import {
+import type {
   CoValueRow,
   DBClientInterface,
   SessionRow,
@@ -12,6 +8,10 @@ import {
   StoredSessionRow,
   TransactionRow,
 } from "cojson-storage";
+import { SyncPromise } from "./syncPromises.js";
+import RawCoID = CojsonInternalTypes.RawCoID;
+import Transaction = CojsonInternalTypes.Transaction;
+import Signature = CojsonInternalTypes.Signature;
 
 export class IDBClient implements DBClientInterface {
   private db;
@@ -75,7 +75,7 @@ export class IDBClient implements DBClientInterface {
           const value = request.result as T;
           resolve(value);
 
-          const next = txEntry!.pendingRequests.shift();
+          const next = txEntry?.pendingRequests.shift();
 
           if (next) {
             next({ stores });
@@ -135,7 +135,7 @@ export class IDBClient implements DBClientInterface {
       transactions.getAll(
         IDBKeyRange.bound(
           [sessionRowId, firstNewTxIdx],
-          [sessionRowId, Infinity],
+          [sessionRowId, Number.POSITIVE_INFINITY],
         ),
       ),
     );
@@ -150,7 +150,7 @@ export class IDBClient implements DBClientInterface {
         signatureAfter.getAll(
           IDBKeyRange.bound(
             [sessionRowId, firstNewTxIdx],
-            [sessionRowId, Infinity],
+            [sessionRowId, Number.POSITIVE_INFINITY],
           ),
         ),
     );
@@ -160,12 +160,13 @@ export class IDBClient implements DBClientInterface {
     msg: CojsonInternalTypes.NewContentMessage,
   ): Promise<number> {
     if (!msg.header) {
-      throw new Error("Header is required, coId: " + msg.id);
+      throw new Error(`Header is required, coId: ${msg.id}`);
     }
 
     return (await this.makeRequest<IDBValidKey>(({ coValues }) =>
       coValues.put({
         id: msg.id,
+        // biome-ignore lint/style/noNonNullAssertion: TODO(JAZZ-561): Review
         header: msg.header!,
       } satisfies CoValueRow),
     )) as number;

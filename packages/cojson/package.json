@@ -19,8 +19,9 @@
   },
   "type": "module",
   "license": "MIT",
-  "version": "0.8.37",
+  "version": "0.8.38",
   "devDependencies": {
+    "@opentelemetry/sdk-metrics": "^1.29.0",
     "@types/jest": "^29.5.3",
     "typescript": "^5.3.3",
     "vitest": "1.5.3"
@@ -34,6 +35,9 @@
     "hash-wasm": "^4.9.0",
     "neverthrow": "^7.0.1",
     "queueueue": "^4.1.2"
+  },
+  "peerDependencies": {
+    "@opentelemetry/api": "^1.0.0"
   },
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist/web -p tsconfig.web.json",

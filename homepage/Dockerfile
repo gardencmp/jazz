@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:22-slim
 
 COPY node_modules ./node_modules
 COPY homepage/.next/standalone ./homepage

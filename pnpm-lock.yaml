@@ -20,7 +20,7 @@ importers:
         version: 2.27.10
       '@vitest/coverage-istanbul':
         specifier: 1.5.3
-        version: 1.5.3(vitest@1.5.3(@types/node@22.5.1)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(lightningcss@1.27.0)(terser@5.33.0))
+        version: 1.5.3(vitest@1.5.3)
       '@vitest/ui':
         specifier: 1.5.3
         version: 1.5.3(vitest@1.5.3)
@@ -49,17 +49,17 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-tools
       next:
         specifier: 14.2.5
-        version: 14.2.5(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -104,19 +104,19 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/cojson
       hash-slash:
         specifier: workspace:0.2.1
         version: link:../../packages/hash-slash
       jazz-browser-media-images:
-        specifier: ^0.8.37
-        version: 0.8.37
+        specifier: ^0.8.38
+        version: 0.8.38(@opentelemetry/api@1.9.0)
       jazz-react:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -525,7 +525,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/jazz-react
       jazz-react-auth-clerk:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-react-auth-clerk
       jazz-tools:
         specifier: workspace:*
@@ -557,6 +557,82 @@ importers:
         version: 5.6.2
       vite:
         specifier: ^5.4.10
+        version: 5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0)
+
+  examples/file-share-svelte:
+    dependencies:
+      '@tailwindcss/typography':
+        specifier: ^0.5.15
+        version: 0.5.15(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3)))
+      jazz-svelte:
+        specifier: workspace:*
+        version: link:../../packages/jazz-svelte
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../../packages/jazz-tools
+      lucide-svelte:
+        specifier: ^0.463.0
+        version: 0.463.0(svelte@5.2.7)
+      svelte-sonner:
+        specifier: ^0.3.28
+        version: 0.3.28(svelte@5.2.7)
+    devDependencies:
+      '@sveltejs/adapter-vercel':
+        specifier: ^5.5.0
+        version: 5.5.0(@sveltejs/kit@2.8.1(@sveltejs/vite-plugin-svelte@4.0.1(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0)))(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0)))(rollup@4.24.0)
+      '@sveltejs/kit':
+        specifier: ^2.0.0
+        version: 2.8.1(@sveltejs/vite-plugin-svelte@4.0.1(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0)))(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0))
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^4.0.0
+        version: 4.0.1(svelte@5.2.7)(vite@5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0))
+      '@types/is-ci':
+        specifier: ^3.0.4
+        version: 3.0.4
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.20(postcss@8.4.47)
+      eslint:
+        specifier: ^9.7.0
+        version: 9.15.0(jiti@1.21.6)
+      eslint-config-prettier:
+        specifier: ^9.1.0
+        version: 9.1.0(eslint@9.15.0(jiti@1.21.6))
+      eslint-plugin-svelte:
+        specifier: ^2.36.0
+        version: 2.46.0(eslint@9.15.0(jiti@1.21.6))(svelte@5.2.7)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3))
+      globals:
+        specifier: ^15.0.0
+        version: 15.12.0
+      is-ci:
+        specifier: ^3.0.1
+        version: 3.0.1
+      prettier:
+        specifier: ^3.3.2
+        version: 3.3.3
+      prettier-plugin-svelte:
+        specifier: ^3.2.6
+        version: 3.3.1(prettier@3.3.3)(svelte@5.2.7)
+      prettier-plugin-tailwindcss:
+        specifier: ^0.6.5
+        version: 0.6.9(prettier-plugin-svelte@3.3.1(prettier@3.3.3)(svelte@5.2.7))(prettier@3.3.3)
+      svelte:
+        specifier: ^5.0.0
+        version: 5.2.7
+      svelte-check:
+        specifier: ^4.0.0
+        version: 4.0.9(picomatch@4.0.2)(svelte@5.2.7)(typescript@5.6.3)
+      tailwindcss:
+        specifier: ^3.4.9
+        version: 3.4.15(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3))
+      typescript:
+        specifier: ^5.0.0
+        version: 5.6.3
+      typescript-eslint:
+        specifier: ^8.0.0
+        version: 8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)
+      vite:
+        specifier: ^5.0.3
         version: 5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0)
 
   examples/image-upload:
@@ -617,10 +693,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       cojson:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/cojson
       cojson-transport-ws:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/cojson-transport-ws
       hash-slash:
         specifier: workspace:0.2.1
@@ -702,10 +778,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -866,13 +942,13 @@ importers:
         version: 9.6.1
       eslint:
         specifier: ^9.7.0
-        version: 9.15.0(jiti@1.21.0)
+        version: 9.15.0(jiti@1.21.6)
       eslint-config-prettier:
         specifier: ^9.1.0
-        version: 9.1.0(eslint@9.15.0(jiti@1.21.0))
+        version: 9.1.0(eslint@9.15.0(jiti@1.21.6))
       eslint-plugin-svelte:
         specifier: ^2.36.0
-        version: 2.46.0(eslint@9.15.0(jiti@1.21.0))(svelte@5.2.7)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3))
+        version: 2.46.0(eslint@9.15.0(jiti@1.21.6))(svelte@5.2.7)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3))
       globals:
         specifier: ^15.0.0
         version: 15.12.0
@@ -893,7 +969,7 @@ importers:
         version: 5.6.3
       typescript-eslint:
         specifier: ^8.0.0
-        version: 8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)
+        version: 8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)
       vite:
         specifier: ^5.0.3
         version: 5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0)
@@ -901,10 +977,10 @@ importers:
   examples/password-manager:
     dependencies:
       jazz-react:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-tools
       react:
         specifier: 18.3.1
@@ -965,13 +1041,13 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-browser-media-images:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-browser-media-images
       jazz-react:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1026,7 +1102,7 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       jazz-run:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-run
       postcss:
         specifier: ^8.4.27
@@ -1107,10 +1183,10 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       jazz-react:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-react
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../../packages/jazz-tools
       lucide-react:
         specifier: ^0.274.0
@@ -1186,9 +1262,9 @@ importers:
         specifier: ^4.4.5
         version: 4.4.5(vue@3.5.11(typescript@5.6.2))
     devDependencies:
-      '@tsconfig/node20':
-        specifier: ^20.1.4
-        version: 20.1.4
+      '@tsconfig/node22':
+        specifier: ^22.0.0
+        version: 22.0.0
       '@types/node':
         specifier: ^22.5.1
         version: 22.5.1
@@ -1246,6 +1322,9 @@ importers:
       '@noble/hashes':
         specifier: ^1.4.0
         version: 1.4.0
+      '@opentelemetry/api':
+        specifier: ^1.0.0
+        version: 1.9.0
       '@scure/base':
         specifier: ^1.1.1
         version: 1.1.5
@@ -1259,6 +1338,9 @@ importers:
         specifier: ^4.1.2
         version: 4.1.2
     devDependencies:
+      '@opentelemetry/sdk-metrics':
+        specifier: ^1.29.0
+        version: 1.29.0(@opentelemetry/api@1.9.0)
       '@types/jest':
         specifier: ^29.5.3
         version: 29.5.11
@@ -1310,18 +1392,18 @@ importers:
   packages/cojson-storage-sqlite:
     dependencies:
       better-sqlite3:
-        specifier: ^8.5.2
-        version: 8.7.0
+        specifier: ^11.7.0
+        version: 11.7.0
       cojson:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson
       cojson-storage:
         specifier: workspace:*
         version: link:../cojson-storage
     devDependencies:
       '@types/better-sqlite3':
-        specifier: ^7.6.4
-        version: 7.6.10
+        specifier: ^7.6.12
+        version: 7.6.12
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -1329,7 +1411,7 @@ importers:
   packages/cojson-transport-ws:
     dependencies:
       cojson:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson
       typescript:
         specifier: ^5.3.3
@@ -1357,16 +1439,16 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       cojson:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson
       cojson-storage-indexeddb:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson-storage-indexeddb
       cojson-transport-ws:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-tools
       typescript:
         specifier: ^5.3.3
@@ -1375,13 +1457,13 @@ importers:
   packages/jazz-browser-auth-clerk:
     dependencies:
       cojson:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-tools
     devDependencies:
       typescript:
@@ -1397,10 +1479,10 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0
       jazz-browser:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-tools
       pica:
         specifier: ^9.0.1
@@ -1416,13 +1498,13 @@ importers:
   packages/jazz-nodejs:
     dependencies:
       cojson:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson
       cojson-transport-ws:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson-transport-ws
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -1441,13 +1523,13 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0
       cojson:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson
       jazz-browser:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-browser
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-tools
     devDependencies:
       '@types/react':
@@ -1466,16 +1548,16 @@ importers:
   packages/jazz-react-auth-clerk:
     dependencies:
       cojson:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson
       jazz-browser-auth-clerk:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-browser-auth-clerk
       jazz-react:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-react
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-tools
       react:
         specifier: 18.3.1
@@ -1575,19 +1657,19 @@ importers:
         specifier: ^0.25.5
         version: 0.25.5(effect@3.6.5)
       cojson:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson
       cojson-storage-sqlite:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson-storage-sqlite
       cojson-transport-ws:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../cojson-transport-ws
       effect:
         specifier: ^3.6.5
         version: 3.6.5
       jazz-tools:
-        specifier: workspace:0.8.37
+        specifier: workspace:0.8.38
         version: link:../jazz-tools
       ws:
         specifier: ^8.14.2
@@ -1626,13 +1708,13 @@ importers:
         version: 9.6.1
       eslint:
         specifier: ^9.7.0
-        version: 9.15.0(jiti@1.21.0)
+        version: 9.15.0(jiti@1.21.6)
       eslint-config-prettier:
         specifier: ^9.1.0
-        version: 9.1.0(eslint@9.15.0(jiti@1.21.0))
+        version: 9.1.0(eslint@9.15.0(jiti@1.21.6))
       eslint-plugin-svelte:
         specifier: ^2.36.0
-        version: 2.46.0(eslint@9.15.0(jiti@1.21.0))(svelte@5.2.7)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3))
+        version: 2.46.0(eslint@9.15.0(jiti@1.21.6))(svelte@5.2.7)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3))
       globals:
         specifier: ^15.0.0
         version: 15.12.0
@@ -1656,7 +1738,7 @@ importers:
         version: 5.6.3
       typescript-eslint:
         specifier: ^8.0.0
-        version: 8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)
+        version: 8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)
       vite:
         specifier: ^5.0.11
         version: 5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0)
@@ -1768,6 +1850,115 @@ importers:
       vite:
         specifier: ^5.0.10
         version: 5.4.11(@types/node@22.5.1)(lightningcss@1.27.0)(terser@5.33.0)
+
+  tests/e2e-react-native:
+    dependencies:
+      '@azure/core-asynciterator-polyfill':
+        specifier: ^1.0.2
+        version: 1.0.2
+      '@react-native-community/netinfo':
+        specifier: ^11.4.1
+        version: 11.4.1(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))
+      '@react-navigation/native':
+        specifier: ^6.1.18
+        version: 6.1.18(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1)
+      '@react-navigation/native-stack':
+        specifier: ^6.11.0
+        version: 6.11.0(@react-navigation/native@6.1.18(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))(react-native-safe-area-context@4.12.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))(react-native-screens@4.1.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1)
+      base-64:
+        specifier: ^1.0.0
+        version: 1.0.0
+      cojson:
+        specifier: workspace:*
+        version: link:../../packages/cojson
+      cojson-transport-ws:
+        specifier: workspace:*
+        version: link:../../packages/cojson-transport-ws
+      detox-cli:
+        specifier: ^20.0.0
+        version: 20.0.0
+      expo:
+        specifier: ^52.0.0
+        version: 52.0.17(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@expo/metro-runtime@4.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(graphql@15.8.0)(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1)
+      expo-build-properties:
+        specifier: ~0.13.1
+        version: 0.13.1(expo@52.0.17(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@expo/metro-runtime@4.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(graphql@15.8.0)(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))
+      expo-clipboard:
+        specifier: ~7.0.0
+        version: 7.0.0(expo@52.0.17(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@expo/metro-runtime@4.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(graphql@15.8.0)(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1)
+      expo-constants:
+        specifier: ~17.0.3
+        version: 17.0.3(expo@52.0.17(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@expo/metro-runtime@4.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(graphql@15.8.0)(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))
+      expo-crypto:
+        specifier: ~14.0.1
+        version: 14.0.1(expo@52.0.17(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@expo/metro-runtime@4.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(graphql@15.8.0)(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))
+      expo-dev-client:
+        specifier: ~5.0.5
+        version: 5.0.5(expo@52.0.17(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@expo/metro-runtime@4.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(graphql@15.8.0)(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))
+      expo-linking:
+        specifier: ~7.0.3
+        version: 7.0.3(expo@52.0.17(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@expo/metro-runtime@4.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(graphql@15.8.0)(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1)
+      expo-secure-store:
+        specifier: ~14.0.0
+        version: 14.0.0(expo@52.0.17(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@expo/metro-runtime@4.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(graphql@15.8.0)(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))
+      expo-status-bar:
+        specifier: ~2.0.0
+        version: 2.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1)
+      expo-web-browser:
+        specifier: ~14.0.1
+        version: 14.0.1(expo@52.0.17(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@expo/metro-runtime@4.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(graphql@15.8.0)(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1))(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))
+      jazz-react-native:
+        specifier: workspace:*
+        version: link:../../packages/jazz-react-native
+      jazz-tools:
+        specifier: workspace:*
+        version: link:../../packages/jazz-tools
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-native:
+        specifier: ~0.76.3
+        version: 0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)
+      react-native-fetch-api:
+        specifier: ^3.0.0
+        version: 3.0.0
+      react-native-get-random-values:
+        specifier: ^1.11.0
+        version: 1.11.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))
+      react-native-polyfill-globals:
+        specifier: ^3.1.0
+        version: 3.1.0(base-64@1.0.0)(react-native-fetch-api@3.0.0)(react-native-get-random-values@1.11.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(react-native-url-polyfill@2.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(text-encoding@0.7.0)(web-streams-polyfill@3.3.3)
+      react-native-safe-area-context:
+        specifier: 4.12.0
+        version: 4.12.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1)
+      react-native-screens:
+        specifier: 4.1.0
+        version: 4.1.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1)
+      react-native-url-polyfill:
+        specifier: ^2.0.0
+        version: 2.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))
+      text-encoding:
+        specifier: ^0.7.0
+        version: 0.7.0
+      web-streams-polyfill:
+        specifier: ^3.2.1
+        version: 3.3.3
+      ws:
+        specifier: ^8.14.2
+        version: 8.18.0
+    devDependencies:
+      '@babel/core':
+        specifier: ^7.20.0
+        version: 7.25.2
+      '@types/react':
+        specifier: ^18.3.12
+        version: 18.3.12
+      tailwindcss:
+        specifier: 3.3.2
+        version: 3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3))
+      typescript:
+        specifier: ^5.3.3
+        version: 5.6.3
 
 packages:
 
@@ -3712,6 +3903,32 @@ packages:
     resolution: {integrity: sha512-q9CRWjpHCMIh5sVyefoD1cA7PkvILqCZsnSOEUUivORLjxCO/Irmue2DprETiNgEqktDBZaM1Bi+jrarx1XdCg==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
+  '@opentelemetry/api@1.9.0':
+    resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
+    engines: {node: '>=8.0.0'}
+
+  '@opentelemetry/core@1.29.0':
+    resolution: {integrity: sha512-gmT7vAreXl0DTHD2rVZcw3+l2g84+5XiHIqdBUxXbExymPCvSsGOpiwMmn8nkiJur28STV31wnhIDrzWDPzjfA==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.10.0'
+
+  '@opentelemetry/resources@1.29.0':
+    resolution: {integrity: sha512-s7mLXuHZE7RQr1wwweGcaRp3Q4UJJ0wazeGlc/N5/XSe6UyXfsh1UQGMADYeg7YwD+cEdMtU1yJAUXdnFzYzyQ==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.0.0 <1.10.0'
+
+  '@opentelemetry/sdk-metrics@1.29.0':
+    resolution: {integrity: sha512-MkVtuzDjXZaUJSuJlHn6BSXjcQlMvHcsDV7LjY4P6AJeffMa4+kIGDjzsCf6DkAh6Vqlwag5EWEam3KZOX5Drw==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.3.0 <1.10.0'
+
+  '@opentelemetry/semantic-conventions@1.28.0':
+    resolution: {integrity: sha512-lp4qAiMTD4sNWW4DbKLBkfiMZ4jbAboJIGOQr5DvciMRI494OapieI9qiODpOt0XBr1LjIDy1xAGAnVs5supTA==}
+    engines: {node: '>=14'}
+
   '@parcel/watcher-android-arm64@2.4.1':
     resolution: {integrity: sha512-LOi/WTbbh3aTn2RYddrO8pnapixAziFl6SMxHM69r3tvdSm94JtCenaKgk1GRg5FJ5wpMCpHeW+7yqPlvZv7kg==}
     engines: {node: '>= 10.0.0'}
@@ -4985,6 +5202,11 @@ packages:
     resolution: {integrity: sha512-+PmQX0PiAYPMeVYe237LJAYvOMYW1j2rH5YROyS3b4CTVJum34HfRvKvAzozHAQG0TnHNdUfY9nCeUyRAs//cw==}
     engines: {node: '>=14.16'}
 
+  '@tailwindcss/typography@0.5.15':
+    resolution: {integrity: sha512-AqhlCXl+8grUz8uqExv5OTtgpjuVIwFTSXTrh8y9/pw6q2ek7fJ+Y8ZEVw7EB2DCcuCOtEjf9w3+J3rzts01uA==}
+    peerDependencies:
+      tailwindcss: '>=3.0.0 || insiders || >=4.0.0-alpha.20'
+
   '@tootallnate/once@2.0.0':
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
     engines: {node: '>= 10'}
@@ -5007,6 +5229,9 @@ packages:
   '@tsconfig/node20@20.1.4':
     resolution: {integrity: sha512-sqgsT69YFeLWf5NtJ4Xq/xAF8p4ZQHlmGW74Nu2tD4+g5fAsposc4ZfaaPixVu4y01BEiDCWLRDCvDM5JOsRxg==}
 
+  '@tsconfig/node22@22.0.0':
+    resolution: {integrity: sha512-twLQ77zevtxobBOD4ToAtVmuYrpeYUh3qh+TEp+08IWhpsrIflVHqQ1F1CiPxQGL7doCdBIOOCF+1Tm833faNg==}
+
   '@types/argparse@1.0.38':
     resolution: {integrity: sha512-ebDJ9b0e702Yr7pWgB0jzm+CX4Srzz8RcXtLJDJB+BSccqMa36uyH/zUsSYao5+BD1ytv3k3rPYCq4mAE1hsXA==}
 
@@ -5022,8 +5247,8 @@ packages:
   '@types/babel__traverse@7.20.6':
     resolution: {integrity: sha512-r1bzfrm0tomOI8g1SzvCaQHo6Lcv6zu0EA+W2kHrt8dyrHQxGzBBL4kdkzIS+jBMV+EYcMAEAqXqYaLJq5rOZg==}
 
-  '@types/better-sqlite3@7.6.10':
-    resolution: {integrity: sha512-TZBjD+yOsyrUJGmcUj6OS3JADk3+UZcNv3NOBqGkM09bZdi28fNZw8ODqbMOLfKCu7RYCO62/ldq1iHbzxqoPw==}
+  '@types/better-sqlite3@7.6.12':
+    resolution: {integrity: sha512-fnQmj8lELIj7BSrZQAdBMHEHX8OZLYIHXqAKT1O7tDfLxaINzf00PMjw22r3N/xXh0w/sGHlO6SVaCQ2mj78lg==}
 
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
@@ -5048,6 +5273,9 @@ packages:
 
   '@types/image-blob-reduce@4.1.4':
     resolution: {integrity: sha512-IMG+KVL7iy/g05zaJQFqc+Y0l+SlBVVW3GVKLM+ZkBtENoJSZ5nqIgtSZcs04QJvF+ticYJn9n3ZG427wg7Yhg==}
+
+  '@types/is-ci@3.0.4':
+    resolution: {integrity: sha512-AkCYCmwlXeuH89DagDCzvCAyltI2v9lh3U3DqSg/GrBYoReAaWwxfXCqMx9UV5MajLZ4ZFwZzV4cABGIxk2XRw==}
 
   '@types/istanbul-lib-coverage@2.0.6':
     resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
@@ -5837,8 +6065,8 @@ packages:
     resolution: {integrity: sha512-pbnl5XzGBdrFU/wT4jqmJVPn2B6UHPBOhzMQkY/SPUPB6QtUXtmBHBIwCbXJol93mOpGMnQyP/+BB19q04xj7g==}
     engines: {node: '>=4'}
 
-  better-sqlite3@8.7.0:
-    resolution: {integrity: sha512-99jZU4le+f3G6aIl6PmmV0cxUIWqKieHxsiF7G34CVFiE+/UabpYqkU0NJIkY/96mQKikHeBjtR27vFfs5JpEw==}
+  better-sqlite3@11.7.0:
+    resolution: {integrity: sha512-mXpa5jnIKKHeoGzBrUJrc65cXFKcILGZpU3FXR0pradUEm9MA7UZz02qfEejaMcm9iXrSOCenwwYMJ/tZ1y5Ig==}
 
   big-integer@1.6.52:
     resolution: {integrity: sha512-QxD8cf2eVqJOOz63z6JIN9BzvVs/dlySa5HGSBH5xtR8dPteIRQnBxxKqkNTiT6jbDTF6jAfrd4oMcND9RGbQg==}
@@ -6063,6 +6291,10 @@ packages:
     resolution: {integrity: sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw==}
     engines: {node: '>= 8.10.0'}
 
+  chokidar@3.6.0:
+    resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
+    engines: {node: '>= 8.10.0'}
+
   chokidar@4.0.1:
     resolution: {integrity: sha512-n8enUVCED/KVRQlab1hr3MVpcVMvxtZjmEa956u+4YijlmQED223XMSYj2tLuKvr4jcCTzNNMpQDUer72MMmzA==}
     engines: {node: '>= 14.16.0'}
@@ -6150,17 +6382,19 @@ packages:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
     engines: {iojs: '>= 1.0.0', node: '>= 0.12.0'}
 
-  cojson-storage-indexeddb@0.8.37:
-    resolution: {integrity: sha512-z6llKrYvKCtCWiMI3U9qp6IXAXBuzs5Qy0hs/27xT1M+PX+hASC8N+56cMidLBm5P1R2lL6C/0I0CHB6J94ANQ==}
+  cojson-storage-indexeddb@0.8.38:
+    resolution: {integrity: sha512-ifg3kI9O0x3CT0fV6HFYxVOaNoaQHrQYWUgsO11t3PhRdoO61w/wHxVX1LyWLGRL0F7GKyTXZfBthCJLf+6yGQ==}
 
-  cojson-storage@0.8.37:
-    resolution: {integrity: sha512-eiYO3vT0dE7Fbtmd15OWjoSO8RVVKxZvM+vSyNKBcV06ht4jtj5ygz5bFcaE4u1oSA1yFSNuMzDrAWFPoNKjQQ==}
+  cojson-storage@0.8.38:
+    resolution: {integrity: sha512-0KfR6AOx4MI7ULrVAuf+/fMAKZqwbJfJ04VaR/og0/wNzT1eg1AFsemAPZ0j5hDCALi1248MyyTsndalid9Lzw==}
 
-  cojson-transport-ws@0.8.37:
-    resolution: {integrity: sha512-Qq/FpylHHU2PtrNBqH4dAE5HdbR5Db6mTmqQOW7pjuHFzCKvskVb0hqZYb++GvizS3kGXv+KG5cAluyuYjYYyQ==}
+  cojson-transport-ws@0.8.38:
+    resolution: {integrity: sha512-mSP3GSB4SbadCZu5OJ33S4OqT/8Y6PVRBBPzpdcWrpxaulknVahZX0gMenuXWeLK96GfYLyS8T8J3KOqTWjXOQ==}
 
-  cojson@0.8.37:
-    resolution: {integrity: sha512-DNK3RHrpmOJXBrk1Ms0MvzcqOYvMbjqyd6LLnrO/p6KyPITuAWIzs1kkDiePvwRhVec/fM/Gd1TDn4bge5azgw==}
+  cojson@0.8.38:
+    resolution: {integrity: sha512-K5j2zsNIL1GdNK/gEUjO0m9bbAO96K39C4pKK0KiStMbOL7VFCJOyo87gOWyD9NSZzqT8cnEWcGeo4EEoZMdQA==}
+    peerDependencies:
+      '@opentelemetry/api': ^1.0.0
 
   collect-v8-coverage@1.0.2:
     resolution: {integrity: sha512-lHl4d5/ONEbLlJvaJNtsF/Lz+WvB07u2ycqTYbdrq7UypDXailES4valYb2eWiJFxZlVmpGekfqoxQhzyFdT4Q==}
@@ -6564,6 +6798,10 @@ packages:
 
   detect-node-es@1.1.0:
     resolution: {integrity: sha512-ypdmJU/TbBby2Dxibuv7ZLW3Bs1QEmM7nHjEANfohJLvE0XVujisn1qPJcZxg+qDucsr+bP6fLD1rPS3AhJ7EQ==}
+
+  detox-cli@20.0.0:
+    resolution: {integrity: sha512-0xfPs6q8vxYlai0bjqmw34/iTmQle4PLAI9W/u5DldOq94/nMP2sZn4ZF3ieQ39oWrPeGHco/pXG845p5TSe3Q==}
+    hasBin: true
 
   devalue@5.1.1:
     resolution: {integrity: sha512-maua5KUiapvEwiEAe+XnlZ3Rh0GD+qI1J/nb9vrJc3muPXvcF/8gXYTWF76+5DAqHyDUtOIImEuo0YKE9mshVw==}
@@ -7945,14 +8183,14 @@ packages:
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
-  jazz-browser-media-images@0.8.37:
-    resolution: {integrity: sha512-TigJs5jDYyuAS0wRa2QS4PM865dMCc74Pgfi+2rspkYMGR65ShJDbCnkn3Ql98ezOrbT8YRuXJOEynecHTcJQQ==}
+  jazz-browser-media-images@0.8.38:
+    resolution: {integrity: sha512-JurNKj120JVkQwzOHlZEePcC2Xb3/SXoViu8k/R0Fr54ODUcB8km2bNSVVmtKuauQMu18yXFDduxl/eSJTfMjw==}
 
-  jazz-browser@0.8.37:
-    resolution: {integrity: sha512-NAYP8GoCssxfQcHs7zUBP6UX3aDYxSkXg08eQOia5HTEOYFLarX3wi0V32SJB161k8aYj112Aga/u4IoKlAZSw==}
+  jazz-browser@0.8.38:
+    resolution: {integrity: sha512-87pz/4Cw8kDiKGeik8f00k/kQ9e6+sFR59Q0nGUqCwF5PohuyFLMeRI2yVxFO2V82K4WeRRaXR6tV6qEiWeAKw==}
 
-  jazz-tools@0.8.37:
-    resolution: {integrity: sha512-jF2UDMDoyxbkXbBXq99UydnvDOtUGFT2oSFqVjPPc3E3kzF5Vps2wdwCqXjc99XsMrmREUA9QNlmYV7v1+8gSw==}
+  jazz-tools@0.8.38:
+    resolution: {integrity: sha512-pR5ZwtHX5uYK/FQ7A3guO8mNLxy84nr/iIU52dCR3wGHfeFZgPMteWVqMqMLYu8Ax2NR/WzE4nMyv3DCLoPkcQ==}
 
   jest-changed-files@29.7.0:
     resolution: {integrity: sha512-fEArFiwf1BpQ+4bXSprcDc3/x4HSzL4al2tozwVpDFpsxALjLYdyiIK4e5Vz66GQJIbXJ82+35PtysofptNX2w==}
@@ -8117,6 +8355,10 @@ packages:
 
   jiti@1.21.0:
     resolution: {integrity: sha512-gFqAIbuKyyso/3G2qhiO2OM6shY6EPP/R0+mkDbyspxKazh8BXDC5FiFsUjlczgdNz/vfra0da2y+aHrusLG/Q==}
+    hasBin: true
+
+  jiti@1.21.6:
+    resolution: {integrity: sha512-2yTgeWTWzMWkHu6Jp9NKgePDaYHbntiwvYuuJLbbN9vl7DC9DvXKOB2BC3ZZ92D3cvV/aflH0osDfwpHepQ53w==}
     hasBin: true
 
   jju@1.4.0:
@@ -8424,11 +8666,17 @@ packages:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
 
+  lodash.castarray@4.4.0:
+    resolution: {integrity: sha512-aVx8ztPv7/2ULbArGJ2Y42bG1mEQ5mGjpdvrbJcJFU3TbYybe+QlLS4pst9zV52ymy2in1KpFPiZnAOATxD4+Q==}
+
   lodash.clonedeep@4.5.0:
     resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
 
   lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
+
+  lodash.isplainobject@4.0.6:
+    resolution: {integrity: sha512-oSXzaWypCMHkPC3NvBEaPHf0KsA5mvPrOPgQWDsbg8n7orZ290M0BmC/jgRZ4vcJ6DTAhjrsSYgdsW/F+MFOBA==}
 
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
@@ -8496,6 +8744,11 @@ packages:
     resolution: {integrity: sha512-qiWcojRXEwDiSimMX1+arnxha+ROJzZjJaVvCC0rsG6a9pUPjZePXSq7em4ZKMp0NDm1hyzPNkM7UaWC3LU2AA==}
     peerDependencies:
       react: 18.3.1
+
+  lucide-svelte@0.463.0:
+    resolution: {integrity: sha512-zKfqFlcrQ/zdcbxmuDs92hA+ksRIi3swJw1sZ73CX6ShjnbEujQlppzZSwj+fqyNGPB4s7MeRIudCQa5s8/Scw==}
+    peerDependencies:
+      svelte: ^3 || ^4 || ^5.0.0-next.42
 
   lunr@2.3.9:
     resolution: {integrity: sha512-zTU3DaZaF3Rt9rhN3uBMGQD3dD2/vFQqnvZCDv4dl5iOzq2IZQqTxu90r4E5J+nP70J3ilqVCrbho2eWaeW8Ow==}
@@ -9415,6 +9668,12 @@ packages:
     peerDependencies:
       postcss: ^8.2.14
 
+  postcss-nested@6.2.0:
+    resolution: {integrity: sha512-HQbt28KulC5AJzG+cZtj9kvKB93CFCdLvog1WFLf1D+xmMvPGlBstkpTEZfK5+AN9hfJocyBFCNiqyS48bpgzQ==}
+    engines: {node: '>=12.0'}
+    peerDependencies:
+      postcss: ^8.2.14
+
   postcss-safe-parser@6.0.0:
     resolution: {integrity: sha512-FARHN8pwH+WiS2OPCxJI8FuRJpTVnn6ZNFiqAM2aeW2LwTHWWmWgIyKC6cUo0L8aeKiF/14MNvnpls6R2PBeMQ==}
     engines: {node: '>=12.0'}
@@ -9426,6 +9685,10 @@ packages:
     engines: {node: '>=12.0'}
     peerDependencies:
       postcss: ^8.4.29
+
+  postcss-selector-parser@6.0.10:
+    resolution: {integrity: sha512-IQ7TZdoaqbT+LCpShg46jnZVlhWD2w6iQYAcYXfHARZ7X1t/UGhhceQDs5X0cGqKvYlHNOuv7Oa1xmb0oQuA3w==}
+    engines: {node: '>=4'}
 
   postcss-selector-parser@6.0.13:
     resolution: {integrity: sha512-EaV1Gl4mUEV4ddhDnv/xtj7sxwrwxdetHdWUGnT4VJQf+4d05v6lHYZr8N573k5Z0BViss7BDhfWtKS3+sfAqQ==}
@@ -9467,6 +9730,61 @@ packages:
     peerDependencies:
       prettier: ^3.0.0
       svelte: ^3.2.0 || ^4.0.0-next.0 || ^5.0.0-next.0
+
+  prettier-plugin-tailwindcss@0.6.9:
+    resolution: {integrity: sha512-r0i3uhaZAXYP0At5xGfJH876W3HHGHDp+LCRUJrs57PBeQ6mYHMwr25KH8NPX44F2yGTvdnH7OqCshlQx183Eg==}
+    engines: {node: '>=14.21.3'}
+    peerDependencies:
+      '@ianvs/prettier-plugin-sort-imports': '*'
+      '@prettier/plugin-pug': '*'
+      '@shopify/prettier-plugin-liquid': '*'
+      '@trivago/prettier-plugin-sort-imports': '*'
+      '@zackad/prettier-plugin-twig-melody': '*'
+      prettier: ^3.0
+      prettier-plugin-astro: '*'
+      prettier-plugin-css-order: '*'
+      prettier-plugin-import-sort: '*'
+      prettier-plugin-jsdoc: '*'
+      prettier-plugin-marko: '*'
+      prettier-plugin-multiline-arrays: '*'
+      prettier-plugin-organize-attributes: '*'
+      prettier-plugin-organize-imports: '*'
+      prettier-plugin-sort-imports: '*'
+      prettier-plugin-style-order: '*'
+      prettier-plugin-svelte: '*'
+    peerDependenciesMeta:
+      '@ianvs/prettier-plugin-sort-imports':
+        optional: true
+      '@prettier/plugin-pug':
+        optional: true
+      '@shopify/prettier-plugin-liquid':
+        optional: true
+      '@trivago/prettier-plugin-sort-imports':
+        optional: true
+      '@zackad/prettier-plugin-twig-melody':
+        optional: true
+      prettier-plugin-astro:
+        optional: true
+      prettier-plugin-css-order:
+        optional: true
+      prettier-plugin-import-sort:
+        optional: true
+      prettier-plugin-jsdoc:
+        optional: true
+      prettier-plugin-marko:
+        optional: true
+      prettier-plugin-multiline-arrays:
+        optional: true
+      prettier-plugin-organize-attributes:
+        optional: true
+      prettier-plugin-organize-imports:
+        optional: true
+      prettier-plugin-sort-imports:
+        optional: true
+      prettier-plugin-style-order:
+        optional: true
+      prettier-plugin-svelte:
+        optional: true
 
   prettier@2.8.8:
     resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
@@ -10472,6 +10790,11 @@ packages:
       svelte:
         optional: true
 
+  svelte-sonner@0.3.28:
+    resolution: {integrity: sha512-K3AmlySeFifF/cKgsYNv5uXqMVNln0NBAacOYgmkQStLa/UoU0LhfAACU6Gr+YYC8bOCHdVmFNoKuDbMEsppJg==}
+    peerDependencies:
+      svelte: ^3.0.0 || ^4.0.0 || ^5.0.0-next.1
+
   svelte2tsx@0.7.26:
     resolution: {integrity: sha512-cBGGZ3Hejuh9gYICQcGKg1zyYhrzZR04iTUdP5pD+CIbjoZiyzS4cpCi4IHh0PA2Vf6cFuwVRmDs9wnOfJotJA==}
     peerDependencies:
@@ -10506,6 +10829,11 @@ packages:
 
   tailwindcss@3.3.2:
     resolution: {integrity: sha512-9jPkMiIBXvPc2KywkraqsUfbfj+dHDb+JPWtSJa9MLFdrPyazI7q6WX2sUrm7R9eVR7qqv3Pas7EvQFzxKnI6w==}
+    engines: {node: '>=14.0.0'}
+    hasBin: true
+
+  tailwindcss@3.4.15:
+    resolution: {integrity: sha512-r4MeXnfBmSOuKUWmXe6h2CcyfzJCEk4F0pptO5jlnYSIViUkVmsawj80N5h2lO3gwcmSb4n3PuN+e+GC1Guylw==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -13100,9 +13428,9 @@ snapshots:
       eslint: 8.57.1
       eslint-visitor-keys: 3.4.3
 
-  '@eslint-community/eslint-utils@4.4.0(eslint@9.15.0(jiti@1.21.0))':
+  '@eslint-community/eslint-utils@4.4.0(eslint@9.15.0(jiti@1.21.6))':
     dependencies:
-      eslint: 9.15.0(jiti@1.21.0)
+      eslint: 9.15.0(jiti@1.21.6)
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.10.0': {}
@@ -13649,7 +13977,7 @@ snapshots:
       jest-util: 29.7.0
       jest-validate: 29.7.0
       jest-watcher: 29.7.0
-      micromatch: 4.0.5
+      micromatch: 4.0.8
       pretty-format: 29.7.0
       slash: 3.0.0
       strip-ansi: 6.0.1
@@ -13764,7 +14092,7 @@ snapshots:
       jest-haste-map: 29.7.0
       jest-regex-util: 29.6.3
       jest-util: 29.7.0
-      micromatch: 4.0.5
+      micromatch: 4.0.8
       pirates: 4.0.6
       slash: 3.0.0
       write-file-atomic: 4.0.2
@@ -13940,6 +14268,27 @@ snapshots:
     dependencies:
       semver: 7.6.3
 
+  '@opentelemetry/api@1.9.0': {}
+
+  '@opentelemetry/core@1.29.0(@opentelemetry/api@1.9.0)':
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/semantic-conventions': 1.28.0
+
+  '@opentelemetry/resources@1.29.0(@opentelemetry/api@1.9.0)':
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/core': 1.29.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/semantic-conventions': 1.28.0
+
+  '@opentelemetry/sdk-metrics@1.29.0(@opentelemetry/api@1.9.0)':
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/core': 1.29.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/resources': 1.29.0(@opentelemetry/api@1.9.0)
+
+  '@opentelemetry/semantic-conventions@1.28.0': {}
+
   '@parcel/watcher-android-arm64@2.4.1':
     optional: true
 
@@ -13980,7 +14329,7 @@ snapshots:
     dependencies:
       detect-libc: 1.0.3
       is-glob: 4.0.3
-      micromatch: 4.0.5
+      micromatch: 4.0.8
       node-addon-api: 7.1.1
     optionalDependencies:
       '@parcel/watcher-android-arm64': 2.4.1
@@ -15040,7 +15389,7 @@ snapshots:
 
   '@remix-run/web-stream@1.1.0':
     dependencies:
-      web-streams-polyfill: 3.2.1
+      web-streams-polyfill: 3.3.3
 
   '@rnx-kit/chromium-edge-launcher@1.0.0':
     dependencies:
@@ -15407,6 +15756,14 @@ snapshots:
     dependencies:
       defer-to-connect: 2.0.1
 
+  '@tailwindcss/typography@0.5.15(tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3)))':
+    dependencies:
+      lodash.castarray: 4.4.0
+      lodash.isplainobject: 4.0.6
+      lodash.merge: 4.6.2
+      postcss-selector-parser: 6.0.10
+      tailwindcss: 3.4.15(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3))
+
   '@tootallnate/once@2.0.0': {}
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
@@ -15420,6 +15777,8 @@ snapshots:
   '@tsconfig/node16@1.0.4': {}
 
   '@tsconfig/node20@20.1.4': {}
+
+  '@tsconfig/node22@22.0.0': {}
 
   '@types/argparse@1.0.38': {}
 
@@ -15444,7 +15803,7 @@ snapshots:
     dependencies:
       '@babel/types': 7.25.6
 
-  '@types/better-sqlite3@7.6.10':
+  '@types/better-sqlite3@7.6.12':
     dependencies:
       '@types/node': 22.5.1
 
@@ -15473,6 +15832,10 @@ snapshots:
   '@types/image-blob-reduce@4.1.4':
     dependencies:
       '@types/pica': 9.0.4
+
+  '@types/is-ci@3.0.4':
+    dependencies:
+      ci-info: 3.9.0
 
   '@types/istanbul-lib-coverage@2.0.6': {}
 
@@ -15587,15 +15950,15 @@ snapshots:
       '@types/node': 22.5.1
     optional: true
 
-  '@typescript-eslint/eslint-plugin@8.15.0(@typescript-eslint/parser@8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3))(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)':
+  '@typescript-eslint/eslint-plugin@8.15.0(@typescript-eslint/parser@8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3))(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)
+      '@typescript-eslint/parser': 8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)
       '@typescript-eslint/scope-manager': 8.15.0
-      '@typescript-eslint/type-utils': 8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)
-      '@typescript-eslint/utils': 8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)
+      '@typescript-eslint/type-utils': 8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)
+      '@typescript-eslint/utils': 8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)
       '@typescript-eslint/visitor-keys': 8.15.0
-      eslint: 9.15.0(jiti@1.21.0)
+      eslint: 9.15.0(jiti@1.21.6)
       graphemer: 1.4.0
       ignore: 5.3.2
       natural-compare: 1.4.0
@@ -15605,14 +15968,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)':
+  '@typescript-eslint/parser@8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.15.0
       '@typescript-eslint/types': 8.15.0
       '@typescript-eslint/typescript-estree': 8.15.0(typescript@5.6.3)
       '@typescript-eslint/visitor-keys': 8.15.0
       debug: 4.3.7
-      eslint: 9.15.0(jiti@1.21.0)
+      eslint: 9.15.0(jiti@1.21.6)
     optionalDependencies:
       typescript: 5.6.3
     transitivePeerDependencies:
@@ -15623,12 +15986,12 @@ snapshots:
       '@typescript-eslint/types': 8.15.0
       '@typescript-eslint/visitor-keys': 8.15.0
 
-  '@typescript-eslint/type-utils@8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)':
+  '@typescript-eslint/type-utils@8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)':
     dependencies:
       '@typescript-eslint/typescript-estree': 8.15.0(typescript@5.6.3)
-      '@typescript-eslint/utils': 8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)
+      '@typescript-eslint/utils': 8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)
       debug: 4.3.7
-      eslint: 9.15.0(jiti@1.21.0)
+      eslint: 9.15.0(jiti@1.21.6)
       ts-api-utils: 1.4.0(typescript@5.6.3)
     optionalDependencies:
       typescript: 5.6.3
@@ -15652,13 +16015,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)':
+  '@typescript-eslint/utils@8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.4.0(eslint@9.15.0(jiti@1.21.0))
+      '@eslint-community/eslint-utils': 4.4.0(eslint@9.15.0(jiti@1.21.6))
       '@typescript-eslint/scope-manager': 8.15.0
       '@typescript-eslint/types': 8.15.0
       '@typescript-eslint/typescript-estree': 8.15.0(typescript@5.6.3)
-      eslint: 9.15.0(jiti@1.21.0)
+      eslint: 9.15.0(jiti@1.21.6)
     optionalDependencies:
       typescript: 5.6.3
     transitivePeerDependencies:
@@ -15769,7 +16132,7 @@ snapshots:
       - esbuild
       - rollup
 
-  '@vitest/coverage-istanbul@1.5.3(vitest@1.5.3(@types/node@22.5.1)(@vitest/ui@1.5.3)(happy-dom@15.8.3)(jsdom@20.0.3)(lightningcss@1.27.0)(terser@5.33.0))':
+  '@vitest/coverage-istanbul@1.5.3(vitest@1.5.3)':
     dependencies:
       debug: 4.3.7
       istanbul-lib-coverage: 3.2.2
@@ -16534,7 +16897,7 @@ snapshots:
     dependencies:
       is-windows: 1.0.2
 
-  better-sqlite3@8.7.0:
+  better-sqlite3@11.7.0:
     dependencies:
       bindings: 1.5.0
       prebuild-install: 7.1.2
@@ -16784,6 +17147,18 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
+  chokidar@3.6.0:
+    dependencies:
+      anymatch: 3.1.3
+      braces: 3.0.3
+      glob-parent: 5.1.2
+      is-binary-path: 2.1.0
+      is-glob: 4.0.3
+      normalize-path: 3.0.0
+      readdirp: 3.6.0
+    optionalDependencies:
+      fsevents: 2.3.3
+
   chokidar@4.0.1:
     dependencies:
       readdirp: 4.0.2
@@ -16869,26 +17244,33 @@ snapshots:
 
   co@4.6.0: {}
 
-  cojson-storage-indexeddb@0.8.37:
+  cojson-storage-indexeddb@0.8.38(@opentelemetry/api@1.9.0):
     dependencies:
-      cojson: 0.8.37
-      cojson-storage: 0.8.37
+      cojson: 0.8.38(@opentelemetry/api@1.9.0)
+      cojson-storage: 0.8.38(@opentelemetry/api@1.9.0)
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
 
-  cojson-storage@0.8.37:
+  cojson-storage@0.8.38(@opentelemetry/api@1.9.0):
     dependencies:
-      cojson: 0.8.37
+      cojson: 0.8.38(@opentelemetry/api@1.9.0)
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
 
-  cojson-transport-ws@0.8.37:
+  cojson-transport-ws@0.8.38(@opentelemetry/api@1.9.0):
     dependencies:
-      cojson: 0.8.37
+      cojson: 0.8.38(@opentelemetry/api@1.9.0)
       typescript: 5.6.3
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
 
-  cojson@0.8.37:
+  cojson@0.8.38(@opentelemetry/api@1.9.0):
     dependencies:
       '@hazae41/berith': 1.2.6
       '@noble/ciphers': 0.1.4
       '@noble/curves': 1.3.0
       '@noble/hashes': 1.4.0
+      '@opentelemetry/api': 1.9.0
       '@scure/base': 1.1.6
       hash-wasm: 4.11.0
       neverthrow: 7.0.1
@@ -17249,6 +17631,10 @@ snapshots:
 
   detect-node-es@1.1.0: {}
 
+  detox-cli@20.0.0:
+    dependencies:
+      chalk: 4.1.2
+
   devalue@5.1.1: {}
 
   devtools-protocol@0.0.1147663: {}
@@ -17469,21 +17855,21 @@ snapshots:
     optionalDependencies:
       source-map: 0.6.1
 
-  eslint-compat-utils@0.5.1(eslint@9.15.0(jiti@1.21.0)):
+  eslint-compat-utils@0.5.1(eslint@9.15.0(jiti@1.21.6)):
     dependencies:
-      eslint: 9.15.0(jiti@1.21.0)
+      eslint: 9.15.0(jiti@1.21.6)
       semver: 7.6.3
 
-  eslint-config-prettier@9.1.0(eslint@9.15.0(jiti@1.21.0)):
+  eslint-config-prettier@9.1.0(eslint@9.15.0(jiti@1.21.6)):
     dependencies:
-      eslint: 9.15.0(jiti@1.21.0)
+      eslint: 9.15.0(jiti@1.21.6)
 
-  eslint-plugin-svelte@2.46.0(eslint@9.15.0(jiti@1.21.0))(svelte@5.2.7)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3)):
+  eslint-plugin-svelte@2.46.0(eslint@9.15.0(jiti@1.21.6))(svelte@5.2.7)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3)):
     dependencies:
-      '@eslint-community/eslint-utils': 4.4.0(eslint@9.15.0(jiti@1.21.0))
+      '@eslint-community/eslint-utils': 4.4.0(eslint@9.15.0(jiti@1.21.6))
       '@jridgewell/sourcemap-codec': 1.5.0
-      eslint: 9.15.0(jiti@1.21.0)
-      eslint-compat-utils: 0.5.1(eslint@9.15.0(jiti@1.21.0))
+      eslint: 9.15.0(jiti@1.21.6)
+      eslint-compat-utils: 0.5.1(eslint@9.15.0(jiti@1.21.6))
       esutils: 2.0.3
       known-css-properties: 0.35.0
       postcss: 8.4.47
@@ -17573,9 +17959,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint@9.15.0(jiti@1.21.0):
+  eslint@9.15.0(jiti@1.21.6):
     dependencies:
-      '@eslint-community/eslint-utils': 4.4.0(eslint@9.15.0(jiti@1.21.0))
+      '@eslint-community/eslint-utils': 4.4.0(eslint@9.15.0(jiti@1.21.6))
       '@eslint-community/regexpp': 4.12.1
       '@eslint/config-array': 0.19.0
       '@eslint/core': 0.9.0
@@ -17610,7 +17996,7 @@ snapshots:
       natural-compare: 1.4.0
       optionator: 0.9.4
     optionalDependencies:
-      jiti: 1.21.0
+      jiti: 1.21.6
     transitivePeerDependencies:
       - supports-color
 
@@ -18177,7 +18563,7 @@ snapshots:
   fetch-blob@3.2.0:
     dependencies:
       node-domexception: 1.0.0
-      web-streams-polyfill: 3.2.1
+      web-streams-polyfill: 3.3.3
 
   fetch-retry@4.1.1: {}
 
@@ -18908,28 +19294,34 @@ snapshots:
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
 
-  jazz-browser-media-images@0.8.37:
+  jazz-browser-media-images@0.8.38(@opentelemetry/api@1.9.0):
     dependencies:
       '@types/image-blob-reduce': 4.1.4
       image-blob-reduce: 4.1.0
-      jazz-browser: 0.8.37
-      jazz-tools: 0.8.37
+      jazz-browser: 0.8.38(@opentelemetry/api@1.9.0)
+      jazz-tools: 0.8.38(@opentelemetry/api@1.9.0)
       pica: 9.0.1
       typescript: 5.6.3
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
 
-  jazz-browser@0.8.37:
+  jazz-browser@0.8.38(@opentelemetry/api@1.9.0):
     dependencies:
       '@scure/bip39': 1.3.0
-      cojson: 0.8.37
-      cojson-storage-indexeddb: 0.8.37
-      cojson-transport-ws: 0.8.37
-      jazz-tools: 0.8.37
+      cojson: 0.8.38(@opentelemetry/api@1.9.0)
+      cojson-storage-indexeddb: 0.8.38(@opentelemetry/api@1.9.0)
+      cojson-transport-ws: 0.8.38(@opentelemetry/api@1.9.0)
+      jazz-tools: 0.8.38(@opentelemetry/api@1.9.0)
       typescript: 5.6.3
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
 
-  jazz-tools@0.8.37:
+  jazz-tools@0.8.38(@opentelemetry/api@1.9.0):
     dependencies:
-      cojson: 0.8.37
+      cojson: 0.8.38(@opentelemetry/api@1.9.0)
       fast-check: 3.21.0
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
 
   jest-changed-files@29.7.0:
     dependencies:
@@ -19001,7 +19393,7 @@ snapshots:
       jest-runner: 29.7.0
       jest-util: 29.7.0
       jest-validate: 29.7.0
-      micromatch: 4.0.5
+      micromatch: 4.0.8
       parse-json: 5.2.0
       pretty-format: 29.7.0
       slash: 3.0.0
@@ -19102,7 +19494,7 @@ snapshots:
       jest-regex-util: 29.6.3
       jest-util: 29.7.0
       jest-worker: 29.7.0
-      micromatch: 4.0.5
+      micromatch: 4.0.8
       walker: 1.0.8
     optionalDependencies:
       fsevents: 2.3.3
@@ -19126,7 +19518,7 @@ snapshots:
       '@types/stack-utils': 2.0.3
       chalk: 4.1.2
       graceful-fs: 4.2.11
-      micromatch: 4.0.5
+      micromatch: 4.0.8
       pretty-format: 29.7.0
       slash: 3.0.0
       stack-utils: 2.0.6
@@ -19315,6 +19707,8 @@ snapshots:
 
   jiti@1.21.0: {}
 
+  jiti@1.21.6: {}
+
   jju@1.4.0: {}
 
   joi@17.13.3:
@@ -19364,7 +19758,7 @@ snapshots:
       chalk: 4.1.2
       flow-parser: 0.246.0
       graceful-fs: 4.2.11
-      micromatch: 4.0.5
+      micromatch: 4.0.8
       neo-async: 2.6.2
       node-dir: 0.1.17
       recast: 0.21.5
@@ -19606,9 +20000,13 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
+  lodash.castarray@4.4.0: {}
+
   lodash.clonedeep@4.5.0: {}
 
   lodash.debounce@4.0.8: {}
+
+  lodash.isplainobject@4.0.6: {}
 
   lodash.merge@4.6.2: {}
 
@@ -19668,6 +20066,10 @@ snapshots:
   lucide-react@0.274.0(react@18.3.1):
     dependencies:
       react: 18.3.1
+
+  lucide-svelte@0.463.0(svelte@5.2.7):
+    dependencies:
+      svelte: 5.2.7
 
   lunr@2.3.9: {}
 
@@ -20273,7 +20675,7 @@ snapshots:
 
   neverthrow@7.0.1: {}
 
-  next@14.2.5(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  next@14.2.5(@opentelemetry/api@1.9.0)(@playwright/test@1.46.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@next/env': 14.2.5
       '@swc/helpers': 0.5.5
@@ -20294,6 +20696,7 @@ snapshots:
       '@next/swc-win32-arm64-msvc': 14.2.5
       '@next/swc-win32-ia32-msvc': 14.2.5
       '@next/swc-win32-x64-msvc': 14.2.5
+      '@opentelemetry/api': 1.9.0
       '@playwright/test': 1.46.1
     transitivePeerDependencies:
       - '@babel/core'
@@ -20770,12 +21173,25 @@ snapshots:
       postcss: 8.4.47
       ts-node: 10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.2)
 
+  postcss-load-config@4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3)):
+    dependencies:
+      lilconfig: 3.0.0
+      yaml: 2.5.0
+    optionalDependencies:
+      postcss: 8.4.47
+      ts-node: 10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3)
+
   postcss-nested@5.0.6(postcss@8.4.47):
     dependencies:
       postcss: 8.4.47
       postcss-selector-parser: 6.1.2
 
   postcss-nested@6.0.1(postcss@8.4.47):
+    dependencies:
+      postcss: 8.4.47
+      postcss-selector-parser: 6.1.2
+
+  postcss-nested@6.2.0(postcss@8.4.47):
     dependencies:
       postcss: 8.4.47
       postcss-selector-parser: 6.1.2
@@ -20787,6 +21203,11 @@ snapshots:
   postcss-scss@4.0.9(postcss@8.4.47):
     dependencies:
       postcss: 8.4.47
+
+  postcss-selector-parser@6.0.10:
+    dependencies:
+      cssesc: 3.0.0
+      util-deprecate: 1.0.2
 
   postcss-selector-parser@6.0.13:
     dependencies:
@@ -20841,6 +21262,12 @@ snapshots:
     dependencies:
       prettier: 3.3.3
       svelte: 5.2.7
+
+  prettier-plugin-tailwindcss@0.6.9(prettier-plugin-svelte@3.3.1(prettier@3.3.3)(svelte@5.2.7))(prettier@3.3.3):
+    dependencies:
+      prettier: 3.3.3
+    optionalDependencies:
+      prettier-plugin-svelte: 3.3.1(prettier@3.3.3)(svelte@5.2.7)
 
   prettier@2.8.8: {}
 
@@ -21080,6 +21507,15 @@ snapshots:
       react-native-url-polyfill: 2.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))
       text-encoding: 0.7.0
       web-streams-polyfill: 3.2.1
+
+  react-native-polyfill-globals@3.1.0(base-64@1.0.0)(react-native-fetch-api@3.0.0)(react-native-get-random-values@1.11.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(react-native-url-polyfill@2.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1)))(text-encoding@0.7.0)(web-streams-polyfill@3.3.3):
+    dependencies:
+      base-64: 1.0.0
+      react-native-fetch-api: 3.0.0
+      react-native-get-random-values: 1.11.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))
+      react-native-url-polyfill: 2.0.0(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))
+      text-encoding: 0.7.0
+      web-streams-polyfill: 3.3.3
 
   react-native-quick-base64@2.1.2(react-native@0.76.3(@babel/core@7.25.2)(@babel/preset-env@7.25.4(@babel/core@7.25.2))(@react-native-community/cli-server-api@13.6.9)(@types/react@18.3.12)(react@18.3.1))(react@18.3.1):
     dependencies:
@@ -21997,6 +22433,10 @@ snapshots:
     optionalDependencies:
       svelte: 5.2.7
 
+  svelte-sonner@0.3.28(svelte@5.2.7):
+    dependencies:
+      svelte: 5.2.7
+
   svelte2tsx@0.7.26(svelte@5.2.7)(typescript@5.6.3):
     dependencies:
       dedent-js: 1.0.1
@@ -22090,6 +22530,61 @@ snapshots:
       postcss-value-parser: 4.2.0
       resolve: 1.22.8
       sucrase: 3.34.0
+    transitivePeerDependencies:
+      - ts-node
+
+  tailwindcss@3.3.2(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3)):
+    dependencies:
+      '@alloc/quick-lru': 5.2.0
+      arg: 5.0.2
+      chokidar: 3.5.3
+      didyoumean: 1.2.2
+      dlv: 1.1.3
+      fast-glob: 3.3.2
+      glob-parent: 6.0.2
+      is-glob: 4.0.3
+      jiti: 1.21.0
+      lilconfig: 2.1.0
+      micromatch: 4.0.5
+      normalize-path: 3.0.0
+      object-hash: 3.0.0
+      picocolors: 1.1.0
+      postcss: 8.4.47
+      postcss-import: 15.1.0(postcss@8.4.47)
+      postcss-js: 4.0.1(postcss@8.4.47)
+      postcss-load-config: 4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3))
+      postcss-nested: 6.0.1(postcss@8.4.47)
+      postcss-selector-parser: 6.0.13
+      postcss-value-parser: 4.2.0
+      resolve: 1.22.8
+      sucrase: 3.34.0
+    transitivePeerDependencies:
+      - ts-node
+
+  tailwindcss@3.4.15(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3)):
+    dependencies:
+      '@alloc/quick-lru': 5.2.0
+      arg: 5.0.2
+      chokidar: 3.6.0
+      didyoumean: 1.2.2
+      dlv: 1.1.3
+      fast-glob: 3.3.2
+      glob-parent: 6.0.2
+      is-glob: 4.0.3
+      jiti: 1.21.6
+      lilconfig: 2.1.0
+      micromatch: 4.0.8
+      normalize-path: 3.0.0
+      object-hash: 3.0.0
+      picocolors: 1.1.1
+      postcss: 8.4.47
+      postcss-import: 15.1.0(postcss@8.4.47)
+      postcss-js: 4.0.1(postcss@8.4.47)
+      postcss-load-config: 4.0.2(postcss@8.4.47)(ts-node@10.9.2(@swc/core@1.7.22(@swc/helpers@0.5.5))(@types/node@22.5.1)(typescript@5.6.3))
+      postcss-nested: 6.2.0(postcss@8.4.47)
+      postcss-selector-parser: 6.1.2
+      resolve: 1.22.8
+      sucrase: 3.35.0
     transitivePeerDependencies:
       - ts-node
 
@@ -22378,12 +22873,12 @@ snapshots:
       shiki: 0.14.7
       typescript: 5.6.3
 
-  typescript-eslint@8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3):
+  typescript-eslint@8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.15.0(@typescript-eslint/parser@8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3))(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)
-      '@typescript-eslint/parser': 8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)
-      '@typescript-eslint/utils': 8.15.0(eslint@9.15.0(jiti@1.21.0))(typescript@5.6.3)
-      eslint: 9.15.0(jiti@1.21.0)
+      '@typescript-eslint/eslint-plugin': 8.15.0(@typescript-eslint/parser@8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3))(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)
+      '@typescript-eslint/parser': 8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)
+      '@typescript-eslint/utils': 8.15.0(eslint@9.15.0(jiti@1.21.6))(typescript@5.6.3)
+      eslint: 9.15.0(jiti@1.21.6)
     optionalDependencies:
       typescript: 5.6.3
     transitivePeerDependencies:
@@ -22819,7 +23314,7 @@ snapshots:
       deepmerge-ts: 5.1.0
       got: 12.6.1
       ky: 0.33.3
-      ws: 8.17.0
+      ws: 8.18.0
     transitivePeerDependencies:
       - bufferutil
       - supports-color

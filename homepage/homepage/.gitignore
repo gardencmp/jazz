@@ -36,3 +36,5 @@ next-env.d.ts
 
 typedoc
 codeSamples
+# Turborepo
+.turbo
