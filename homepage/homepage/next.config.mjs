@@ -37,7 +37,7 @@ const config = {
 function highlightPlugin() {
   return async function transformer(tree) {
     const highlighter = await getHighlighter({
-      langs: ["typescript", "bash", "tsx", "json"],
+      langs: ["typescript", "bash", "tsx", "json", "svelte"],
       theme: "css-variables", // use the theme
     });
 

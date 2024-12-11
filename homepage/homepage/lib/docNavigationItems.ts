@@ -31,7 +31,7 @@ export const docNavigationItems = [
           react: 100,
           vue: 100,
           "react-native": 100,
-          svelte: 0,
+          svelte: 100,
         },
       },
       {
