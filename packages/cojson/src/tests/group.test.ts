@@ -319,6 +319,58 @@ describe("writeOnly", () => {
     expect(groupOnNode2.myRole()).toEqual("writeOnly");
   });
 
+  test("writeOnly roles are not inherited", async () => {
+    const { node1, node2 } = await createTwoConnectedNodes("server", "server");
+
+    const group = node1.node.createGroup();
+    group.addMember(
+      await loadCoValueOrFail(node1.node, node2.accountID),
+      "writeOnly",
+    );
+
+    const childGroup = node1.node.createGroup();
+    childGroup.extend(group);
+    expect(childGroup.roleOf(node2.accountID)).toEqual(undefined);
+  });
+
+  test("writeOnly roles are not overridded by reader roles", async () => {
+    const { node1, node2 } = await createTwoConnectedNodes("server", "server");
+
+    const group = node1.node.createGroup();
+    group.addMember(
+      await loadCoValueOrFail(node1.node, node2.accountID),
+      "reader",
+    );
+
+    const childGroup = node1.node.createGroup();
+    childGroup.extend(group);
+    childGroup.addMember(
+      await loadCoValueOrFail(node1.node, node2.accountID),
+      "writeOnly",
+    );
+
+    expect(childGroup.roleOf(node2.accountID)).toEqual("writeOnly");
+  });
+
+  test("writeOnly roles are overridded by writer roles", async () => {
+    const { node1, node2 } = await createTwoConnectedNodes("server", "server");
+
+    const group = node1.node.createGroup();
+    group.addMember(
+      await loadCoValueOrFail(node1.node, node2.accountID),
+      "writer",
+    );
+
+    const childGroup = node1.node.createGroup();
+    childGroup.extend(group);
+    childGroup.addMember(
+      await loadCoValueOrFail(node1.node, node2.accountID),
+      "writeOnly",
+    );
+
+    expect(childGroup.roleOf(node2.accountID)).toEqual("writer");
+  });
+
   test("Edits by writeOnly members are visible to other members", async () => {
     const { node1, node2, node3 } = await createThreeConnectedNodes(
       "server",
@@ -412,5 +464,32 @@ describe("writeOnly", () => {
 
     const mapOnNode3 = await loadCoValueOrFail(node3.node, map.id);
     expect(mapOnNode3.get("test")).toEqual("Written from a writeOnly member");
+  });
+
+  test("inherited writer roles should work correctly", async () => {
+    const { node1, node2 } = await createTwoConnectedNodes("server", "server");
+
+    const group = node1.node.createGroup();
+    group.addMember(
+      await loadCoValueOrFail(node1.node, node2.accountID),
+      "writer",
+    );
+
+    const childGroup = node1.node.createGroup();
+    childGroup.extend(group);
+    childGroup.addMember(
+      await loadCoValueOrFail(node1.node, node2.accountID),
+      "writeOnly",
+    );
+
+    const map = childGroup.createMap();
+    map.set("test", "Written from the admin");
+
+    await map.core.waitForSync();
+
+    const mapOnNode2 = await loadCoValueOrFail(node2.node, map.id);
+
+    // The writer role should be able to see the edits from the admin
+    expect(mapOnNode2.get("test")).toEqual("Written from the admin");
   });
 });

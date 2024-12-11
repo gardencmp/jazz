@@ -719,7 +719,9 @@ function isMorePermissiveAndShouldInherit(
   }
 
   if (roleInParent === "writer") {
-    return !roleInChild || roleInChild === "reader";
+    return (
+      !roleInChild || roleInChild === "reader" || roleInChild === "writeOnly"
+    );
   }
 
   if (roleInParent === "reader") {
