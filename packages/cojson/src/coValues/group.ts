@@ -13,7 +13,7 @@ import {
   isParentGroupReference,
 } from "../ids.js";
 import { JsonObject } from "../jsonValue.js";
-import { Role } from "../permissions.js";
+import { AccountRole, Role } from "../permissions.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 import {
   ControlledAccountOrAgent,
@@ -33,6 +33,7 @@ export type GroupShape = {
   [key: RawAccountID | AgentID]: Role;
   [EVERYONE]?: Role;
   readKey?: KeyID;
+  [writeKeyFor: `writeKeyFor_${RawAccountID | AgentID}`]: KeyID;
   [revelationFor: `${KeyID}_for_${RawAccountID | AgentID}`]: Sealed<KeySecret>;
   [revelationFor: `${KeyID}_for_${Everyone}`]: KeySecret;
   [oldKeyForNewKey: `${KeyID}_for_${KeyID}`]: Encrypted<
@@ -213,18 +214,19 @@ export class RawGroup<
     account: RawAccount | ControlledAccountOrAgent | AgentID | Everyone,
     role: Role,
   ) {
-    const currentReadKey = this.core.getCurrentReadKey();
-
-    if (!currentReadKey.secret) {
-      throw new Error("Can't add member without read key secret");
-    }
-
     if (account === EVERYONE) {
       if (!(role === "reader" || role === "writer")) {
         throw new Error(
           "Can't make everyone something other than reader or writer",
         );
       }
+
+      const currentReadKey = this.core.getCurrentReadKey();
+
+      if (!currentReadKey.secret) {
+        throw new Error("Can't add member without read key secret");
+      }
+
       this.set(account, role, "trusting");
 
       if (this.get(account) !== role) {
@@ -236,44 +238,168 @@ export class RawGroup<
         currentReadKey.secret,
         "trusting",
       );
+
+      return;
+    }
+
+    const memberKey = typeof account === "string" ? account : account.id;
+    const agent =
+      typeof account === "string"
+        ? account
+        : account.currentAgentID()._unsafeUnwrap({ withStackTrace: true });
+
+    /**
+     * WriteOnly members can only see their own changes.
+     *
+     * We don't want to reveal the readKey to them so we create a new one and reveal it
+     * to everyone else.
+     *
+     * To never reveal the readKey to writeOnly members we also create a dedicated writeKey for the
+     * invite.
+     */
+    if (role === "writeOnly" || role === "writeOnlyInvite") {
+      const writeKeyForNewMember = this.core.crypto.newRandomKeySecret();
+
+      this.set(memberKey, role, "trusting");
+      this.set(`writeKeyFor_${memberKey}`, writeKeyForNewMember.id, "trusting");
+
+      this.storeKeyRevelationForMember(
+        memberKey,
+        agent,
+        writeKeyForNewMember.id,
+        writeKeyForNewMember.secret,
+      );
+
+      for (const otherMemberKey of this.getMemberKeys()) {
+        const memberRole = this.get(otherMemberKey);
+
+        if (
+          memberRole === "reader" ||
+          memberRole === "writer" ||
+          memberRole === "admin" ||
+          memberRole === "readerInvite" ||
+          memberRole === "writerInvite" ||
+          memberRole === "adminInvite"
+        ) {
+          const otherMemberAgent = this.core.node
+            .resolveAccountAgent(
+              otherMemberKey,
+              "Expected member agent to be loaded",
+            )
+            ._unsafeUnwrap({ withStackTrace: true });
+
+          this.storeKeyRevelationForMember(
+            otherMemberKey,
+            otherMemberAgent,
+            writeKeyForNewMember.id,
+            writeKeyForNewMember.secret,
+          );
+        }
+      }
     } else {
-      const memberKey = typeof account === "string" ? account : account.id;
-      const agent =
-        typeof account === "string"
-          ? account
-          : account.currentAgentID()._unsafeUnwrap({ withStackTrace: true });
+      const currentReadKey = this.core.getCurrentReadKey();
+
+      if (!currentReadKey.secret) {
+        throw new Error("Can't add member without read key secret");
+      }
+
       this.set(memberKey, role, "trusting");
 
       if (this.get(memberKey) !== role) {
         throw new Error("Failed to set role");
       }
 
-      this.set(
-        `${currentReadKey.id}_for_${memberKey}`,
-        this.core.crypto.seal({
-          message: currentReadKey.secret,
-          from: this.core.node.account.currentSealerSecret(),
-          to: this.core.crypto.getAgentSealerID(agent),
-          nOnceMaterial: {
-            in: this.id,
-            tx: this.core.nextTransactionID(),
-          },
-        }),
-        "trusting",
+      this.storeKeyRevelationForMember(
+        memberKey,
+        agent,
+        currentReadKey.id,
+        currentReadKey.secret,
       );
+
+      for (const keyID of this.getWriteOnlyKeys()) {
+        const secret = this.core.getReadKey(keyID);
+
+        if (!secret) {
+          console.error("Can't find key", keyID);
+          continue;
+        }
+
+        this.storeKeyRevelationForMember(memberKey, agent, keyID, secret);
+      }
     }
+  }
+
+  private storeKeyRevelationForMember(
+    memberKey: RawAccountID | AgentID,
+    agent: AgentID,
+    keyID: KeyID,
+    secret: KeySecret,
+  ) {
+    this.set(
+      `${keyID}_for_${memberKey}`,
+      this.core.crypto.seal({
+        message: secret,
+        from: this.core.node.account.currentSealerSecret(),
+        to: this.core.crypto.getAgentSealerID(agent),
+        nOnceMaterial: {
+          in: this.id,
+          tx: this.core.nextTransactionID(),
+        },
+      }),
+      "trusting",
+    );
+  }
+
+  private getWriteOnlyKeys() {
+    const keys: KeyID[] = [];
+
+    for (const key of this.keys()) {
+      if (key.startsWith("writeKeyFor_")) {
+        keys.push(
+          this.get(key as `writeKeyFor_${RawAccountID | AgentID}`) as KeyID,
+        );
+      }
+    }
+
+    return keys;
+  }
+
+  getCurrentKeyReadId() {
+    if (this.myRole() === "writeOnly") {
+      const accountId = this.core.node.account.id;
+
+      return this.get(`writeKeyFor_${accountId}`) as KeyID;
+    }
+
+    return this.get("readKey");
+  }
+
+  getMemberKeys(): (RawAccountID | AgentID)[] {
+    return this.keys().filter((key): key is RawAccountID | AgentID => {
+      return key.startsWith("co_") || isAgentID(key);
+    });
   }
 
   /** @internal */
   rotateReadKey() {
-    const currentlyPermittedReaders = this.keys().filter((key) => {
-      if (key.startsWith("co_") || isAgentID(key)) {
-        const role = this.get(key);
-        return role === "admin" || role === "writer" || role === "reader";
-      } else {
-        return false;
-      }
-    }) as (RawAccountID | AgentID)[];
+    const memberKeys = this.getMemberKeys();
+
+    const currentlyPermittedReaders = memberKeys.filter((key) => {
+      const role = this.get(key);
+      return (
+        role === "admin" ||
+        role === "writer" ||
+        role === "reader" ||
+        role === "adminInvite" ||
+        role === "writerInvite" ||
+        role === "readerInvite"
+      );
+    });
+
+    const writeOnlyMembers = memberKeys.filter((key) => {
+      const role = this.get(key);
+      return role === "writeOnly" || role === "writeOnlyInvite";
+    });
 
     // Get these early, so we fail fast if they are unavailable
     const parentGroups = this.getParentGroups();
@@ -293,26 +419,52 @@ export class RawGroup<
     const newReadKey = this.core.crypto.newRandomKeySecret();
 
     for (const readerID of currentlyPermittedReaders) {
-      const reader = this.core.node
+      const agent = this.core.node
         .resolveAccountAgent(
           readerID,
           "Expected to know currently permitted reader",
         )
         ._unsafeUnwrap({ withStackTrace: true });
 
-      this.set(
-        `${newReadKey.id}_for_${readerID}`,
-        this.core.crypto.seal({
-          message: newReadKey.secret,
-          from: this.core.node.account.currentSealerSecret(),
-          to: this.core.crypto.getAgentSealerID(reader),
-          nOnceMaterial: {
-            in: this.id,
-            tx: this.core.nextTransactionID(),
-          },
-        }),
-        "trusting",
+      this.storeKeyRevelationForMember(
+        readerID,
+        agent,
+        newReadKey.id,
+        newReadKey.secret,
       );
+    }
+
+    for (const writeOnlyMemberID of writeOnlyMembers) {
+      const agent = this.core.node
+        .resolveAccountAgent(
+          writeOnlyMemberID,
+          "Expected to know writeOnly member",
+        )
+        ._unsafeUnwrap({ withStackTrace: true });
+      const writeOnlyKey = this.core.crypto.newRandomKeySecret();
+      this.storeKeyRevelationForMember(
+        writeOnlyMemberID,
+        agent,
+        writeOnlyKey.id,
+        writeOnlyKey.secret,
+      );
+      this.set(`writeKeyFor_${writeOnlyMemberID}`, writeOnlyKey.id, "trusting");
+
+      for (const readerID of currentlyPermittedReaders) {
+        const agent = this.core.node
+          .resolveAccountAgent(
+            readerID,
+            "Expected to know currently permitted reader",
+          )
+          ._unsafeUnwrap({ withStackTrace: true });
+
+        this.storeKeyRevelationForMember(
+          readerID,
+          agent,
+          writeOnlyKey.id,
+          writeOnlyKey.secret,
+        );
+      }
     }
 
     this.set(
@@ -426,7 +578,7 @@ export class RawGroup<
    *
    * @category 2. Role changing
    */
-  createInvite(role: "reader" | "writer" | "admin"): InviteSecret {
+  createInvite(role: AccountRole): InviteSecret {
     const secretSeed = this.core.crypto.newRandomSecretSeed();
 
     const inviteSecret = this.core.crypto.agentSecretFromSecretSeed(secretSeed);
@@ -562,7 +714,7 @@ function isMorePermissiveAndShouldInherit(
   }
 
   if (roleInParent === "reader") {
-    return !roleInChild;
+    return !roleInChild || roleInChild === "writeOnly";
   }
 
   return false;

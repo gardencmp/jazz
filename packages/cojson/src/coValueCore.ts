@@ -684,7 +684,7 @@ export class CoValueCore {
     if (this.header.ruleset.type === "group") {
       const content = expectGroup(this.getCurrentContent());
 
-      const currentKeyId = content.get("readKey");
+      const currentKeyId = content.getCurrentKeyReadId();
 
       if (!currentKeyId) {
         throw new Error("No readKey set");
