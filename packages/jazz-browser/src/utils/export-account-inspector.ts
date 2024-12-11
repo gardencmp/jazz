@@ -47,7 +47,6 @@ export function setupInspector() {
   if (typeof window === "undefined") return;
 
   const url = new URL(window.location.href);
-  console.log(url.hash);
   if (url.hash.includes("allowJazzInspector")) {
     return listenForCmdJ();
   }
