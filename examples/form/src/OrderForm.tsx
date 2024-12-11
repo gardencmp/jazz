@@ -36,7 +36,21 @@ export function OrderForm({
         {BubbleTeaAddOnTypes.map((addOn) => (
           <div key={addOn}>
             <label>
-              <input type="checkbox" value={addOn} name="addOns" id="addOns" />
+              <input
+                type="checkbox"
+                value={addOn}
+                name="addOns"
+                id="addOns"
+                checked={order.addOns?.includes(addOn) || false}
+                onChange={(e) => {
+                  console.log(e.target.checked, order.addOns);
+                  if (e.target.checked) {
+                    order.addOns?.push(addOn);
+                  } else {
+                    order.addOns?.splice(order.addOns?.indexOf(addOn), 1);
+                  }
+                }}
+              />
               {addOn}
             </label>
           </div>

@@ -53,7 +53,12 @@ export class JazzAccount extends Account {
     if (!this.profile._refs.orders) {
       const owner = this.profile._owner;
       this.profile.orders = ListOfBubbleTeaOrders.create([], { owner });
-      this.profile.draft = DraftBubbleTeaOrder.create({}, { owner });
+      this.profile.draft = DraftBubbleTeaOrder.create(
+        {
+          addOns: ListOfBubbleTeaAddOns.create([], { owner }),
+        },
+        { owner },
+      );
     }
   }
 }

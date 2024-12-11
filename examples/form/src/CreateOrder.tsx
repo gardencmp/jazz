@@ -1,7 +1,11 @@
 import { ID } from "jazz-tools";
 import { OrderForm } from "./OrderForm.tsx";
 import { useAccount, useCoState } from "./main.tsx";
-import { BubbleTeaOrder, DraftBubbleTeaOrder } from "./schema.ts";
+import {
+  BubbleTeaOrder,
+  DraftBubbleTeaOrder,
+  ListOfBubbleTeaAddOns,
+} from "./schema.ts";
 
 export function CreateOrder() {
   const { me } = useAccount({ profile: { draft: {}, orders: [] } });
@@ -14,7 +18,9 @@ export function CreateOrder() {
 
     // reset the draft
     me.profile.draft = DraftBubbleTeaOrder.create(
-      {},
+      {
+        addOns: ListOfBubbleTeaAddOns.create([], { owner: me.profile._owner }),
+      },
       { owner: me.profile._owner },
     );
   };
@@ -29,7 +35,9 @@ function CreateOrderForm({
   id: ID<DraftBubbleTeaOrder>;
   onSave: (draft: DraftBubbleTeaOrder) => void;
 }) {
-  const draft = useCoState(DraftBubbleTeaOrder, id);
+  const draft = useCoState(DraftBubbleTeaOrder, id, {
+    addOns: [],
+  });
 
   if (!draft) return;
 
