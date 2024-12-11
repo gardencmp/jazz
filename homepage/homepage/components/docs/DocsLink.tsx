@@ -17,11 +17,12 @@ export function DocsLink(
 
   const framework = usePathname().split("/")[2];
   const hasFramework = isValidFramework(props.href.split("/")[2]);
+  const isExternal = props.href.startsWith("http");
 
   return (
     <Link
       href={
-        hasFramework
+        hasFramework || isExternal
           ? props.href
           : props.href.replace("/docs", "/docs/" + framework)
       }
