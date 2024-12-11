@@ -53,11 +53,13 @@ export default function CoJsonViewerApp() {
   }, [currentAccount]);
 
   useEffect(() => {
-    if (!currentAccount) {
+    if (!currentAccount && path.length > 0) {
       setLocalNode(null);
       goToIndex(-1);
       return;
     }
+
+    if (!currentAccount) return;
 
     WasmCrypto.create().then(async (crypto) => {
       const wsPeer = createWebSocketPeer({
@@ -77,7 +79,7 @@ export default function CoJsonViewerApp() {
       });
       setLocalNode(node);
     });
-  }, [currentAccount, goToIndex]);
+  }, [currentAccount, goToIndex, path]);
 
   const addAccount = (id: RawAccountID, secret: AgentSecret) => {
     const newAccount = { id, secret };
@@ -101,6 +103,18 @@ export default function CoJsonViewerApp() {
       setPage(coValueId);
     }
   };
+
+  if (
+    path?.[0]?.coId.toString() === "import" &&
+    path?.[1]?.coId !== undefined &&
+    path?.[2]?.coId !== undefined
+  ) {
+    addAccount(
+      path?.[1]?.coId as RawAccountID,
+      atob(path?.[2]?.coId as string) as AgentSecret,
+    );
+    goToIndex(-1);
+  }
 
   return (
     <div className="w-full h-screen bg-gray-100 p-4 overflow-hidden flex flex-col">
