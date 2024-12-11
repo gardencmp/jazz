@@ -55,12 +55,12 @@ app.get("/covalue/:uuid/binary", async (req: Request, res: Response) => {
 
     const covalue: CoValue = covalues[uuid];
     if (!covalue) {
-        return res.status(404).json({ m: "CoValue not found." });
+        return res.status(404).json({ m: "CoValue not found" });
     }
 
     const filePath = covalue.url?.path as string;
     if (!filePath) {
-        return res.status(404).json({ m: "CoValue binary file not found." });
+        return res.status(404).json({ m: "CoValue binary file not found" });
     }
 
     await fileManager.chunkFileDownload(

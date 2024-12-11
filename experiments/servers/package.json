@@ -17,6 +17,7 @@
     "dev:node-http1": "npx ts-node-dev --respawn src/node-js/http1-sse.ts",
     "dev:node-http2": "npx ts-node-dev --respawn src/node-js/http2-sse.ts",
     "dev:uws": "npx ts-node-dev --respawn src/uws-js/websocket.ts",
+    "dev:uws-http": "npx ts-node-dev --respawn src/uws-js/http-sse.ts",
     "test": "playwright test",
     "test-text": "playwright test tests/covalue-text.spec.ts",
     "test-binary": "playwright test tests/covalue-binary.spec.ts"
