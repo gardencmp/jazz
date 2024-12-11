@@ -1,19 +1,21 @@
-import { describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { expectMap } from "../coValue.js";
-import { CoValueHeader } from "../coValueCore.js";
-import { RawAccountID } from "../coValues/account.js";
-import { MapOpPayload, RawCoMap } from "../coValues/coMap.js";
-import { RawGroup } from "../coValues/group.js";
+import type { CoValueHeader } from "../coValueCore.js";
+import type { RawAccountID } from "../coValues/account.js";
+import { type MapOpPayload, RawCoMap } from "../coValues/coMap.js";
+import type { RawGroup } from "../coValues/group.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
 import { stableStringify } from "../jsonStringify.js";
 import { LocalNode } from "../localNode.js";
 import { getPriorityFromHeader } from "../priority.js";
 import { connectedPeers, newQueuePair } from "../streamUtils.js";
-import { SyncMessage } from "../sync.js";
+import type { SyncMessage } from "../sync.js";
 import {
   blockMessageTypeOnOutgoingPeer,
+  createTestMetricReader,
   createTestNode,
   randomAnonymousAccountAndSessionID,
+  tearDownTestMetricReader,
   waitFor,
 } from "./testUtils.js";
 
@@ -1956,6 +1958,94 @@ describe("waitForSyncWithPeer", () => {
     await expect(
       client.syncManager.waitForSyncWithPeer(peer.id, map.core.id, 100),
     ).rejects.toThrow("Timeout");
+  });
+});
+
+describe("metrics", () => {
+  afterEach(() => {
+    tearDownTestMetricReader();
+  });
+
+  test("should correctly track the number of connected peers", async () => {
+    const metricReader = createTestMetricReader();
+    const [admin, session] = randomAnonymousAccountAndSessionID();
+    const node = new LocalNode(admin, session, Crypto);
+
+    let connectedPeers = await metricReader.getMetricValue("jazz.peers", {
+      role: "peer",
+    });
+    expect(connectedPeers).toBeUndefined();
+    let connectedServerPeers = await metricReader.getMetricValue("jazz.peers", {
+      role: "server",
+    });
+    expect(connectedServerPeers).toBeUndefined();
+
+    // Add a first peer
+    const [inPeer1, outPeer1] = newQueuePair();
+    node.syncManager.addPeer({
+      id: "peer-1",
+      incoming: inPeer1,
+      outgoing: outPeer1,
+      role: "peer",
+      crashOnClose: false,
+    });
+
+    connectedPeers = await metricReader.getMetricValue("jazz.peers", {
+      role: "peer",
+    });
+    expect(connectedPeers).toBe(1);
+
+    // Add another peer
+    const [inPeer2, outPeer2] = newQueuePair();
+    node.syncManager.addPeer({
+      id: "peer-2",
+      incoming: inPeer2,
+      outgoing: outPeer2,
+      role: "peer",
+      crashOnClose: false,
+    });
+
+    connectedPeers = await metricReader.getMetricValue("jazz.peers", {
+      role: "peer",
+    });
+    expect(connectedPeers).toBe(2);
+
+    // Add a server peer
+    const [inServer1, outServer1] = newQueuePair();
+    node.syncManager.addPeer({
+      id: "server-1",
+      incoming: inServer1,
+      outgoing: outServer1,
+      role: "server",
+      crashOnClose: false,
+    });
+    connectedServerPeers = await metricReader.getMetricValue("jazz.peers", {
+      role: "server",
+    });
+    expect(connectedServerPeers).toBe(1);
+    connectedPeers = await metricReader.getMetricValue("jazz.peers", {
+      role: "peer",
+    });
+    expect(connectedPeers).toBe(2);
+
+    // @ts-expect-error Simulating peer-1 closing
+    await outPeer1.push("Disconnected");
+    await waitFor(() => node.syncManager.peers["peer-1"]?.closed);
+
+    connectedPeers = await metricReader.getMetricValue("jazz.peers", {
+      role: "peer",
+    });
+    expect(connectedPeers).toBe(1);
+
+    // @ts-expect-error Simulating server-1 closing
+    await outServer1.push("Disconnected");
+
+    await waitFor(() => node.syncManager.peers["server-1"]?.closed);
+
+    connectedServerPeers = await metricReader.getMetricValue("jazz.peers", {
+      role: "server",
+    });
+    expect(connectedServerPeers).toBe(0);
   });
 });
 
