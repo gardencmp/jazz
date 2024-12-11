@@ -1,20 +1,7 @@
 import { ID } from "jazz-tools";
 import { OrderForm } from "./OrderForm.tsx";
 import { useAccount, useCoState } from "./main.tsx";
-import {
-  BubbleTeaAddOnTypes,
-  BubbleTeaBaseTeaTypes,
-  BubbleTeaOrder,
-  DraftBubbleTeaOrder,
-} from "./schema.ts";
-
-export interface BubbleTeaOrderType {
-  baseTea: (typeof BubbleTeaBaseTeaTypes)[number];
-  addOns: Array<(typeof BubbleTeaAddOnTypes)[number]>;
-  deliveryDate: Date;
-  withMilk: boolean;
-  instructions?: string;
-}
+import { BubbleTeaOrder, DraftBubbleTeaOrder } from "./schema.ts";
 
 export function CreateOrder() {
   const { me } = useAccount({ profile: { draft: {}, orders: [] } });
@@ -22,7 +9,10 @@ export function CreateOrder() {
   if (!me?.profile) return;
 
   const onSave = (draft: DraftBubbleTeaOrder) => {
+    // turn the draft into a real order
     me.profile.orders.push(draft as BubbleTeaOrder);
+
+    // reset the draft
     me.profile.draft = DraftBubbleTeaOrder.create(
       {},
       { owner: me.profile._owner },

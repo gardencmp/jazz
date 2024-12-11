@@ -40,7 +40,7 @@ export class ListOfBubbleTeaOrders extends CoList.Of(co.ref(BubbleTeaOrder)) {}
 /** The profile is an app-specific per-user public `CoMap`
  *  where you can store top-level objects for that user */
 export class JazzProfile extends Profile {
-  draft = co.ref(DraftBubbleTeaOrder)!;
+  draft = co.ref(DraftBubbleTeaOrder);
   orders = co.ref(ListOfBubbleTeaOrders);
 }
 
