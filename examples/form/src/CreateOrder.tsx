@@ -4,6 +4,7 @@ import { useAccount, useCoState } from "./main.tsx";
 import {
   BubbleTeaAddOnTypes,
   BubbleTeaBaseTeaTypes,
+  BubbleTeaOrder,
   DraftBubbleTeaOrder,
 } from "./schema.ts";
 
@@ -16,20 +17,35 @@ export interface BubbleTeaOrderType {
 }
 
 export function CreateOrder() {
-  const { me } = useAccount({ profile: { draft: {} } });
+  const { me } = useAccount({ profile: { draft: {}, orders: [] } });
 
   if (!me?.profile) return;
 
-  return <CreateOrderForm id={me?.profile?.draft.id} />;
+  const onSave = (draft: DraftBubbleTeaOrder) => {
+    me.profile.orders.push(draft as BubbleTeaOrder);
+    me.profile.draft = DraftBubbleTeaOrder.create(
+      {},
+      { owner: me.profile._owner },
+    );
+  };
+
+  return <CreateOrderForm id={me?.profile?.draft.id} onSave={onSave} />;
 }
 
-function CreateOrderForm({ id }: { id: ID<DraftBubbleTeaOrder> }) {
+function CreateOrderForm({
+  id,
+  onSave,
+}: {
+  id: ID<DraftBubbleTeaOrder>;
+  onSave: (draft: DraftBubbleTeaOrder) => void;
+}) {
   const draft = useCoState(DraftBubbleTeaOrder, id);
 
   if (!draft) return;
 
   const addOrder = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    onSave(draft);
   };
 
   return <OrderForm order={draft} onSave={addOrder} />;
