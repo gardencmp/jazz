@@ -1,11 +1,26 @@
 import { useAccount } from "./main.tsx";
-import { BubbleTeaOrder, DraftBubbleTeaOrder } from "./schema.ts";
+import { BubbleTeaOrder } from "./schema.ts";
 
-function Order({ order }: { order: BubbleTeaOrder | DraftBubbleTeaOrder }) {
+function Order({ order }: { order: BubbleTeaOrder }) {
+  const { id, baseTea, addOns, deliveryDate, withMilk, instructions } = order;
+  const date = deliveryDate.toLocaleDateString();
+
   return (
-    <a href={`/#/order/${order.id}`} className="border p-3 block">
-      <div>{order.id}</div>
-      <div>{order.baseTea}</div>
+    <a
+      href={`/#/order/${id}`}
+      className="border p-3 flex justify-between items-start gap-3"
+    >
+      <div>
+        <div className="font-medium">
+          {baseTea} {withMilk ? "milk " : ""} tea
+        </div>
+        {addOns && addOns?.length > 0 && (
+          <div className="text-sm text-stone-600">
+            with {addOns?.join(", ").toLowerCase()}
+          </div>
+        )}
+      </div>
+      <div className="text-sm text-stone-600">{date}</div>
     </a>
   );
 }
