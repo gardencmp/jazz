@@ -266,6 +266,11 @@ function determineValidTransactionsForGroup(
         continue;
       }
 
+      /**
+       * We don't want to give the ability to invite members to override
+       * key revelations, otherwise they could hide a key revelation to any user
+       * blocking them from accessing the group.
+       */
       if (
         keyRevelations.has(change.key) &&
         memberState[transactor] !== "admin"
@@ -305,6 +310,14 @@ function determineValidTransactionsForGroup(
         continue;
       }
 
+      /**
+       * writeOnlyInvite need to be able to set writeKeys because every new writeOnly
+       * member comes with their own write key.
+       *
+       * We don't want to give the ability to invite members to override
+       * write keys, otherwise they could hide a write key to other writeOnly users
+       * blocking them from accessing the group.ß
+       */
       if (writeKeys.has(change.key) && memberState[transactor] !== "admin") {
         console.warn(
           "Write key already exists and can't be overridden by invite",

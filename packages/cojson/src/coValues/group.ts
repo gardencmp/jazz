@@ -434,6 +434,10 @@ export class RawGroup<
       );
     }
 
+    /**
+     * If there are some writeOnly members we need to rotate their keys
+     * and reveal them to the other non-writeOnly members
+     */
     for (const writeOnlyMemberID of writeOnlyMembers) {
       const agent = this.core.node
         .resolveAccountAgent(
@@ -441,7 +445,9 @@ export class RawGroup<
           "Expected to know writeOnly member",
         )
         ._unsafeUnwrap({ withStackTrace: true });
+
       const writeOnlyKey = this.core.crypto.newRandomKeySecret();
+
       this.storeKeyRevelationForMember(
         writeOnlyMemberID,
         agent,
@@ -478,8 +484,11 @@ export class RawGroup<
 
     this.set("readKey", newReadKey.id, "trusting");
 
-    // when we rotate our readKey (because someone got kicked out), we also need to (recursively)
-    // rotate the readKeys of all child groups (so they are kicked out there as well)
+    /**
+     * The new read key needs to be revealed to the parent groups
+     *
+     * This way the members from the parent groups can still have access to this group
+     */
     for (const parent of parentGroups) {
       const { id: parentReadKeyID, secret: parentReadKeySecret } =
         parent.core.getCurrentReadKey();
@@ -714,7 +723,12 @@ function isMorePermissiveAndShouldInherit(
   }
 
   if (roleInParent === "reader") {
-    return !roleInChild || roleInChild === "writeOnly";
+    return !roleInChild;
+  }
+
+  // writeOnly can't be inherited
+  if (roleInParent === "writeOnly") {
+    return false;
   }
 
   return false;
