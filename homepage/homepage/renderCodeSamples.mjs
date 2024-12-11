@@ -36,7 +36,7 @@ await rm("./codeSamples", { recursive: true, force: true });
       ).filter((entry) => entry !== undefined),
     );
 
-    console.log(allFiles);
+    // console.log(allFiles);
 
     const components = (
       await Promise.all(
