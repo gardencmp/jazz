@@ -23,6 +23,7 @@ import { PureJSCrypto } from "jazz-tools/native";
 
 export { RNDemoAuth } from "./auth/DemoAuthMethod.js";
 
+import { createWebSocketPeerWithReconnection } from "./createWebSocketPeerWithReconnection.js";
 import { KvStoreContext } from "./storage/kv-store-context.js";
 
 /** @category Context Creation */
@@ -66,21 +67,13 @@ export async function createJazzRNContext<Acc extends Account>(
 export async function createJazzRNContext<Acc extends Account>(
   options: ReactNativeContextOptions<Acc> | BaseReactNativeContextOptions,
 ): Promise<ReactNativeContext<Acc> | ReactNativeGuestContext> {
-  const firstWsPeer = createWebSocketPeer({
-    websocket: new WebSocket(options.peer),
-    id: options.peer + "@" + new Date().toISOString(),
-    role: "server",
-    expectPings: true,
-  });
-  let shouldTryToReconnect = true;
-
-  let currentReconnectionTimeout = options.reconnectionTimeout || 500;
-
-  const unsubscribeNetworkChange = NetInfo.addEventListener((state) => {
-    if (state.isConnected) {
-      currentReconnectionTimeout = options.reconnectionTimeout || 500;
-    }
-  });
+  const websocketPeer = createWebSocketPeerWithReconnection(
+    options.peer,
+    options.reconnectionTimeout,
+    (peer) => {
+      node.syncManager.addPeer(peer);
+    },
+  );
 
   const context =
     "auth" in options
@@ -88,67 +81,22 @@ export async function createJazzRNContext<Acc extends Account>(
           AccountSchema: options.AccountSchema,
           auth: options.auth,
           crypto: await PureJSCrypto.create(),
-          peersToLoadFrom: [firstWsPeer],
+          peersToLoadFrom: [websocketPeer.peer],
           sessionProvider: provideLockSession,
         })
       : await createJazzContext({
           crypto: await PureJSCrypto.create(),
-          peersToLoadFrom: [firstWsPeer],
+          peersToLoadFrom: [websocketPeer.peer],
         });
 
   const node =
     "account" in context ? context.account._raw.core.node : context.agent.node;
 
-  async function websocketReconnectLoop() {
-    while (shouldTryToReconnect) {
-      if (
-        Object.keys(node.syncManager.peers).some((peerId) =>
-          peerId.includes(options.peer),
-        )
-      ) {
-        // TODO: this might drain battery, use listeners instead
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      } else {
-        console.log(
-          "Websocket disconnected, trying to reconnect in " +
-            currentReconnectionTimeout +
-            "ms",
-        );
-        currentReconnectionTimeout = Math.min(
-          currentReconnectionTimeout * 2,
-          30000,
-        );
-        await new Promise<void>((resolve) => {
-          setTimeout(resolve, currentReconnectionTimeout);
-          const _unsubscribeNetworkChange = NetInfo.addEventListener(
-            (state) => {
-              if (state.isConnected) {
-                resolve();
-                _unsubscribeNetworkChange();
-              }
-            },
-          );
-        });
-
-        node.syncManager.addPeer(
-          createWebSocketPeer({
-            websocket: new WebSocket(options.peer),
-            id: options.peer + "@" + new Date().toISOString(),
-            role: "server",
-          }),
-        );
-      }
-    }
-  }
-
-  void websocketReconnectLoop();
-
   return "account" in context
     ? {
         me: context.account,
         done: () => {
-          shouldTryToReconnect = false;
-          unsubscribeNetworkChange?.();
+          websocketPeer.done();
           context.done();
         },
         logOut: () => {
@@ -158,8 +106,7 @@ export async function createJazzRNContext<Acc extends Account>(
     : {
         guest: context.agent,
         done: () => {
-          shouldTryToReconnect = false;
-          unsubscribeNetworkChange?.();
+          websocketPeer.done();
           context.done();
         },
         logOut: () => {
