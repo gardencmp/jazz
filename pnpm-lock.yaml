@@ -92,7 +92,7 @@ importers:
         specifier: ^1.87.3
         version: 1.87.12(@tanstack/router-generator@1.87.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/router-devtools':
-        specifier: ^1.87.3
+        specifier: ^1.87.7
         version: 1.87.12(@tanstack/react-router@1.87.12(@tanstack/router-generator@1.87.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(csstype@3.1.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       class-variance-authority:
         specifier: ^0.7.1
@@ -101,14 +101,17 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       jazz-react:
-        specifier: ^0.8.37
+        specifier: ^0.8.38
         version: 0.8.39(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       jazz-tools:
-        specifier: ^0.8.37
+        specifier: ^0.8.38
         version: 0.8.39(@opentelemetry/api@1.9.0)
       lucide-react:
         specifier: ^0.468.0
         version: 0.468.0(react@18.3.1)
+      motion:
+        specifier: ^11.13.5
+        version: 11.14.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -120,23 +123,23 @@ importers:
         version: 2.5.5
       tailwindcss-animate:
         specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@22.10.2)(typescript@5.6.3)))
+        version: 1.0.7(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@20.17.10)(typescript@5.6.3)))
     devDependencies:
       '@tanstack/router-plugin':
-        specifier: ^1.87.4
-        version: 1.87.13(vite@6.0.3(@types/node@22.10.2)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0))(webpack@5.97.1(@swc/core@1.10.1(@swc/helpers@0.5.5)))
+        specifier: ^1.87.7
+        version: 1.87.13(vite@6.0.3(@types/node@20.17.10)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0))(webpack@5.97.1(@swc/core@1.10.1(@swc/helpers@0.5.5)))
       '@types/node':
-        specifier: ^22.10.1
-        version: 22.10.2
+        specifier: ^20.17.10
+        version: 20.17.10
       '@types/react':
-        specifier: ^19.0.1
-        version: 19.0.1
+        specifier: ^18.3.16
+        version: 18.3.16
       '@types/react-dom':
-        specifier: ^19.0.2
-        version: 19.0.2(@types/react@19.0.1)
+        specifier: ^18.3.5
+        version: 18.3.5(@types/react@18.3.16)
       '@vitejs/plugin-react':
         specifier: ^4.3.4
-        version: 4.3.4(vite@6.0.3(@types/node@22.10.2)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0))
+        version: 4.3.4(vite@6.0.3(@types/node@20.17.10)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0))
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
@@ -145,10 +148,10 @@ importers:
         version: 8.4.49
       tailwindcss:
         specifier: ^3.4.16
-        version: 3.4.16(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@22.10.2)(typescript@5.6.3))
+        version: 3.4.16(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@20.17.10)(typescript@5.6.3))
       vite:
         specifier: ^6.0.3
-        version: 6.0.3(@types/node@22.10.2)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0)
+        version: 6.0.3(@types/node@20.17.10)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0)
 
   examples/chat:
     dependencies:
@@ -5495,11 +5498,6 @@ packages:
     peerDependencies:
       '@types/react': ^18.0.0
 
-  '@types/react-dom@19.0.2':
-    resolution: {integrity: sha512-c1s+7TKFaDRRxr1TxccIX2u7sfCnc3RxkVyBIUA2lCpyqCF+QoAwQ/CBg7bsMdVwP120HEH143VQezKtef5nCg==}
-    peerDependencies:
-      '@types/react': ^19.0.0
-
   '@types/react-test-renderer@18.3.0':
     resolution: {integrity: sha512-HW4MuEYxfDbOHQsVlY/XtOvNHftCVEPhJF2pQXXwcUiUF+Oyb0usgp48HSgpK5rt8m9KZb22yqOeZm+rrVG8gw==}
 
@@ -5508,9 +5506,6 @@ packages:
 
   '@types/react@18.3.16':
     resolution: {integrity: sha512-oh8AMIC4Y2ciKufU8hnKgs+ufgbA/dhPTACaZPM86AbwX9QwnFtSoPWEeRUj8fge+v6kFt78BXcDhAU1SrrAsw==}
-
-  '@types/react@19.0.1':
-    resolution: {integrity: sha512-YW6614BDhqbpR5KtUYzTA+zlA7nayzJRA9ljz9CQoxthR0sDisYZLuvSMsil36t4EH/uAt8T52Xb4sVw17G+SQ==}
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
@@ -7665,6 +7660,20 @@ packages:
   fraction.js@4.3.7:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
 
+  framer-motion@11.14.4:
+    resolution: {integrity: sha512-NQuzr9JbeJDMQmy0FFLhLzk9h1kAjVC1tGE/HY4ubF02B95EBm2lpA21LE3Od/OpXqXgp0zl5Hdqu25hliBRsA==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: 18.3.1
+      react-dom: 18.3.1
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   freeport-async@2.0.0:
     resolution: {integrity: sha512-K7od3Uw45AJg00XUmy15+Hae2hOcgKcmN3/EF6Y7i01O0gaqiRx8sUSpsb9+BRNL8RPBrhzPsVfy8q9ADlJuWQ==}
     engines: {node: '>=8'}
@@ -9146,6 +9155,26 @@ packages:
     engines: {node: '>=14.0.0'}
     peerDependencies:
       esbuild: ^0.14.0 || ^0.15.0 || ^0.16.0 || ^0.17.0 || ^0.18.0
+
+  motion-dom@11.14.3:
+    resolution: {integrity: sha512-lW+D2wBy5vxLJi6aCP0xyxTxlTfiu+b+zcpVbGVFUxotwThqhdpPRSmX8xztAgtZMPMeU0WGVn/k1w4I+TbPqA==}
+
+  motion-utils@11.14.3:
+    resolution: {integrity: sha512-Xg+8xnqIJTpr0L/cidfTTBFkvRw26ZtGGuIhA94J9PQ2p4mEa06Xx7QVYZH0BP+EpMSaDlu+q0I0mmvwADPsaQ==}
+
+  motion@11.14.4:
+    resolution: {integrity: sha512-ZIaw6ko88B8rSmBEFzqbTCQMbo9xMu8f4PSXSGdb9DTDy8R0sXcbwMEKmTEYkrj9TmZ4n+Ebd0KYjtqHgzRkRQ==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: 18.3.1
+      react-dom: 18.3.1
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
 
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
@@ -16579,7 +16608,7 @@ snapshots:
       tsx: 4.19.2
       zod: 3.24.0
 
-  '@tanstack/router-plugin@1.87.13(vite@6.0.3(@types/node@22.10.2)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0))(webpack@5.97.1(@swc/core@1.10.1(@swc/helpers@0.5.5)))':
+  '@tanstack/router-plugin@1.87.13(vite@6.0.3(@types/node@20.17.10)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0))(webpack@5.97.1(@swc/core@1.10.1(@swc/helpers@0.5.5)))':
     dependencies:
       '@babel/core': 7.26.0
       '@babel/generator': 7.26.3
@@ -16600,7 +16629,7 @@ snapshots:
       unplugin: 1.16.0
       zod: 3.24.0
     optionalDependencies:
-      vite: 6.0.3(@types/node@22.10.2)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0)
+      vite: 6.0.3(@types/node@20.17.10)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0)
       webpack: 5.97.1(@swc/core@1.10.1(@swc/helpers@0.5.5))
     transitivePeerDependencies:
       - supports-color
@@ -16779,10 +16808,6 @@ snapshots:
     dependencies:
       '@types/react': 18.3.16
 
-  '@types/react-dom@19.0.2(@types/react@19.0.1)':
-    dependencies:
-      '@types/react': 19.0.1
-
   '@types/react-test-renderer@18.3.0':
     dependencies:
       '@types/react': 18.3.16
@@ -16795,10 +16820,6 @@ snapshots:
   '@types/react@18.3.16':
     dependencies:
       '@types/prop-types': 15.7.11
-      csstype: 3.1.3
-
-  '@types/react@19.0.1':
-    dependencies:
       csstype: 3.1.3
 
   '@types/stack-utils@2.0.3': {}
@@ -16976,14 +16997,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitejs/plugin-react@4.3.4(vite@6.0.3(@types/node@22.10.2)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0))':
+  '@vitejs/plugin-react@4.3.4(vite@6.0.3(@types/node@20.17.10)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0))':
     dependencies:
       '@babel/core': 7.26.0
       '@babel/plugin-transform-react-jsx-self': 7.25.9(@babel/core@7.26.0)
       '@babel/plugin-transform-react-jsx-source': 7.25.9(@babel/core@7.26.0)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.2
-      vite: 6.0.3(@types/node@22.10.2)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0)
+      vite: 6.0.3(@types/node@20.17.10)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -19671,6 +19692,15 @@ snapshots:
 
   fraction.js@4.3.7: {}
 
+  framer-motion@11.14.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      motion-dom: 11.14.3
+      motion-utils: 11.14.3
+      tslib: 2.6.2
+    optionalDependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
   freeport-async@2.0.0: {}
 
   fresh@0.5.2: {}
@@ -21482,6 +21512,18 @@ snapshots:
     transitivePeerDependencies:
       - rollup
 
+  motion-dom@11.14.3: {}
+
+  motion-utils@11.14.3: {}
+
+  motion@11.14.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      framer-motion: 11.14.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      tslib: 2.6.2
+    optionalDependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
   mri@1.2.0: {}
 
   mrmime@1.0.1: {}
@@ -22035,6 +22077,14 @@ snapshots:
     optionalDependencies:
       postcss: 8.4.49
       ts-node: 10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@22.10.2)(typescript@5.6.3)
+
+  postcss-load-config@4.0.2(postcss@8.4.49)(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@20.17.10)(typescript@5.6.3)):
+    dependencies:
+      lilconfig: 3.1.3
+      yaml: 2.5.0
+    optionalDependencies:
+      postcss: 8.4.49
+      ts-node: 10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@20.17.10)(typescript@5.6.3)
 
   postcss-load-config@4.0.2(postcss@8.4.49)(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@22.10.2)(typescript@5.6.3)):
     dependencies:
@@ -23368,6 +23418,10 @@ snapshots:
 
   tailwind-merge@2.5.5: {}
 
+  tailwindcss-animate@1.0.7(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@20.17.10)(typescript@5.6.3))):
+    dependencies:
+      tailwindcss: 3.4.16(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@20.17.10)(typescript@5.6.3))
+
   tailwindcss-animate@1.0.7(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@22.10.2)(typescript@5.6.3))):
     dependencies:
       tailwindcss: 3.4.16(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@22.10.2)(typescript@5.6.3))
@@ -23399,6 +23453,33 @@ snapshots:
       postcss-nested: 6.2.0(postcss@8.4.49)
       postcss-selector-parser: 6.1.2
       postcss-value-parser: 4.2.0
+      resolve: 1.22.8
+      sucrase: 3.35.0
+    transitivePeerDependencies:
+      - ts-node
+
+  tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@20.17.10)(typescript@5.6.3)):
+    dependencies:
+      '@alloc/quick-lru': 5.2.0
+      arg: 5.0.2
+      chokidar: 3.6.0
+      didyoumean: 1.2.2
+      dlv: 1.1.3
+      fast-glob: 3.3.2
+      glob-parent: 6.0.2
+      is-glob: 4.0.3
+      jiti: 1.21.6
+      lilconfig: 3.1.3
+      micromatch: 4.0.8
+      normalize-path: 3.0.0
+      object-hash: 3.0.0
+      picocolors: 1.1.1
+      postcss: 8.4.49
+      postcss-import: 15.1.0(postcss@8.4.49)
+      postcss-js: 4.0.1(postcss@8.4.49)
+      postcss-load-config: 4.0.2(postcss@8.4.49)(ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@20.17.10)(typescript@5.6.3))
+      postcss-nested: 6.2.0(postcss@8.4.49)
+      postcss-selector-parser: 6.1.2
       resolve: 1.22.8
       sucrase: 3.35.0
     transitivePeerDependencies:
@@ -23633,6 +23714,27 @@ snapshots:
   ts-easing@0.2.0: {}
 
   ts-interface-checker@0.1.13: {}
+
+  ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@20.17.10)(typescript@5.6.3):
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.9
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 20.17.10
+      acorn: 8.11.2
+      acorn-walk: 8.3.1
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.6.3
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    optionalDependencies:
+      '@swc/core': 1.10.1(@swc/helpers@0.5.5)
+    optional: true
 
   ts-node@10.9.2(@swc/core@1.10.1(@swc/helpers@0.5.5))(@types/node@22.10.2)(typescript@5.6.3):
     dependencies:
@@ -24024,13 +24126,13 @@ snapshots:
       lightningcss: 1.27.0
       terser: 5.33.0
 
-  vite@6.0.3(@types/node@22.10.2)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0):
+  vite@6.0.3(@types/node@20.17.10)(jiti@1.21.6)(lightningcss@1.27.0)(terser@5.33.0)(tsx@4.19.2)(yaml@2.5.0):
     dependencies:
       esbuild: 0.24.0
       postcss: 8.4.49
       rollup: 4.24.0
     optionalDependencies:
-      '@types/node': 22.10.2
+      '@types/node': 20.17.10
       fsevents: 2.3.3
       jiti: 1.21.6
       lightningcss: 1.27.0

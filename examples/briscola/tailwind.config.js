@@ -51,6 +51,10 @@ export default {
           5: "hsl(var(--chart-5))",
         },
       },
+
+      aspectRatio: {
+        card: "2584/4181",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

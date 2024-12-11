@@ -11,10 +11,10 @@
     "start": "vite"
   },
   "devDependencies": {
-    "@tanstack/router-plugin": "^1.87.4",
-    "@types/node": "^22.10.1",
-    "@types/react": "^19.0.1",
-    "@types/react-dom": "^19.0.2",
+    "@tanstack/router-plugin": "^1.87.7",
+    "@types/node": "^20.17.10",
+    "@types/react": "^18.3.16",
+    "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
@@ -23,14 +23,15 @@
   },
   "dependencies": {
     "@tanstack/react-router": "^1.87.3",
-    "@tanstack/router-devtools": "^1.87.3",
+    "@tanstack/router-devtools": "^1.87.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "jazz-react": "^0.8.37",
-    "jazz-tools": "^0.8.37",
+    "jazz-react": "^0.8.38",
+    "jazz-tools": "^0.8.38",
     "lucide-react": "^0.468.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "motion": "^11.13.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7"
   }
