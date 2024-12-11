@@ -12,7 +12,7 @@ function Order({ order }: { order: BubbleTeaOrder | DraftBubbleTeaOrder }) {
 
 export function Orders() {
   const { me } = useAccount({
-    profile: { orders: [], draftOrders: [] },
+    profile: { orders: [] },
   });
 
   return (
@@ -25,12 +25,9 @@ export function Orders() {
           )}
         </div>
 
-        <div className="space-y-3">
-          <h2 className="font-semibold pb-2 border-b mb-3">Drafts</h2>
-          {me?.profile?.draftOrders.map((order) =>
-            order ? <Order key={order.id} order={order} /> : null,
-          )}
-        </div>
+        <a href={`/#/order`} className="block">
+          Add order
+        </a>
       </section>
     </>
   );

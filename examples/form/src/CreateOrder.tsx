@@ -1,10 +1,10 @@
+import { ID } from "jazz-tools";
 import { OrderForm } from "./OrderForm.tsx";
-import { useAccount } from "./main.tsx";
+import { useAccount, useCoState } from "./main.tsx";
 import {
   BubbleTeaAddOnTypes,
   BubbleTeaBaseTeaTypes,
-  BubbleTeaOrder,
-  ListOfBubbleTeaAddOns,
+  DraftBubbleTeaOrder,
 } from "./schema.ts";
 
 export interface BubbleTeaOrderType {
@@ -16,37 +16,21 @@ export interface BubbleTeaOrderType {
 }
 
 export function CreateOrder() {
-  const { me } = useAccount({
-    profile: { orders: [] },
-  });
+  const { me } = useAccount({ profile: { draft: {} } });
 
   if (!me?.profile) return;
 
-  const newOrder = BubbleTeaOrder.create(
-    {
-      baseTea: BubbleTeaBaseTeaTypes[0],
-      addOns: ListOfBubbleTeaAddOns.create([], { owner: me.profile._owner }),
-      deliveryDate: new Date(),
-      withMilk: false,
-    },
-    { owner: me?.profile._owner },
-  );
+  return <CreateOrderForm id={me?.profile?.draft.id} />;
+}
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+function CreateOrderForm({ id }: { id: ID<DraftBubbleTeaOrder> }) {
+  const draft = useCoState(DraftBubbleTeaOrder, id);
+
+  if (!draft) return;
+
+  const addOrder = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (me?.profile) {
-      me.profile.orders.push(newOrder);
-    }
   };
 
-  return (
-    <>
-      <section>
-        <h1>Order a bubble tea 🧋</h1>
-
-        <OrderForm order={newOrder} onSubmit={onSubmit} />
-      </section>
-    </>
-  );
+  return <OrderForm order={draft} onSave={addOrder} />;
 }

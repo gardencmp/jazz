@@ -36,15 +36,12 @@ export class DraftBubbleTeaOrder extends CoMap {
 }
 
 export class ListOfBubbleTeaOrders extends CoList.Of(co.ref(BubbleTeaOrder)) {}
-export class ListOfDraftBubbleTeaOrders extends CoList.Of(
-  co.ref(DraftBubbleTeaOrder),
-) {}
 
 /** The profile is an app-specific per-user public `CoMap`
  *  where you can store top-level objects for that user */
 export class JazzProfile extends Profile {
+  draft = co.ref(DraftBubbleTeaOrder)!;
   orders = co.ref(ListOfBubbleTeaOrders);
-  draftOrders = co.ref(ListOfDraftBubbleTeaOrders);
 }
 
 export class JazzAccount extends Account {
@@ -54,12 +51,9 @@ export class JazzAccount extends Account {
     super.migrate(creationProps);
 
     if (!this.profile._refs.orders) {
-      this.profile.orders = ListOfBubbleTeaOrders.create([], {
-        owner: this.profile._owner,
-      });
-      this.profile.draftOrders = ListOfDraftBubbleTeaOrders.create([], {
-        owner: this.profile._owner,
-      });
+      const owner = this.profile._owner;
+      this.profile.orders = ListOfBubbleTeaOrders.create([], { owner });
+      this.profile.draft = DraftBubbleTeaOrder.create({}, { owner });
     }
   }
 }

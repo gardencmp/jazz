@@ -2,17 +2,18 @@ import {
   BubbleTeaAddOnTypes,
   BubbleTeaBaseTeaTypes,
   BubbleTeaOrder,
+  DraftBubbleTeaOrder,
 } from "./schema.ts";
 
 export function OrderForm({
   order,
-  onSubmit,
+  onSave,
 }: {
-  order: BubbleTeaOrder;
-  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+  order: BubbleTeaOrder | DraftBubbleTeaOrder;
+  onSave?: (e: React.FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSave}>
       <div>
         <label htmlFor="baseTea">Base tea</label>
         <select
@@ -75,7 +76,7 @@ export function OrderForm({
         ></textarea>
       </div>
 
-      {onSubmit && (
+      {onSave && (
         <button type="submit" className="bg-black">
           Submit
         </button>
