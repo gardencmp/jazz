@@ -60,8 +60,11 @@ test("Can create a FileStream in a group", () => {
 });
 
 test("Remove a member from a group where the admin role is inherited", async () => {
-  const { node1, node2, node3, node1ToNode2Peer, node2ToNode3Peer } =
-    await createThreeConnectedNodes("server", "server", "server");
+  const { node1, node2, node3 } = await createThreeConnectedNodes(
+    "server",
+    "server",
+    "server",
+  );
 
   const group = node1.node.createGroup();
 
@@ -112,8 +115,11 @@ test("Remove a member from a group where the admin role is inherited", async () 
 });
 
 test("An admin should be able to rotate the readKey on child groups and keep access to new coValues", async () => {
-  const { node1, node2, node3, node1ToNode2Peer, node2ToNode1Peer } =
-    await createThreeConnectedNodes("server", "server", "server");
+  const { node1, node2, node3 } = await createThreeConnectedNodes(
+    "server",
+    "server",
+    "server",
+  );
 
   const group = node1.node.createGroup();
 
@@ -152,8 +158,11 @@ test("An admin should be able to rotate the readKey on child groups and keep acc
 });
 
 test("An admin should be able to rotate the readKey on child groups even if it was unavailable when kicking out a member from a parent group", async () => {
-  const { node1, node2, node3, node1ToNode2Peer, node2ToNode1Peer } =
-    await createThreeConnectedNodes("server", "server", "server");
+  const { node1, node2, node3 } = await createThreeConnectedNodes(
+    "server",
+    "server",
+    "server",
+  );
 
   const group = node1.node.createGroup();
 
@@ -190,8 +199,11 @@ test("An admin should be able to rotate the readKey on child groups even if it w
 });
 
 test("An admin should be able to rotate the readKey on child groups even if it was unavailable when kicking out a member from a parent group (grandChild)", async () => {
-  const { node1, node2, node3, node1ToNode2Peer } =
-    await createThreeConnectedNodes("server", "server", "server");
+  const { node1, node2, node3 } = await createThreeConnectedNodes(
+    "server",
+    "server",
+    "server",
+  );
 
   const group = node1.node.createGroup();
 
@@ -231,8 +243,11 @@ test("An admin should be able to rotate the readKey on child groups even if it w
 });
 
 test("A user add after a key rotation should have access to the old transactions", async () => {
-  const { node1, node2, node3, node1ToNode2Peer, node2ToNode1Peer } =
-    await createThreeConnectedNodes("server", "server", "server");
+  const { node1, node2, node3 } = await createThreeConnectedNodes(
+    "server",
+    "server",
+    "server",
+  );
 
   const group = node1.node.createGroup();
 
@@ -263,8 +278,11 @@ test("A user add after a key rotation should have access to the old transactions
 });
 
 test("Invites should have access to the new keys", async () => {
-  const { node1, node2, node3, node1ToNode2Peer } =
-    await createThreeConnectedNodes("server", "server", "server");
+  const { node1, node2, node3 } = await createThreeConnectedNodes(
+    "server",
+    "server",
+    "server",
+  );
 
   const group = node1.node.createGroup();
   group.addMember(
@@ -302,8 +320,11 @@ describe("writeOnly", () => {
   });
 
   test("Edits by writeOnly members are visible to other members", async () => {
-    const { node1, node2, node3, node1ToNode2Peer, node2ToNode1Peer } =
-      await createThreeConnectedNodes("server", "server", "server");
+    const { node1, node2, node3 } = await createThreeConnectedNodes(
+      "server",
+      "server",
+      "server",
+    );
 
     const group = node1.node.createGroup();
 
@@ -334,10 +355,7 @@ describe("writeOnly", () => {
   });
 
   test("Edits by other members are not visible to writeOnly members", async () => {
-    const { node1, node2, node1ToNode2Peer } = await createTwoConnectedNodes(
-      "server",
-      "server",
-    );
+    const { node1, node2 } = await createTwoConnectedNodes("server", "server");
 
     const group = node1.node.createGroup();
 
@@ -355,14 +373,11 @@ describe("writeOnly", () => {
   });
 
   test("Write only member keys are rotated when a member is kicked out", async () => {
-    const {
-      node1,
-      node2,
-      node3,
-      node1ToNode2Peer,
-      node2ToNode1Peer,
-      node2ToNode3Peer,
-    } = await createThreeConnectedNodes("server", "server", "server");
+    const { node1, node2, node3 } = await createThreeConnectedNodes(
+      "server",
+      "server",
+      "server",
+    );
 
     const group = node1.node.createGroup();
 
