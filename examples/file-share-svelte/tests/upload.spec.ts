@@ -43,7 +43,7 @@ test('can login with passkey and upload file', async ({ page, browser }) => {
   await page.goto('/');
   
   // Click login and handle the passkey authentication
-  await page.getByRole('textbox').fill('Captian Hook');
+  await page.getByRole('textbox').fill('Capitan Hook');
   await page.getByRole('button', { name: "Sign up" }).click();
   
   // Verify successful login by checking for user-specific element
