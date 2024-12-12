@@ -410,7 +410,7 @@ const svelteExamples: Example[] = [
     slug: "file-share-svelte",
     description: "Upload a file, then share the link for others to download.",
     tech: [tech.svelte],
-    features: [features.fileUpload],
+    features: [features.fileUpload, features.passkey, features.inviteLink],
     illustration: <FileShareIllustration />,
   },
 ];
