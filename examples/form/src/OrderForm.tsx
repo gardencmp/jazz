@@ -19,12 +19,12 @@ export function OrderForm({
         <select
           name="baseTea"
           id="baseTea"
-          value={order.baseTea}
+          value={order.baseTea || ""}
           className="dark:bg-transparent"
           onChange={(e) => (order.baseTea = e.target.value as any)}
           required
         >
-          <option value="" disabled selected>
+          <option value="" disabled>
             Please select your preferred base tea
           </option>
           {BubbleTeaBaseTeaTypes.map((teaType) => (
@@ -66,7 +66,7 @@ export function OrderForm({
           name="deliveryDate"
           id="deliveryDate"
           className="dark:bg-transparent"
-          value={order.deliveryDate?.toISOString().split("T")[0]}
+          value={order.deliveryDate?.toISOString().split("T")[0] || ""}
           onChange={(e) => (order.deliveryDate = new Date(e.target.value))}
           required
         />
