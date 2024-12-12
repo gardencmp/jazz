@@ -84,7 +84,7 @@ describe("Simple CoRichText operations", async () => {
       });
     });
 
-    test('to string', () => {
+    test("to string", () => {
       const text = CoRichText.createFromPlainText("hello world", {
         owner: me,
       });
@@ -99,14 +99,14 @@ describe("Simple CoRichText operations", async () => {
       });
 
       // Add an outer mark spanning the whole text
-      text.insertMark(0, 11, Marks.Strong, { tag: 'strong' });
-      
+      text.insertMark(0, 11, Marks.Strong, { tag: "strong" });
+
       // Add an inner mark spanning part of the text
-      text.insertMark(6, 11, Marks.Em, { tag: 'em' });
+      text.insertMark(6, 11, Marks.Em, { tag: "em" });
 
       // Split at position 8 (between 'wo' and 'rld')
       const tree = text.toTree(["strong", "em"]);
-      
+
       expect(tree).toEqual({
         type: "node",
         tag: "root",
@@ -123,8 +123,8 @@ describe("Simple CoRichText operations", async () => {
                 type: "leaf",
                 start: 0,
                 end: 6,
-              }
-            ]
+              },
+            ],
           },
           {
             type: "node",
@@ -142,17 +142,17 @@ describe("Simple CoRichText operations", async () => {
                     type: "leaf",
                     start: 6,
                     end: 11,
-                  }
-                ]
-              }
-            ]
-          }
-        ]
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       });
 
       // Now verify splitting works by checking a specific position
       const [before, after] = splitNode(tree.children[1] as TreeNode, 8);
-      
+
       // Verify the structure of the split nodes
       expect(before).toEqual({
         type: "node",
@@ -169,11 +169,11 @@ describe("Simple CoRichText operations", async () => {
               {
                 type: "leaf",
                 start: 6,
-                end: 8
-              }
-            ]
-          }
-        ]
+                end: 8,
+              },
+            ],
+          },
+        ],
       });
 
       expect(after).toEqual({
@@ -191,11 +191,11 @@ describe("Simple CoRichText operations", async () => {
               {
                 type: "leaf",
                 start: 8,
-                end: 11
-              }
-            ]
-          }
-        ]
+                end: 11,
+              },
+            ],
+          },
+        ],
       });
     });
   });

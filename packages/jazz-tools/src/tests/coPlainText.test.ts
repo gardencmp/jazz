@@ -1,14 +1,14 @@
+import { connectedPeers } from "cojson/src/streamUtils.js";
 import { describe, expect, test } from "vitest";
 import {
-  createJazzContext,
   Account,
   CoPlainText,
   WasmCrypto,
-  fixedCredentialsAuth,
   cojsonInternals,
+  createJazzContext,
+  fixedCredentialsAuth,
   isControlledAccount,
 } from "../index.web.js";
-import { connectedPeers } from "cojson/src/streamUtils.js";
 import { randomSessionProvider } from "../internal.js";
 
 const Crypto = await WasmCrypto.create();
