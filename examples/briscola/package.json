@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@tanstack/router-plugin": "^1.87.7",
-    "@types/node": "^20.17.10",
+    "@types/node": "^22.10.2",
     "@types/react": "^18.3.16",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
@@ -22,12 +22,16 @@
     "vite": "^6.0.3"
   },
   "dependencies": {
-    "@tanstack/react-router": "^1.87.3",
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-separator": "^1.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@tanstack/react-router": "^1.87.7",
     "@tanstack/router-devtools": "^1.87.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "jazz-react": "^0.8.38",
-    "jazz-tools": "^0.8.38",
+    "jazz-nodejs": "workspace:*",
+    "jazz-react": "workspace:*",
+    "jazz-tools": "workspace:*",
     "lucide-react": "^0.468.0",
     "motion": "^11.13.5",
     "react": "^18.3.1",

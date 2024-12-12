@@ -1,56 +1,47 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { createFileRoute } from "@tanstack/react-router";
-import { Reorder, motion } from "motion/react";
-import { useDragControls } from "motion/react";
-import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
 function HomeComponent() {
-  const [cards, setCards] = useState(["A", "B", "C"]);
-
   return (
-    <div className="h-screen flex flex-col w-full justify-between p-2">
-      <Reorder.Group axis="x" values={cards} onReorder={setCards}>
-        <div className="flex place-content-center gap-2">
-          {cards.map((card) => (
-            <Reorder.Item key={card} value={card}>
-              <Card card={card} />
-            </Reorder.Item>
-          ))}
-        </div>
-      </Reorder.Group>
-
-      <Reorder.Group axis="x" values={cards} onReorder={setCards}>
-        <div className="flex place-content-center gap-2">
-          {cards.map((card) => (
-            <Reorder.Item key={card} value={card}>
-              <Card card={card} />
-            </Reorder.Item>
-          ))}
-        </div>
-      </Reorder.Group>
+    <div className="h-screen flex flex-col w-full place-items-center justify-center p-2">
+      <Card className="w-[500px]">
+        <CardHeader>
+          <CardTitle>Welcome to Jazz Briscola</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="flex items-center space-x-4">
+            <div className="w-1/2 flex flex-col p-4">
+              <Button>New Game</Button>
+            </div>
+            <Separator orientation="vertical" className="h-40" />
+            <div className="w-1/2 flex flex-col space-y-4 p-4">
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="picture">Game ID</Label>
+                <Input id="picture" placeholder="co_XXXXXXXXXXX" />
+              </div>
+              <Button>Join</Button>
+            </div>
+          </div>
+          <Separator />
+          <div className="p-4">
+            <Button variant="link">How to play?</Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-  );
-}
-
-interface Props {
-  card: string;
-}
-function Card({ card }: Props) {
-  // const controls = useDragControls();
-
-  return (
-    <motion.div
-      // drag
-      // dragControls={controls}
-      className="border aspect-card w-[150px] bg-white touch-none rounded-lg shadow-lg p-2"
-      whileHover={{
-        marginTop: -30,
-      }}
-    >
-      {card}
-    </motion.div>
   );
 }

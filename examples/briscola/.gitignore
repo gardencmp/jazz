@@ -16,3 +16,6 @@ dist/
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+
+.env

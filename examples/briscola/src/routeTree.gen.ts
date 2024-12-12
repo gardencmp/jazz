@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from "./routes/__root";
+import { Route as GameGameIdImport } from "./routes/game/$gameId";
 import { Route as IndexImport } from "./routes/index";
 
 // Create/Update Routes
@@ -18,6 +19,12 @@ import { Route as IndexImport } from "./routes/index";
 const IndexRoute = IndexImport.update({
   id: "/",
   path: "/",
+  getParentRoute: () => rootRoute,
+} as any);
+
+const GameGameIdRoute = GameGameIdImport.update({
+  id: "/game/$gameId",
+  path: "/game/$gameId",
   getParentRoute: () => rootRoute,
 } as any);
 
@@ -32,6 +39,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof IndexImport;
       parentRoute: typeof rootRoute;
     };
+    "/game/$gameId": {
+      id: "/game/$gameId";
+      path: "/game/$gameId";
+      fullPath: "/game/$gameId";
+      preLoaderRoute: typeof GameGameIdImport;
+      parentRoute: typeof rootRoute;
+    };
   }
 }
 
@@ -39,32 +53,37 @@ declare module "@tanstack/react-router" {
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/game/$gameId": typeof GameGameIdRoute;
 }
 
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
+  "/game/$gameId": typeof GameGameIdRoute;
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute;
   "/": typeof IndexRoute;
+  "/game/$gameId": typeof GameGameIdRoute;
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/";
+  fullPaths: "/" | "/game/$gameId";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/";
-  id: "__root__" | "/";
+  to: "/" | "/game/$gameId";
+  id: "__root__" | "/" | "/game/$gameId";
   fileRoutesById: FileRoutesById;
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  GameGameIdRoute: typeof GameGameIdRoute;
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GameGameIdRoute: GameGameIdRoute,
 };
 
 export const routeTree = rootRoute
@@ -77,11 +96,15 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/game/$gameId"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/game/$gameId": {
+      "filePath": "game/$gameId.tsx"
     }
   }
 }
