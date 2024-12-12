@@ -50,6 +50,23 @@ const ClerkIllustration = () => (
   </div>
 );
 
+const FormIllustration = () => (
+  <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
+    <div className="p-3 flex flex-col rounded-md shadow-xl shadow-stone-400/20 bg-white sm:p-5 dark:shadow-none">
+      <div className="w-16 h-1 rounded-full bg-stone-400 mb-1.5" />
+      <div className="w-40 h-5 rounded border mb-3 dark:border-stone-500" />
+      <div className="w-16 h-1 rounded-full bg-stone-400 mb-1.5 hidden sm:block" />
+      <div className="w-40 h-5 rounded border mb-3 hidden sm:block dark:border-stone-500" />
+
+      <div className="flex items-center gap-2 mb-5">
+        <div className="w-3 h-3 rounded border dark:border-stone-500" />
+        <div className="w-16 h-1 rounded-full bg-stone-400" />
+      </div>
+      <MockButton>Submit</MockButton>
+    </div>
+  </div>
+);
+
 const MusicIllustration = () => (
   <div className="flex flex-col items-center justify-center h-full p-8">
     <div className="p-3 w-[12rem] h-[8rem] border border-dashed border-blue dark:border-blue-500 rounded-lg flex gap-2 flex-col items-center justify-center">
@@ -268,6 +285,14 @@ const reactExamples: Example[] = [
         </div>
       </div>
     ),
+  },
+  {
+    name: "Form",
+    slug: "form",
+    description: "A form example for creating and editing CoValues",
+    tech: [tech.react],
+    demoUrl: "https://form-demo.jazz.tools",
+    illustration: <FormIllustration />,
   },
 ];
 
