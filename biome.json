@@ -25,18 +25,48 @@
   "linter": {
     "enabled": false,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "correctness": {
+        "useImportExtensions": {
+          "level": "error",
+          "options": {
+            "suggestedExtensions": {
+              "ts": {
+                "module": "js",
+                "component": "jsx"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "overrides": [
+    {
+      "include": ["packages/**/src/**"],
+      "linter": {
+        "enabled": true,
+        "rules": {
+          "recommended": false
+        }
+      }
+    },
+    {
+      "include": ["packages/**/src/tests/**", "packages/**/src/test/**"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "useImportExtensions": "off"
+          }
+        }
+      }
+    },
     {
       "include": ["packages/cojson-storage-indexeddb/**"],
       "linter": {
         "enabled": true,
         "rules": {
-          "correctness": {
-            "useImportExtensions": "error"
-          },
+          "recommended": true,
           "suspicious": {
             "noExplicitAny": "info"
           }

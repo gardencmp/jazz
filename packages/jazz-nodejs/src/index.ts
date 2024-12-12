@@ -8,7 +8,7 @@ import {
   randomSessionProvider,
 } from "jazz-tools";
 import { WebSocket } from "ws";
-import { webSocketWithReconnection } from "./webSocketWithReconnection";
+import { webSocketWithReconnection } from "./webSocketWithReconnection.js";
 
 /** @category Context Creation */
 export async function startWorker<Acc extends Account>({
