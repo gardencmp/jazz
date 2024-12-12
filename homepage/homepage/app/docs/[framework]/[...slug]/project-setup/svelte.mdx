@@ -25,7 +25,7 @@ import { Account, Profile, co } from "jazz-tools";
 
 export class MyProfile extends Profile {
   name = co.string;
-  counter = co.number;
+  counter = co.number; // This will be publically visible
 }
 
 export class MyAccount extends Account {
