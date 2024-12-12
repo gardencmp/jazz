@@ -1,5 +1,14 @@
 # jazz-tools
 
+## 0.8.39
+
+### Patch Changes
+
+- 249eecb: Added new APIs to wait for CoValue sync
+- Updated dependencies [249eecb]
+- Updated dependencies [3121551]
+  - cojson@0.8.39
+
 ## 0.8.38
 
 ### Patch Changes

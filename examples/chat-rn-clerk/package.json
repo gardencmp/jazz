@@ -1,7 +1,7 @@
 {
   "name": "chat-rn-clerk",
   "main": "index.js",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "scripts": {
     "build": "expo export -p ios",
     "start": "expo start",
