@@ -35,16 +35,16 @@ export function SupportedEnvironmentsSection() {
       icon: <VueLogo />,
     },
     {
+      name: "Svelte",
+      icon: <SvelteLogo />,
+    },
+    {
       name: "Node.js",
       icon: <NodejsLogo />,
     },
   ];
 
   const comingSoon = [
-    {
-      name: "Svelte",
-      icon: <SvelteLogo />,
-    },
     {
       name: "Swift",
       icon: <SwiftLogo />,
@@ -65,14 +65,11 @@ export function SupportedEnvironmentsSection() {
         Jazz works with your favorite stack
       </h2>
       <div className="flex flex-col gap-6 lg:col-span-2 lg:gap-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:gap-3">
+        <div className="flex flex-col gap-5 lg:flex-row lg:gap-8">
           {supported.map((tech) => (
-            <div
-              key={tech.name}
-              className="flex items-center gap-2 lg:py-3 lg:px-4 lg:shadow-sm rounded-lg lg:border"
-            >
-              <span className="text-2xl">{tech.icon}</span>
-              <div className="text-center font-medium text-stone-900 dark:text-white">
+            <div key={tech.name} className="flex items-center gap-2">
+              <span className="text-xl">{tech.icon}</span>
+              <div className="text-center font-medium text-stone-900 dark:text-white lg:text-lg">
                 {tech.name}
               </div>
             </div>

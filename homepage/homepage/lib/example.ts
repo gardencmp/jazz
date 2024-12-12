@@ -16,6 +16,7 @@ export const tech = {
   nextjs: "Next.js",
   reactNative: "React Native",
   vue: "Vue",
+  svelte: "Svelte",
 };
 
 export const features = {
