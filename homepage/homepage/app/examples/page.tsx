@@ -6,7 +6,12 @@ import { VueLogo } from "@/components/icons/VueLogo";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
-import { CloudUploadIcon, FingerprintIcon, ImageIcon } from "lucide-react";
+import {
+  CloudUploadIcon,
+  FileArchiveIcon,
+  FingerprintIcon,
+  ImageIcon,
+} from "lucide-react";
 
 import {
   Schema_ts as ImageUploadSchema,
@@ -18,6 +23,7 @@ import {
 } from "@/codeSamples/examples/reactions/src";
 import { ExampleCard } from "@/components/examples/ExampleCard";
 import { ExampleDemo } from "@/components/examples/ExampleDemo";
+import { SvelteLogo } from "@/components/icons/SvelteLogo";
 import { Example, features, tech } from "@/lib/example";
 
 const MockButton = ({ children }: { children: React.ReactNode }) => (
@@ -188,6 +194,26 @@ const PasswordManagerIllustration = () => (
         </tr>
       </tbody>
     </table>
+  </div>
+);
+
+const FileShareIllustration = () => (
+  <div className="flex flex-col items-center justify-center h-full gap-3 p-8">
+    <p>This file was shared with you.</p>
+    <div className="p-3 w-full border rounded-lg flex justify-between gap-5">
+      <div className="flex items-center gap-2">
+        <FileArchiveIcon
+          size={24}
+          strokeWidth={1}
+          className="stroke-blue dark:stroke-blue-500"
+        />
+        <p className="whitespace-nowrap text-stone-900 dark:text-white">
+          top-secret.zip
+        </p>
+      </div>
+
+      <MockButton>Download</MockButton>
+    </div>
   </div>
 );
 
@@ -368,6 +394,17 @@ const demos = [
   },
 ];
 
+const svelteExamples: Example[] = [
+  {
+    name: "File share",
+    slug: "file-share-svelte",
+    description: "Upload a file, then share the link for others to download.",
+    tech: [tech.svelte],
+    features: [features.fileUpload],
+    illustration: <FileShareIllustration />,
+  },
+];
+
 const categories = [
   {
     name: "React",
@@ -392,6 +429,12 @@ const categories = [
     id: "vue",
     logo: VueLogo,
     examples: vueExamples,
+  },
+  {
+    name: "Svelte",
+    id: "svelte",
+    logo: SvelteLogo,
+    examples: svelteExamples,
   },
 ];
 
