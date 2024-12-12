@@ -13,6 +13,14 @@ export type { CoValue, ID } from "./internal.js";
 export { Encoders, co } from "./internal.js";
 
 export {
+  Inbox,
+  type AdminTicket,
+  type WriteOnlyTicket,
+  isAdminInboxTicket,
+  isWriteOnlyInboxTicket,
+} from "./coValues/inbox.js";
+
+export {
   Account,
   FileStream,
   BinaryCoStream,

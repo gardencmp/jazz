@@ -12,6 +12,10 @@
     "./createWorkerAccount": {
       "import": "./dist/createWorkerAccount.js",
       "types": "./src/createWorkerAccount.ts"
+    },
+    "./createWorkerInbox": {
+      "import": "./dist/createWorkerInbox.js",
+      "types": "./src/createWorkerInbox.ts"
     }
   },
   "scripts": {
