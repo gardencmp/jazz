@@ -73,7 +73,10 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
               .optional,
       );
     }
-  } else if (value._type === "BinaryCoStream") {
+  } else if (
+    value._type === "BinaryCoStream" ||
+    value._type === "CoPlainText"
+  ) {
     return true;
   } else {
     console.error(value);
@@ -210,4 +213,10 @@ export type DeeplyLoaded<
               },
             ]
           ? V
-          : never;
+          : [V] extends [
+                {
+                  _type: "CoPlainText";
+                },
+              ]
+            ? V
+            : never;
