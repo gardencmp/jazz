@@ -8,8 +8,8 @@ import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/Gapp
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
 import {
   CloudUploadIcon,
-  FileArchiveIcon,
   FingerprintIcon,
+  FolderArchiveIcon,
   ImageIcon,
 } from "lucide-react";
 
@@ -202,7 +202,7 @@ const FileShareIllustration = () => (
     <p>This file was shared with you.</p>
     <div className="p-3 w-full border rounded-lg flex justify-between gap-5">
       <div className="flex items-center gap-2">
-        <FileArchiveIcon
+        <FolderArchiveIcon
           size={24}
           strokeWidth={1}
           className="stroke-blue dark:stroke-blue-500"
