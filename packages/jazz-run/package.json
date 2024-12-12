@@ -4,6 +4,16 @@
   "type": "module",
   "license": "MIT",
   "version": "0.8.38",
+  "exports": {
+    "./startSyncServer": {
+      "import": "./dist/startSyncServer.js",
+      "types": "./src/startSyncServer.ts"
+    },
+    "./createWorkerAccount": {
+      "import": "./dist/createWorkerAccount.js",
+      "types": "./src/createWorkerAccount.ts"
+    }
+  },
   "scripts": {
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",

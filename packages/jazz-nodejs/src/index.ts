@@ -1,5 +1,4 @@
-import { AgentSecret, Peer, WasmCrypto } from "cojson";
-import { createWebSocketPeer } from "cojson-transport-ws";
+import { AgentSecret, LocalNode, WasmCrypto } from "cojson";
 import {
   Account,
   AccountClass,
@@ -9,23 +8,23 @@ import {
   randomSessionProvider,
 } from "jazz-tools";
 import { WebSocket } from "ws";
+import { webSocketWithReconnection } from "./webSocketWithReconnection";
 
 /** @category Context Creation */
 export async function startWorker<Acc extends Account>({
   accountID = process.env.JAZZ_WORKER_ACCOUNT,
   accountSecret = process.env.JAZZ_WORKER_SECRET,
-  syncServer: peer = "wss://cloud.jazz.tools",
+  syncServer = "wss://cloud.jazz.tools",
   AccountSchema = Account as unknown as AccountClass<Acc>,
 }: {
   accountID?: string;
   accountSecret?: string;
   syncServer?: string;
   AccountSchema?: AccountClass<Acc>;
-}): Promise<{ worker: Acc; done: () => void }> {
-  const wsPeer: Peer = createWebSocketPeer({
-    id: "upstream",
-    websocket: new WebSocket(peer),
-    role: "server",
+}): Promise<{ worker: Acc; done: () => Promise<void> }> {
+  let node: LocalNode | undefined = undefined;
+  const wsPeer = webSocketWithReconnection(syncServer, (peer) => {
+    node?.syncManager.addPeer(peer);
   });
 
   if (!accountID) {
@@ -41,7 +40,7 @@ export async function startWorker<Acc extends Account>({
     throw new Error("Invalid accountSecret");
   }
 
-  const { account: worker, done } = await createJazzContext({
+  const context = await createJazzContext({
     auth: fixedCredentialsAuth({
       accountID: accountID as ID<Acc>,
       secret: accountSecret as AgentSecret,
@@ -49,23 +48,18 @@ export async function startWorker<Acc extends Account>({
     AccountSchema,
     // TODO: locked sessions similar to browser
     sessionProvider: randomSessionProvider,
-    peersToLoadFrom: [wsPeer],
+    peersToLoadFrom: [wsPeer.peer],
     crypto: await WasmCrypto.create(),
   });
 
-  setInterval(async () => {
-    if (!worker._raw.core.node.syncManager.peers["upstream"]) {
-      console.log(new Date(), "Reconnecting to upstream " + peer);
+  node = context.account._raw.core.node;
 
-      const wsPeer: Peer = createWebSocketPeer({
-        id: "upstream",
-        websocket: new WebSocket(peer),
-        role: "server",
-      });
+  async function done() {
+    await context.account.waitForAllCoValuesSync();
 
-      worker._raw.core.node.syncManager.addPeer(wsPeer);
-    }
-  }, 5000);
+    wsPeer.done();
+    context.done();
+  }
 
-  return { worker: worker as Acc, done };
+  return { worker: context.account as Acc, done };
 }
