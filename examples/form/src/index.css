@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  strong {
+    @apply font-semibold text-stone-900 dark:text-white;
+  }
+}
