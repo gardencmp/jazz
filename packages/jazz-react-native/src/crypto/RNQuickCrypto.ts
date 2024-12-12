@@ -1,8 +1,10 @@
 import { base58 } from "@scure/base";
 import { JsonValue, PureJSCrypto } from "cojson/native";
 import { CojsonInternalTypes, cojsonInternals } from "cojson/native";
-import { Ed } from "react-native-quick-crypto";
+import { Ed, bufferLikeToArrayBuffer as toAB } from "react-native-quick-crypto";
 const { stableStringify } = cojsonInternals;
+
+const textEncoder = new TextEncoder();
 
 export class RNQuickCrypto extends PureJSCrypto {
   ed: Ed;
@@ -18,24 +20,25 @@ export class RNQuickCrypto extends PureJSCrypto {
 
   newEd25519SigningKey(): Uint8Array {
     this.ed.generateKeyPairSync();
-    return new Uint8Array(this.ed.getPublicKey());
+    return new Uint8Array(this.ed.getPrivateKey());
   }
 
   getSignerID(
     secret: CojsonInternalTypes.SignerSecret,
   ): CojsonInternalTypes.SignerID {
-    return `signer_z${base58.encode(
-      new Uint8Array(this.ed.getPublicKey()),
-      // base58.decode(secret.substring("signerSecret_z".length)),
-    )}`;
+    return `signer_z${base58.encode(new Uint8Array(this.ed.getPublicKey()))}`;
   }
 
   sign(
     secret: CojsonInternalTypes.SignerSecret,
     message: JsonValue,
   ): CojsonInternalTypes.Signature {
-    const buf = Buffer.from(stableStringify(message));
-    const signature = new Uint8Array(this.ed.signSync(buf.buffer));
+    const signature = new Uint8Array(
+      this.ed.signSync(
+        toAB(textEncoder.encode(stableStringify(message))),
+        toAB(base58.decode(secret.substring("signerSecret_z".length))),
+      ),
+    );
     return `signature_z${base58.encode(signature)}`;
   }
 
@@ -44,11 +47,10 @@ export class RNQuickCrypto extends PureJSCrypto {
     message: JsonValue,
     id: CojsonInternalTypes.SignerID,
   ): boolean {
-    const buf = Buffer.from(stableStringify(message));
     return this.ed.verifySync(
-      base58.decode(signature.substring("signature_z".length)),
-      buf.buffer,
-      // base58.decode(id.substring("signer_z".length)),
+      toAB(base58.decode(signature.substring("signature_z".length))),
+      toAB(textEncoder.encode(stableStringify(message))),
+      toAB(base58.decode(id.substring("signer_z".length))),
     );
   }
 }
