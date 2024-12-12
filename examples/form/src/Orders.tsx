@@ -12,15 +12,15 @@ export function Orders() {
       <section className="space-y-5">
         <a
           href={`/#/order`}
-          className="block relative p-3 bg-white font-semibold text-black border text-center text-white rounded-md dark:border-white"
+          className="block relative p-3 bg-white border text-center rounded-md dark:bg-stone-900"
         >
-          Add new order
+          <strong>Add new order</strong>
           <DraftIndicator />
         </a>
 
         <div className="space-y-3">
-          <h1 className="font-semibold text-lg text-stone-900 dark:text-white pb-2 border-b mb-3">
-            Your orders 🧋
+          <h1 className="text-lg pb-2 border-b mb-3">
+            <strong>Your orders 🧋</strong>
           </h1>
           {me?.profile?.orders.map((order) =>
             order ? <OrderThumbnail key={order.id} order={order} /> : null,

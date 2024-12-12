@@ -34,8 +34,8 @@ export function CreateOrder() {
     <>
       <LinkToHome />
 
-      <h1 className="font-semibold text-lg text-stone-900 dark:text-white">
-        Make a new bubble tea order 🧋
+      <h1 className="text-lg">
+        <strong>Make a new bubble tea order 🧋</strong>
       </h1>
 
       <CreateOrderForm id={me?.profile?.draft.id} onSave={onSave} />

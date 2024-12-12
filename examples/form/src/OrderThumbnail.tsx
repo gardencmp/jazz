@@ -10,9 +10,9 @@ export function OrderThumbnail({ order }: { order: BubbleTeaOrder }) {
       className="border p-3 flex justify-between items-start gap-3"
     >
       <div>
-        <div className="font-medium">
+        <strong>
           {baseTea} {withMilk ? "milk " : ""} tea
-        </div>
+        </strong>
         {addOns && addOns?.length > 0 && (
           <p className="text-sm text-stone-600">
             with {addOns?.join(", ").toLowerCase()}

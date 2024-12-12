@@ -18,7 +18,7 @@ function App() {
             You're logged in as <strong>{me?.profile?.name}</strong>
           </span>
           <button
-            className="bg-stone-100 py-1.5 px-2 text-sm rounded-md dark:bg-stone-950"
+            className="bg-stone-100 py-1.5 px-3 text-sm rounded-md dark:bg-stone-900 dark:text-white"
             onClick={() => logOut()}
           >
             Log out

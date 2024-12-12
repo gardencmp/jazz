@@ -16,8 +16,8 @@ export function EditOrder(props: { id: ID<BubbleTeaOrder> }) {
 
       <OrderThumbnail order={order} />
 
-      <h1 className="font-semibold text-lg text-stone-900 dark:text-white">
-        Edit your bubble tea order 🧋
+      <h1 className="text-lg">
+        <strong>Edit your bubble tea order 🧋</strong>
       </h1>
 
       <OrderForm order={order} />
