@@ -317,14 +317,12 @@ app.get("/*", (res, req) => {
 });
 
 
-// export function createHTTPServer() {
-    app.listen(+PORT, (token) => {
-        if (token) {
-            logger.info(
-                `HTTP/1.1 + TLSv1.3 Server is running on: https://localhost:${PORT}`,
-            );
-        } else {
-            logger.error(`Failed to start server on port: ${PORT}`);
-        }
-    });
-// }
+app.listen(+PORT, (token) => {
+    if (token) {
+        logger.info(
+            `HTTP/1.1 + TLSv1.3 Server is running on: https://localhost:${PORT}`,
+        );
+    } else {
+        logger.error(`Failed to start server on port: ${PORT}`);
+    }
+});
