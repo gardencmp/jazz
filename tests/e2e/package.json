@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:local": "VITE_WS_PEER=ws://localhost:4200/ vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "format-and-lint": "biome check .",
