@@ -38,6 +38,7 @@ export function DocumentComponent({ docID }: { docID: ID<Document> }) {
     const setupPlugins = exampleSetup({ schema, history: false });
     // console.log("setupPlugins", setupPlugins, schema);
 
+    // Create a new editor view
     const editorView = new EditorView(mount, {
       state: EditorState.create({
         doc: schema.node("doc", undefined, [
@@ -51,6 +52,7 @@ export function DocumentComponent({ docID }: { docID: ID<Document> }) {
 
         console.log("Applying transaction", lastDoc);
         if (lastDoc) {
+          console.log("Applying transaction to plain text");
           applyTxToPlainText(lastDoc, tr);
         }
 
@@ -63,7 +65,17 @@ export function DocumentComponent({ docID }: { docID: ID<Document> }) {
     let lastDoc: Document | undefined;
 
     const unsub = Document.subscribe(docID, me, {}, (doc) => {
+      console.log("doc", JSON.parse(JSON.stringify(doc)));
+      if (!(doc.text && doc.marks)) {
+        console.log("waiting for doc to load");
+        return;
+      }
+
+      console.log("doc loaded");
+
       lastDoc = doc;
+      console.log("doc marks", JSON.parse(JSON.stringify(doc.marks)));
+      console.log("doc text", JSON.parse(JSON.stringify(doc.text)));
 
       console.log("Applying doc update");
       console.log(
@@ -87,8 +99,11 @@ export function DocumentComponent({ docID }: { docID: ID<Document> }) {
         }),
       );
 
+      // Focus the editor after the state has been updated
       if (focusedBefore) {
-        editorView.focus();
+        setTimeout(() => {
+          editorView.focus();
+        }, 0);
       }
     });
 
@@ -102,7 +117,7 @@ export function DocumentComponent({ docID }: { docID: ID<Document> }) {
   return (
     <div>
       <h1>Document</h1>
-      <div ref={setMount} className="border min-w-96 p-5 min-h-96" />
+      <div ref={setMount} className="border" />
     </div>
   );
 }

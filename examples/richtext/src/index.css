@@ -76,3 +76,8 @@
     padding: 0;
   }
 }
+
+.ProseMirror {
+  min-height: 24rem;
+  min-width: 24rem;
+}

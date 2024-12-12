@@ -1,8 +1,6 @@
 import { useIframeHashRouter } from "hash-slash";
 import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
-import { CoRichText } from "jazz-tools";
-import { Group } from "jazz-tools";
-import { ID, Marks } from "jazz-tools";
+import { CoRichText, Group, ID, Marks } from "jazz-tools";
 import { createRoot } from "react-dom/client";
 import { DocumentComponent } from "./document";
 
@@ -56,6 +54,7 @@ function App() {
     setTimeout(() => {
       location.hash = "/doc/" + Doc.id;
     }, 1000);
+    return <div>Loading...</div>;
   };
 
   return (
@@ -64,7 +63,7 @@ function App() {
         {me.profile?.name} · <button onClick={logOut}>Log Out</button>
       </div>
       {useIframeHashRouter().route({
-        "/": () => createDocument() as never,
+        "/": () => createDocument(),
         "/doc/:id": (id) => <DocumentComponent docID={id as ID<Document>} />,
       })}
     </div>
