@@ -1,6 +1,6 @@
 <script lang="ts" module>
   export type Props<Acc extends Account = Account> = {
-    children: Snippet;
+    children?: Snippet;
     auth: AuthMethod | 'guest';
     peer: `wss://${string}` | `ws://${string}`;
     storage?: 'indexedDB' | 'singleTabOPFS';

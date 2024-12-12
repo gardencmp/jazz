@@ -77,15 +77,29 @@ export function createJazzApp<Acc extends Account = Account>({
         "useAccount can't be used in a JazzProvider with auth === 'guest' - consider using useAccountOrGuest()"
       );
     }
+
+    // If no depth is specified, return the context's me directly
+    if (depth === undefined) {
+      return {
+        get me() {
+          return (ctx.current as BrowserContext<Acc>).me;
+        },
+        logOut() {
+          return ctx.current?.logOut();
+        }
+      };
+    }
+
+    // If depth is specified, use useCoState to get the deeply loaded version
     const me = useCoState<Acc, D>(
       ctx.current.me.constructor as CoValueClass<Acc>,
       (ctx.current as BrowserContext<Acc>).me.id,
       depth
     );
+
     return {
       get me() {
-        if (!ctx.current || !('me' in ctx.current)) return;
-        return depth === undefined ? me.current || ctx.current.me : me.current;
+        return me.current;
       },
       logOut() {
         return ctx.current?.logOut();
@@ -160,21 +174,19 @@ export function createJazzApp<Acc extends Account = Account>({
     const observable = $state.raw(createCoValueObservable());
 
     // Effect to handle subscription
+    // TODO: Possibly memoise this, to avoid re-subscribing
     $effect(() => {
       // Reset state when dependencies change
       state = undefined;
 
-      // Get latest values
-      const currentCtx = ctx.current;
-
       // Return early if no context or id, effectively cleaning up any previous subscription
-      if (!currentCtx || !id) return;
+      if (!ctx?.current || !id) return;
 
       // Setup subscription with current values
       return observable.subscribe(
         Schema,
         id,
-        'me' in currentCtx ? currentCtx.me : currentCtx.guest,
+        'me' in ctx.current ? ctx.current.me : ctx.current.guest,
         depth,
         () => {
           // Get current value from our stable observable
