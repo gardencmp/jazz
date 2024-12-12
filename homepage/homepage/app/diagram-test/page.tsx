@@ -1,5 +1,6 @@
 import bs58 from "bs58";
 import clsx from "clsx";
+import { BinaryIcon, SignatureIcon } from "lucide-react";
 
 export default function Page() {
   const scenario1 = {
@@ -37,7 +38,7 @@ export default function Page() {
 
   const header = {
     type: "comap",
-    ownedBy: "co_zCCymDTETFr2rv9U",
+    owner: "co_zCCymDTETFr2rv9U",
     createdAt: "2024-12-06...",
     uniqueness: "fc89fjwo3",
   };
@@ -173,10 +174,11 @@ function CoValueCoreDiagram({
 
 function HeaderContent({ header }: { header: object }) {
   return (
-    <div className="bg-stone-900 h-full px-4 py-3 rounded-lg">
+    <div className="bg-stone-800 h-full px-4 py-3 rounded-lg">
       <div className="flex justify-between text-stone-500 mb-2">header</div>
-      <pre className="text-xs leading-6">
+      <pre className="text-sm leading-6 text-white">
         {JSON.stringify(header, null, 2)
+          .replace(/"(.+?)":/g, "$1:")
           .replace(/\n\s+/g, "\n")
           .replace(/,/g, "")
           .replace(/[{}]\n?/g, "")}
@@ -194,7 +196,7 @@ function SimplifiedGroup({
   };
 }) {
   return (
-    <div className="bg-stone-900 py-3 px-4 rounded-lg max-w-[30rem] leading-relaxed">
+    <div className="bg-stone-800 py-3 px-4 rounded-lg max-w-[30rem] leading-relaxed text-white">
       {Object.entries(group.roles).map(([user, role]) => (
         <div key={user}>
           <span className={clsx("font-semibold", userColors[user])}>
@@ -280,7 +282,7 @@ function sessionsForGroup(group: {
 
 function SessionHeader({ sessionKey }: { sessionKey: string }) {
   return (
-    <div className="bg-stone-900 py-2 px-3 flex justify-between items-baseline rounded-lg min-w-[8rem]">
+    <div className="bg-stone-900 py-2 px-3 flex flex-col items-baseline rounded-lg min-w-[5.5rem]">
       <span
         className={clsx([
           userColors[sessionKey.split("_")[0]],
@@ -289,7 +291,7 @@ function SessionHeader({ sessionKey }: { sessionKey: string }) {
       >
         {sessionKey.split("_")[0]}
       </span>{" "}
-      <span className="text-xs">
+      <span className="text-sm">
         {sessionKey.split("_").slice(1).join(" ")}
       </span>
     </div>
@@ -313,10 +315,10 @@ function CoValueContent({
 }) {
   return (
     <div className="flex gap-5 not-prose relative">
-      <div className="flex-1 min-w-[19rem]">
+      <div className="flex-1 min-w-[17rem]">
         <HeaderContent header={header} />
-        <div className="text-xs py-2 absolute -bottom-8">
-          h(header) = {fakeCoID(header)} ("CoValue ID")
+        <div className="text-sm py-2 absolute -bottom-8">
+          h(header) = {fakeCoID(header)} ("ID")
         </div>
       </div>
       <div className="flex-[6] flex flex-col gap-5">
@@ -335,10 +337,11 @@ function CoValueContent({
                 <div
                   key={JSON.stringify(item)}
                   className={clsx(
-                    "bg-stone-900 min-w-[9.5rem]",
+                    "bg-stone-800 min-w-[9rem]",
                     isLastPerKey ? "outline outline-blue-500" : "",
                     {
                       "rounded-l-lg ml-1.5": idx === 0,
+                      "rounded-r-lg mr-1.5": idx === log.length - 1,
                     },
                   )}
                 >
@@ -347,8 +350,9 @@ function CoValueContent({
                       {fakeEncryptedPayload(item.payload)}
                     </pre>
                   ) : (
-                    <pre className="text-sm leading-6 py-2 px-3 border-b border-stone-600">
+                    <pre className="text-sm leading-6 py-2 px-3 border-b border-stone-600 text-white">
                       {JSON.stringify(item.payload, null, 2)
+                        .replace(/"(.+?)":/g, "$1:")
                         .replace(/\n\s+/g, "\n")
                         .replace(/,/g, "")
                         .replace(/[{}]\n?/g, "")}
@@ -363,14 +367,16 @@ function CoValueContent({
             })}
             {showHashAndSignature && (
               <div className="p-3 -mt-px rounded min-w-[9.5rem]">
-                <pre className="text-xs">→ {fakeHash(log)}</pre>
+                <pre className="text-sm flex items-center gap-1 text-white">
+                  <BinaryIcon className="w-4 h-4" /> {fakeHash(log)}
+                </pre>
                 <pre
                   className={clsx(
-                    "text-xs p-2",
+                    "text-sm p-2 pl-4 flex items-center gap-1",
                     userColors[key.split("_")[0] as keyof typeof userColors],
                   )}
                 >
-                  {"   ↪ "}
+                  <SignatureIcon className="w-4 h-4" />
                   {fakeSignature(log)}
                 </pre>
               </div>
@@ -435,11 +441,11 @@ function fakeEncryptedPayload(payload: object) {
   return (
     "encr_z" +
     bs58.encode(
-      encoder.encode(hashCode(JSON.stringify(payload)) + "").slice(0, 6),
+      encoder.encode(hashCode(JSON.stringify(payload)) + "").slice(0, 5),
     ) +
     "…\n    …" +
     bs58.encode(
-      encoder.encode(hashCode(JSON.stringify(payload) + "a") + "").slice(0, 7),
+      encoder.encode(hashCode(JSON.stringify(payload) + "a") + "").slice(0, 6),
     )
   );
 }
