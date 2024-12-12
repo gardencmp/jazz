@@ -1,10 +1,10 @@
 import { inIframe } from "@/util.ts";
+import * as A from "@automerge/automerge/next";
 import { useIframeHashRouter } from "hash-slash";
 import { Group, ID } from "jazz-tools";
-import { YjsJazzDoc } from "y-jazz";
-import { Doc as YDoc } from "yjs";
-import { ChatScreenLoader } from "./chatScreen.tsx";
+import { ChatScreen } from "./chatScreen.tsx";
 import { useAccount } from "./main.tsx";
+import { Chat } from "./schema.ts";
 import { AppContainer, TopBar } from "./ui.tsx";
 
 export function App() {
@@ -15,8 +15,9 @@ export function App() {
     if (!me) return;
     const group = Group.create({ owner: me });
     group.addMember("everyone", "writer");
-    const doc = new YDoc();
-    const chat = YjsJazzDoc.createFromYjsDoc(doc, { owner: group });
+    const chat = Chat.createFromAutomergeDoc(A.from({ messages: [] }), {
+      owner: group,
+    });
     router.navigate("/#/chat/" + chat.id);
   };
 
@@ -28,7 +29,7 @@ export function App() {
       </TopBar>
       {router.route({
         "/": () => createChat() as never,
-        "/chat/:id": (id) => <ChatScreenLoader chatID={id as ID<YjsJazzDoc>} />,
+        "/chat/:id": (id) => <ChatScreen chatID={id as ID<Chat>} />,
       })}
     </AppContainer>
   );

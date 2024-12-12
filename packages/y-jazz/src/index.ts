@@ -1,4 +1,4 @@
-import { RawCoStream, cojsonInternals } from "cojson";
+import { cojsonInternals } from "cojson";
 import { Account, CoFeed, Group, co } from "jazz-tools";
 import { Doc as YDoc, applyUpdateV2, encodeStateAsUpdateV2 } from "yjs";
 
@@ -15,10 +15,11 @@ function decodeUpdate(update: YjsUpdate) {
 export class YjsJazzDoc extends CoFeed.Of(co.json<YjsUpdate>()) {
   _currentDoc?: YDoc;
 
-  static createFromYjsDoc(doc: YDoc, owner: Account | Group) {
-    const feed = super.create([encodeUpdate(encodeStateAsUpdateV2(doc))], {
-      owner,
-    });
+  static createFromYjsDoc(doc: YDoc, options: { owner: Account | Group }) {
+    const feed = super.create(
+      [encodeUpdate(encodeStateAsUpdateV2(doc))],
+      options,
+    );
     return feed;
   }
 
