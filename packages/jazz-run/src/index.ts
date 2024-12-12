@@ -60,7 +60,7 @@ const dbOption = Options.file("db")
   )
   .pipe(Options.withDefault("sync-db/storage.db"));
 
-export const startSyncServerCommand = Command.make(
+const startSyncServerCommand = Command.make(
   "sync",
   { port: portOption, inMemory: inMemoryOption, db: dbOption },
   ({ port, inMemory, db }) => {

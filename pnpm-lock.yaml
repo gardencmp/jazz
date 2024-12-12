@@ -1513,6 +1513,9 @@ importers:
       '@types/ws':
         specifier: 8.5.10
         version: 8.5.10
+      jazz-run:
+        specifier: workspace:*
+        version: link:../jazz-run
       typescript:
         specifier: ^5.3.3
         version: 5.3.3

@@ -1,5 +1,4 @@
-import { AgentSecret, LocalNode, Peer, WasmCrypto } from "cojson";
-import { createWebSocketPeer } from "cojson-transport-ws";
+import { AgentSecret, LocalNode, WasmCrypto } from "cojson";
 import {
   Account,
   AccountClass,
@@ -9,6 +8,7 @@ import {
   randomSessionProvider,
 } from "jazz-tools";
 import { WebSocket } from "ws";
+import { webSocketWithReconnection } from "./webSocketWithReconnection";
 
 /** @category Context Creation */
 export async function startWorker<Acc extends Account>({
@@ -21,7 +21,7 @@ export async function startWorker<Acc extends Account>({
   accountSecret?: string;
   syncServer?: string;
   AccountSchema?: AccountClass<Acc>;
-}): Promise<{ worker: Acc; done: () => void }> {
+}): Promise<{ worker: Acc; done: () => Promise<void> }> {
   let node: LocalNode | undefined = undefined;
   const wsPeer = webSocketWithReconnection(syncServer, (peer) => {
     node?.syncManager.addPeer(peer);
@@ -62,44 +62,4 @@ export async function startWorker<Acc extends Account>({
   }
 
   return { worker: context.account as Acc, done };
-}
-
-function webSocketWithReconnection(
-  peer: string,
-  addPeer: (peer: Peer) => void,
-) {
-  let done = false;
-  const wsPeer = createWebSocketPeer({
-    websocket: new WebSocket(peer),
-    id: "upstream",
-    role: "server",
-    onClose: handleClose,
-  });
-
-  let timer: ReturnType<typeof setTimeout>;
-  function handleClose() {
-    if (done) return;
-
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      console.log(new Date(), "Reconnecting to upstream " + peer);
-
-      const wsPeer: Peer = createWebSocketPeer({
-        id: "upstream",
-        websocket: new WebSocket(peer),
-        role: "server",
-        onClose: handleClose,
-      });
-
-      addPeer(wsPeer);
-    }, 1000);
-  }
-
-  return {
-    peer: wsPeer,
-    done: () => {
-      done = true;
-      clearTimeout(timer);
-    },
-  };
 }
