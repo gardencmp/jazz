@@ -217,6 +217,19 @@ const FileShareIllustration = () => (
   </div>
 );
 
+const PasskeyIllustration = () => (
+  <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
+    <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
+      <FingerprintIcon
+        size={36}
+        strokeWidth={0.75}
+        className="stroke-red-600"
+      />
+      <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
+    </div>
+  </div>
+);
+
 const reactExamples: Example[] = [
   {
     name: "Chat",
@@ -282,18 +295,7 @@ const reactExamples: Example[] = [
     tech: [tech.react],
     features: [features.passkey],
     demoUrl: "https://passkey-demo.jazz.tools",
-    illustration: (
-      <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
-        <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
-          <FingerprintIcon
-            size={36}
-            strokeWidth={0.75}
-            className="stroke-red-600"
-          />
-          <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
-        </div>
-      </div>
-    ),
+    illustration: <PasskeyIllustration />,
   },
 ];
 
@@ -395,6 +397,14 @@ const demos = [
 ];
 
 const svelteExamples: Example[] = [
+  {
+    name: "Passkey",
+    slug: "passkey-svelte",
+    description: "A Svelte app that uses Passkey for authentication",
+    tech: [tech.svelte],
+    features: [features.passkey],
+    illustration: <PasskeyIllustration />,
+  },
   {
     name: "File share",
     slug: "file-share-svelte",
