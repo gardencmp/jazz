@@ -1,5 +1,12 @@
 # cojson
 
+## 0.8.39
+
+### Patch Changes
+
+- 249eecb: Added new APIs to wait for CoValue sync
+- 3121551: Add connected peers gauge metric
+
 ## 0.8.38
 
 ### Patch Changes
