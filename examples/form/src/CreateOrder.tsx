@@ -34,7 +34,7 @@ export function CreateOrder() {
     <>
       <LinkToHome />
 
-      <h1 className="font-semibold text-lg dark:text-white">
+      <h1 className="font-semibold text-lg text-stone-900 dark:text-white">
         Make a new bubble tea order 🧋
       </h1>
 

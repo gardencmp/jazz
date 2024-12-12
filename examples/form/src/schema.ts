@@ -17,7 +17,11 @@ export const BubbleTeaBaseTeaTypes = [
 
 export class ListOfBubbleTeaAddOns extends CoList.Of(
   co.literal(...BubbleTeaAddOnTypes),
-) {}
+) {
+  get hasChanges() {
+    return Object.entries(this._raw.insertions).length > 0;
+  }
+}
 
 export class BubbleTeaOrder extends CoMap {
   baseTea = co.literal(...BubbleTeaBaseTeaTypes);
@@ -33,6 +37,10 @@ export class DraftBubbleTeaOrder extends CoMap {
   deliveryDate = co.optional.Date;
   withMilk = co.optional.boolean;
   instructions = co.optional.string;
+
+  get hasChanges() {
+    return Object.keys(this._edits).length > 1 || this.addOns?.hasChanges;
+  }
 }
 
 export class ListOfBubbleTeaOrders extends CoList.Of(co.ref(BubbleTeaOrder)) {}
