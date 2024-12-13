@@ -16,6 +16,13 @@ export function CreateOrder() {
   if (!me?.profile) return;
 
   const onSave = (draft: DraftBubbleTeaOrder) => {
+    // validate if the draft is a valid order
+    const validation = draft.validate();
+    if (validation?.error) {
+      alert(validation.error);
+      return;
+    }
+
     // turn the draft into a real order
     me.profile.orders.push(draft as BubbleTeaOrder);
 

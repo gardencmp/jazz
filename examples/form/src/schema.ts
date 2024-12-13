@@ -41,6 +41,16 @@ export class DraftBubbleTeaOrder extends CoMap {
   get hasChanges() {
     return Object.keys(this._edits).length > 1 || this.addOns?.hasChanges;
   }
+
+  // validate if the draft is a valid order
+  validate() {
+    if (!this.baseTea) {
+      return { error: "Missing base tea" };
+    }
+    if (!this.deliveryDate) {
+      return { error: "Missing delivery date" };
+    }
+  }
 }
 
 export class ListOfBubbleTeaOrders extends CoList.Of(co.ref(BubbleTeaOrder)) {}
