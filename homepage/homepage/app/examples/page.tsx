@@ -6,7 +6,12 @@ import { VueLogo } from "@/components/icons/VueLogo";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
-import { CloudUploadIcon, FingerprintIcon, ImageIcon } from "lucide-react";
+import {
+  CloudUploadIcon,
+  FingerprintIcon,
+  FolderArchiveIcon,
+  ImageIcon,
+} from "lucide-react";
 
 import {
   Schema_ts as ImageUploadSchema,
@@ -18,6 +23,7 @@ import {
 } from "@/codeSamples/examples/reactions/src";
 import { ExampleCard } from "@/components/examples/ExampleCard";
 import { ExampleDemo } from "@/components/examples/ExampleDemo";
+import { SvelteLogo } from "@/components/icons/SvelteLogo";
 import { Example, features, tech } from "@/lib/example";
 
 const MockButton = ({ children }: { children: React.ReactNode }) => (
@@ -191,6 +197,39 @@ const PasswordManagerIllustration = () => (
   </div>
 );
 
+const FileShareIllustration = () => (
+  <div className="flex flex-col items-center justify-center h-full gap-3 p-8">
+    <p>This file was shared with you.</p>
+    <div className="p-3 w-full border rounded-lg flex justify-between gap-5">
+      <div className="flex items-center gap-2">
+        <FolderArchiveIcon
+          size={24}
+          strokeWidth={1.5}
+          className="stroke-blue dark:stroke-blue-500"
+        />
+        <p className="whitespace-nowrap text-stone-900 dark:text-white">
+          top-secret.zip
+        </p>
+      </div>
+
+      <MockButton>Download</MockButton>
+    </div>
+  </div>
+);
+
+const PasskeyIllustration = () => (
+  <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
+    <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
+      <FingerprintIcon
+        size={36}
+        strokeWidth={0.75}
+        className="stroke-red-600"
+      />
+      <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
+    </div>
+  </div>
+);
+
 const reactExamples: Example[] = [
   {
     name: "Chat",
@@ -256,18 +295,7 @@ const reactExamples: Example[] = [
     tech: [tech.react],
     features: [features.passkey],
     demoUrl: "https://passkey-demo.jazz.tools",
-    illustration: (
-      <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
-        <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
-          <FingerprintIcon
-            size={36}
-            strokeWidth={0.75}
-            className="stroke-red-600"
-          />
-          <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
-        </div>
-      </div>
-    ),
+    illustration: <PasskeyIllustration />,
   },
 ];
 
@@ -368,6 +396,25 @@ const demos = [
   },
 ];
 
+const svelteExamples: Example[] = [
+  {
+    name: "Passkey",
+    slug: "passkey-svelte",
+    description: "A Svelte app that uses Passkey for authentication",
+    tech: [tech.svelte],
+    features: [features.passkey],
+    illustration: <PasskeyIllustration />,
+  },
+  {
+    name: "File share",
+    slug: "file-share-svelte",
+    description: "Upload a file, then share the link for others to download.",
+    tech: [tech.svelte],
+    features: [features.fileUpload, features.passkey, features.inviteLink],
+    illustration: <FileShareIllustration />,
+  },
+];
+
 const categories = [
   {
     name: "React",
@@ -392,6 +439,12 @@ const categories = [
     id: "vue",
     logo: VueLogo,
     examples: vueExamples,
+  },
+  {
+    name: "Svelte",
+    id: "svelte",
+    logo: SvelteLogo,
+    examples: svelteExamples,
   },
 ];
 
