@@ -64,48 +64,51 @@ export function DocumentComponent({ docID }: { docID: ID<Document> }) {
 
     let lastDoc: Document | undefined;
 
-    const unsub = Document.subscribe(docID, me, {}, (doc) => {
-      console.log("doc", JSON.parse(JSON.stringify(doc)));
-      if (!(doc.text && doc.marks)) {
-        console.log("waiting for doc to load");
-        return;
-      }
+    console.log("About to subscribe to document:", docID, "with user:", me.id);
+    const unsub = Document.subscribe(
+      docID,
+      me,
+      { marks: [{}], text: [] },
+      async (doc) => {
+        console.log("doc", JSON.parse(JSON.stringify(doc)));
 
-      console.log("doc loaded");
+        console.log("doc loaded");
 
-      lastDoc = doc;
-      console.log("doc marks", JSON.parse(JSON.stringify(doc.marks)));
-      console.log("doc text", JSON.parse(JSON.stringify(doc.text)));
+        lastDoc = doc;
+        console.log("doc marks", JSON.parse(JSON.stringify(doc.marks)));
+        console.log("doc text", JSON.parse(JSON.stringify(doc.text)));
 
-      console.log("Applying doc update");
-      console.log(
-        "marks",
-        doc.toString(),
-        doc.resolveAndDiffuseAndFocusMarks(),
-      );
-      console.log("tree", doc.toTree(["strong", "em"]));
+        console.log("Applying doc update");
+        console.log(
+          "marks",
+          doc.toString(),
+          doc.resolveAndDiffuseAndFocusMarks(),
+        );
+        console.log("tree", doc.toTree(["strong", "em"]));
 
-      console.log(richTextToProsemirrorDoc(doc));
+        console.log(richTextToProsemirrorDoc(doc));
 
-      const focusedBefore = editorView.hasFocus();
+        const focusedBefore = editorView.hasFocus();
 
-      editorView.updateState(
-        EditorState.create({
-          doc: richTextToProsemirrorDoc(doc),
-          plugins: editorView.state.plugins,
-          selection: editorView.state.selection,
-          schema: editorView.state.schema,
-          storedMarks: editorView.state.storedMarks,
-        }),
-      );
+        editorView.updateState(
+          EditorState.create({
+            doc: richTextToProsemirrorDoc(doc),
+            plugins: editorView.state.plugins,
+            selection: editorView.state.selection,
+            schema: editorView.state.schema,
+            storedMarks: editorView.state.storedMarks,
+          }),
+        );
 
-      // Focus the editor after the state has been updated
-      if (focusedBefore) {
-        setTimeout(() => {
-          editorView.focus();
-        }, 0);
-      }
-    });
+        // Focus the editor after the state has been updated
+        if (focusedBefore) {
+          setTimeout(() => {
+            editorView.focus();
+          }, 0);
+        }
+      },
+    );
+    console.log("Subscription created successfully");
 
     return () => {
       console.log("Destroying");
