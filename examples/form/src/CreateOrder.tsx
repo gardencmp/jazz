@@ -1,5 +1,7 @@
 import { useIframeHashRouter } from "hash-slash";
 import { ID } from "jazz-tools";
+import { useState } from "react";
+import { Errors } from "./Errors.tsx";
 import { LinkToHome } from "./LinkToHome.tsx";
 import { OrderForm } from "./OrderForm.tsx";
 import { useAccount, useCoState } from "./main.tsx";
@@ -12,14 +14,15 @@ import {
 export function CreateOrder() {
   const { me } = useAccount({ profile: { draft: {}, orders: [] } });
   const router = useIframeHashRouter();
+  const [errors, setErrors] = useState<string[]>([]);
 
   if (!me?.profile) return;
 
   const onSave = (draft: DraftBubbleTeaOrder) => {
     // validate if the draft is a valid order
     const validation = draft.validate();
-    if (validation?.error) {
-      alert(validation.error);
+    setErrors(validation.errors);
+    if (validation.errors.length > 0) {
       return;
     }
 
@@ -44,6 +47,8 @@ export function CreateOrder() {
       <h1 className="text-lg">
         <strong>Make a new bubble tea order 🧋</strong>
       </h1>
+
+      <Errors errors={errors} />
 
       <CreateOrderForm id={me?.profile?.draft.id} onSave={onSave} />
     </>

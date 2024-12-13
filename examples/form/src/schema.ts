@@ -44,12 +44,16 @@ export class DraftBubbleTeaOrder extends CoMap {
 
   // validate if the draft is a valid order
   validate() {
+    const errors: string[] = [];
+
     if (!this.baseTea) {
-      return { error: "Missing base tea" };
+      errors.push("Please select your preferred base tea.");
     }
     if (!this.deliveryDate) {
-      return { error: "Missing delivery date" };
+      errors.push("Plese select a delivery date.");
     }
+
+    return { errors };
   }
 }
 
