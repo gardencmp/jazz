@@ -19,6 +19,6 @@
     "test:watch": "vitest --watch --root ../../ --project jazz-browser-auth-clerk"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "~5.6.2"
   }
 }

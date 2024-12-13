@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.4.1",
-    "jazz-tools": "workspace:*",
     "jazz-react": "workspace:*",
     "jazz-react-auth-clerk": "workspace:0.8.39",
+    "jazz-tools": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

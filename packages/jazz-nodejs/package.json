@@ -14,8 +14,8 @@
   },
   "devDependencies": {
     "@types/ws": "8.5.10",
-    "typescript": "^5.3.3",
-    "jazz-run": "workspace:*"
+    "jazz-run": "workspace:*",
+    "typescript": "~5.6.2"
   },
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist",
