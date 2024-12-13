@@ -11,8 +11,8 @@
     "cojson-storage": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "@types/better-sqlite3": "^7.6.12"
+    "@types/better-sqlite3": "^7.6.12",
+    "typescript": "~5.6.2"
   },
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist",

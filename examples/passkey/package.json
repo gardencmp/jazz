@@ -11,8 +11,8 @@
     "format-and-lint:fix": "biome check . --write"
   },
   "dependencies": {
-    "jazz-tools": "workspace:*",
     "jazz-react": "workspace:*",
+    "jazz-tools": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
