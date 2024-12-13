@@ -49,7 +49,6 @@ export function UploaderPeer() {
       file.id,
       account.me,
       (value) => value.syncCompleted,
-      {},
     );
 
     iframe.remove();

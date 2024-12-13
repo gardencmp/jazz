@@ -2,10 +2,10 @@ import type { Everyone, RawAccountID, RawGroup, Role } from "cojson";
 import type {
   CoValue,
   CoValueClass,
-  DeeplyLoaded,
-  DepthsIn,
   ID,
   RefEncoded,
+  RefsToResolve,
+  Resolved,
   Schema,
 } from "../internal.js";
 import {
@@ -183,41 +183,44 @@ export class Group extends CoValueBase implements CoValue {
   }
 
   /** @category Subscription & Loading */
-  static load<G extends Group, Depth>(
+  static load<G extends Group, const O extends { resolve?: RefsToResolve<G> }>(
     this: CoValueClass<G>,
     id: ID<G>,
     as: Account,
-    depth: Depth & DepthsIn<G>,
-  ): Promise<DeeplyLoaded<G, Depth> | undefined> {
-    return loadCoValue(this, id, as, depth);
+    options?: O,
+  ): Promise<Resolved<G, O> | undefined> {
+    return loadCoValue(this, id, as, options);
   }
 
   /** @category Subscription & Loading */
-  static subscribe<G extends Group, Depth>(
+  static subscribe<
+    G extends Group,
+    const O extends { resolve?: RefsToResolve<G> },
+  >(
     this: CoValueClass<G>,
     id: ID<G>,
     as: Account,
-    depth: Depth & DepthsIn<G>,
-    listener: (value: DeeplyLoaded<G, Depth>) => void,
+    options: O,
+    listener: (value: Resolved<G, O>) => void,
   ): () => void {
-    return subscribeToCoValue<G, Depth>(this, id, as, depth, listener);
+    return subscribeToCoValue<G, O>(this, id, as, options, listener);
   }
 
   /** @category Subscription & Loading */
-  ensureLoaded<G extends Group, Depth>(
+  ensureLoaded<G extends Group, const O extends { resolve?: RefsToResolve<G> }>(
     this: G,
-    depth: Depth & DepthsIn<G>,
-  ): Promise<DeeplyLoaded<G, Depth> | undefined> {
-    return ensureCoValueLoaded(this, depth);
+    options?: O,
+  ): Promise<Resolved<G, O> | undefined> {
+    return ensureCoValueLoaded(this, options);
   }
 
   /** @category Subscription & Loading */
-  subscribe<G extends Group, Depth>(
+  subscribe<G extends Group, const O extends { resolve?: RefsToResolve<G> }>(
     this: G,
-    depth: Depth & DepthsIn<G>,
-    listener: (value: DeeplyLoaded<G, Depth>) => void,
+    options: O,
+    listener: (value: Resolved<G, O>) => void,
   ): () => void {
-    return subscribeToExistingCoValue(this, depth, listener);
+    return subscribeToExistingCoValue(this, options, listener);
   }
 
   /**

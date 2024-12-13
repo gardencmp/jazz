@@ -21,7 +21,7 @@ export default function ChatScreen({ navigation }: { navigation: any }) {
   const { me, logOut } = useAccount();
   const [chat, setChat] = useState<Chat>();
   const [message, setMessage] = useState("");
-  const loadedChat = useCoState(Chat, chat?.id, [{}]);
+  const loadedChat = useCoState(Chat, chat?.id, { resolve: { items: true } });
 
   useEffect(() => {
     navigation.setOptions({

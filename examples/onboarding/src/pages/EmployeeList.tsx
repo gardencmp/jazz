@@ -10,7 +10,11 @@ export function EmployeeList({
 }: {
   employeeListCoId: ID<EmployeeCoList>;
 }) {
-  const employees = useCoState(EmployeeCoList, employeeListCoId, [{}]);
+  const employees = useCoState(EmployeeCoList, employeeListCoId, {
+    resolve: {
+      items: true,
+    },
+  });
 
   if (!employees) {
     return <div>Loading...</div>;

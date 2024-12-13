@@ -13,7 +13,11 @@ export default function UserProfile({ id }: { id: ID<JazzAccount> }) {
   const bookReviews = useCoState(
     ListOfBookReviews,
     user?.profile?._refs.bookReviews?.id,
-    [{}],
+    {
+      resolve: {
+        items: true,
+      },
+    },
   );
 
   return (

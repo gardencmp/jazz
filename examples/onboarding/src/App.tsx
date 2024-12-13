@@ -19,8 +19,12 @@ function ImportEmployee({
   const { employeeCoId } = useParams();
   const navigate = useNavigate();
 
-  const employees = useCoState(EmployeeCoList, employeeListCoId, [{}]);
-  const employee = useCoState(CoEmployee, employeeCoId as ID<CoEmployee>, {});
+  const employees = useCoState(EmployeeCoList, employeeListCoId, {
+    resolve: {
+      items: true,
+    },
+  });
+  const employee = useCoState(CoEmployee, employeeCoId as ID<CoEmployee>);
 
   useEffect(() => {
     if (!employee || !employees) return;

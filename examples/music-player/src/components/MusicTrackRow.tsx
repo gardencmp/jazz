@@ -29,8 +29,10 @@ export function MusicTrackRow({
   const track = useCoState(MusicTrack, trackId);
 
   const { me } = useAccount({
-    root: {
-      playlists: [{}],
+    resolve: {
+      root: {
+        playlists: { items: true },
+      },
     },
   });
 

@@ -62,8 +62,10 @@ export async function addSharedFolder(
   const [sharedFolder, account] = await Promise.all([
     Folder.load(sharedFolderId, me, {}),
     PasswordManagerAccount.load(me.id, me, {
-      root: {
-        folders: [],
+      resolve: {
+        root: {
+          folders: true,
+        },
       },
     }),
   ]);

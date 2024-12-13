@@ -4,10 +4,10 @@ import type {
   CoValue,
   CoValueClass,
   CoValueFromRaw,
-  DeeplyLoaded,
-  DepthsIn,
   ID,
   RefEncoded,
+  RefsToResolve,
+  Resolved,
   Schema,
   SchemaFor,
   UnCo,
@@ -353,13 +353,13 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
    *
    * @category Subscription & Loading
    */
-  static load<L extends CoList, Depth>(
+  static load<L extends CoList, const O extends { resolve?: RefsToResolve<L> }>(
     this: CoValueClass<L>,
     id: ID<L>,
     as: Account,
-    depth: Depth & DepthsIn<L>,
-  ): Promise<DeeplyLoaded<L, Depth> | undefined> {
-    return loadCoValue(this, id, as, depth);
+    options?: O,
+  ): Promise<Resolved<L, O> | undefined> {
+    return loadCoValue(this, id, as, options);
   }
 
   /**
@@ -390,14 +390,17 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
    *
    * @category Subscription & Loading
    */
-  static subscribe<L extends CoList, Depth>(
+  static subscribe<
+    L extends CoList,
+    const O extends { resolve?: RefsToResolve<L> },
+  >(
     this: CoValueClass<L>,
     id: ID<L>,
     as: Account,
-    depth: Depth & DepthsIn<L>,
-    listener: (value: DeeplyLoaded<L, Depth>) => void,
+    options: O,
+    listener: (value: Resolved<L, O>) => void,
   ): () => void {
-    return subscribeToCoValue<L, Depth>(this, id, as, depth, listener);
+    return subscribeToCoValue<L, O>(this, id, as, options, listener);
   }
 
   /**
@@ -407,11 +410,11 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
    *
    * @category Subscription & Loading
    */
-  ensureLoaded<L extends CoList, Depth>(
-    this: L,
-    depth: Depth & DepthsIn<L>,
-  ): Promise<DeeplyLoaded<L, Depth> | undefined> {
-    return ensureCoValueLoaded(this, depth);
+  ensureLoaded<
+    L extends CoList,
+    const O extends { resolve?: RefsToResolve<L> },
+  >(this: L, options?: O): Promise<Resolved<L, O> | undefined> {
+    return ensureCoValueLoaded(this, options);
   }
 
   /**
@@ -423,12 +426,12 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
    *
    * @category Subscription & Loading
    **/
-  subscribe<L extends CoList, Depth>(
+  subscribe<L extends CoList, const O extends { resolve?: RefsToResolve<L> }>(
     this: L,
-    depth: Depth & DepthsIn<L>,
-    listener: (value: DeeplyLoaded<L, Depth>) => void,
+    options: O,
+    listener: (value: Resolved<L, O>) => void,
   ): () => void {
-    return subscribeToExistingCoValue(this, depth, listener);
+    return subscribeToExistingCoValue(this, options, listener);
   }
 
   /** @category Type Helpers */

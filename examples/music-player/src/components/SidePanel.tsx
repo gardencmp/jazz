@@ -5,8 +5,10 @@ export function SidePanel() {
   const { playlistId } = useParams();
   const navigate = useNavigate();
   const { me } = useAccount({
-    root: {
-      playlists: [{}],
+    resolve: {
+      root: {
+        playlists: { items: true },
+      },
     },
   });
 
