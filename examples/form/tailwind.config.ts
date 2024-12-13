@@ -1,4 +1,6 @@
-const plugin = require("tailwindcss/plugin");
+import formsPlugin from "@tailwindcss/forms";
+import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 const stonePalette = {
   50: "oklch(0.988281 0.002 75)",
@@ -14,7 +16,7 @@ const stonePalette = {
   900: "oklch(0.302734 0.002 75)",
   925: "oklch(0.220000 0.002 75)",
   950: "oklch(0.193359 0.002 75)",
-};
+} as const;
 
 const stonePaletteWithAlpha = { ...stonePalette };
 
@@ -25,7 +27,7 @@ Object.keys(stonePalette).forEach((key) => {
   );
 });
 
-const config = {
+const config: Config = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
@@ -47,7 +49,7 @@ const config = {
     },
   },
   plugins: [
-    require("@tailwindcss/forms"),
+    formsPlugin,
     plugin(({ addBase }) =>
       addBase({
         ":root": {
@@ -68,5 +70,6 @@ const config = {
       }),
     ),
   ],
-};
+} as const;
+
 export default config;
