@@ -204,7 +204,7 @@ const FileShareIllustration = () => (
       <div className="flex items-center gap-2">
         <FolderArchiveIcon
           size={24}
-          strokeWidth={1}
+          strokeWidth={1.5}
           className="stroke-blue dark:stroke-blue-500"
         />
         <p className="whitespace-nowrap text-stone-900 dark:text-white">
