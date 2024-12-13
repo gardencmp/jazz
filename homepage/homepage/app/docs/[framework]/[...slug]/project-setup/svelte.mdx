@@ -16,7 +16,7 @@ pnpm install jazz-tools jazz-svelte
 
 2. Write your schema
 
-See the [schema docs](/docs/react/schemas/covalues) for more information.
+See the [schema docs](/docs/schemas/covalues) for more information.
 
 <CodeGroup>
 ```ts
@@ -58,7 +58,7 @@ export const { Provider, useCoState, useAccount } = createJazzApp({
 <!-- src/routes/+layout.svelte -->
 <script lang="ts">
   import { Provider } from '$lib/jazz';
-  
+
   // Example configuration for authentication and peer connection
   let auth = null; // Replace with your auth implementation
   let peer = "wss://your-peer-endpoint";
@@ -79,9 +79,9 @@ export const { Provider, useCoState, useAccount } = createJazzApp({
   import { useCoState, useAccount } from '$lib/jazz';
 
   const { me } = useAccount();
-  
+
   const counter = $derived(useCoState(co.number, me.profile.counter));
-  
+
   function increment() {
     me.profile.counter = counter + 1;
   }
