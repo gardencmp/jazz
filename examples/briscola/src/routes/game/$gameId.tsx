@@ -1,6 +1,16 @@
+import { cn } from "@/lib/utils";
+import { useCoState } from "@/main";
+import {
+  type Card,
+  type CardValue,
+  Game,
+  type ListaDiCarte,
+  type Player,
+} from "@/schema";
 import { createFileRoute } from "@tanstack/react-router";
-import { Reorder, motion } from "motion/react";
-import { useState } from "react";
+import type { ID, co } from "jazz-tools";
+import { AnimatePresence, Reorder, motion } from "motion/react";
+import { type ReactNode, useState } from "react";
 import bastoni from "../../bastoni.svg?url";
 import coppe from "../../coppe.svg?url";
 import denari from "../../denari.svg?url";
@@ -12,49 +22,145 @@ export const Route = createFileRoute("/game/$gameId")({
 
 function RouteComponent() {
   const { gameId } = Route.useParams();
-  const [cards, setCards] = useState(["A", "B", "C"]);
-  const [cards2, setCards2] = useState(["A", "B", "C"]);
+  const game = useCoState(Game, gameId as ID<Game>, {
+    deck: [{}],
+    player1: { hand: [{}] },
+  });
+  // console.log({ deck: game?.deck });
+  // const [cards, setCards] = useState<CardValue[]>(["SA", "C8", "D2"]);
 
   return (
-    <div>
-      Hello "/game/{gameId}"!
-      <Reorder.Group axis="x" values={cards} onReorder={setCards}>
+    <div className="flex flex-col h-full p-2 bg-green-800">
+      {/* <Reorder.Group axis="x" values={cards} onReorder={setCards}>
         <div className="flex place-content-center gap-2">
           {cards.map((card) => (
             <Reorder.Item key={card} value={card}>
-              <Card card={card} />
+              <PlayingCard card={card} />
             </Reorder.Item>
           ))}
         </div>
-      </Reorder.Group>
-      <Reorder.Group axis="x" values={cards2} onReorder={setCards2}>
-        <div className="flex place-content-center gap-2">
-          {cards2.map((card) => (
-            <Reorder.Item key={card} value={card}>
-              <Card card={card} />
-            </Reorder.Item>
-          ))}
-        </div>
-      </Reorder.Group>
+      </Reorder.Group> */}
+
+      <div className="grow items-center justify-center flex ">
+        {game?.deck && (
+          <>
+            {game.deck[0] && (
+              <PlayingCard
+                className="rotate-[88deg] left-1/2 absolute"
+                card={game.deck[0]}
+              />
+            )}
+            <CardStack cards={game?.deck} className="" />
+          </>
+        )}
+      </div>
+
+      {game?.player1 && (
+        <PlayerArea player={game?.player1}>
+          <Reorder.Group
+            axis="x"
+            values={game.player1.hand || []}
+            onReorder={() => {}}
+          >
+            <div className="flex place-content-center gap-2">
+              {JSON.stringify(game.player1.hand)}
+              {game.player1.hand?.map((card, i) => (
+                <Reorder.Item key={card?.value} value={card}>
+                  <PlayingCard card={card} />
+                </Reorder.Item>
+              ))}
+            </div>
+          </Reorder.Group>
+        </PlayerArea>
+      )}
+    </div>
+  );
+}
+
+interface CardStackProps {
+  cards?: co<ListaDiCarte | null>;
+  className?: string;
+}
+function CardStack({ cards, className }: CardStackProps) {
+  return (
+    <div className={cn("relative p-4 w-[200px] h-[280px]", className)}>
+      <AnimatePresence>
+        {cards?.map((card, i) => (
+          <motion.div
+            initial={{ left: -1000 }}
+            animate={{ left: 0 }}
+            transition={{ delay: i * 0.05 }}
+            key={i}
+            className="w-[150px] aspect-card absolute border border-gray-200/10 rounded-lg bg-white drop-shadow-sm"
+            style={{
+              rotate: `${(i % 3) * (i % 5) * 3}deg`,
+              backgroundImage: `url(https://placecats.com/150/243)`,
+              backgroundSize: "cover",
+            }}
+          />
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
 
 interface Props {
-  card: string;
+  card: co<Card>;
+  className?: string;
 }
-function Card({ card }: Props) {
+function PlayingCard({ card, className }: Props) {
+  const cardImage = getCardImage(card.value);
+  const value = getValue(card.value);
+
   return (
     <motion.div
-      className="border aspect-card w-[150px] bg-white touch-none rounded-lg shadow-lg p-2"
-      whileHover={{
-        marginTop: -30,
-      }}
+      className={cn(
+        "border aspect-card w-[150px] bg-white touch-none rounded-lg shadow-lg p-2",
+        className,
+      )}
     >
-      <div className="border-zinc-400 border rounded-lg h-full p-2">
-        <span className="text-3xl font-bold">7</span>
-        <img src={spade} className="h-24 pointer-events-none" />
+      <div className="border-zinc-400 border rounded-lg h-full px-1 flex flex-col ">
+        <div className="text-4xl font-bold text-black self-start">{value}</div>
+        <div className="grow flex justify-center items-center">
+          <img src={cardImage} className="pointer-events-none max-h-[140px]" />
+        </div>
+        <div className="text-4xl font-bold text-black rotate-180 transform self-end">
+          {value}
+        </div>
       </div>
     </motion.div>
+  );
+}
+
+function getCardImage(cardValue: typeof CardValue) {
+  switch (cardValue.charAt(0)) {
+    case "C":
+      return coppe;
+    case "D":
+      return denari;
+    case "S":
+      return spade;
+    case "B":
+      return bastoni;
+  }
+}
+
+function getValue(card: typeof CardValue) {
+  return card.charAt(1);
+}
+
+interface PlayerAreaProps {
+  player: co<Player>;
+  children: ReactNode;
+}
+function PlayerArea({ children, player }: PlayerAreaProps) {
+  return (
+    <div className="grid grid-cols-3">
+      <div></div>
+      {children}
+      <div className="flex justify-center">
+        <CardStack cards={player.carteAcchiappate} className="rotate-90" />
+      </div>
+    </div>
   );
 }

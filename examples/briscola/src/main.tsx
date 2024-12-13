@@ -3,6 +3,9 @@ import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
 import { createRoot } from "react-dom/client";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
+import { listenForCmdJ } from "jazz-tools";
+
+listenForCmdJ();
 
 const Jazz = createJazzReactApp();
 export const { useAccount, useCoState } = Jazz;
