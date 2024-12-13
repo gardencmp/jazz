@@ -20,9 +20,7 @@ function ImportEmployee({
   const navigate = useNavigate();
 
   const employees = useCoState(EmployeeCoList, employeeListCoId, {
-    resolve: {
-      items: true,
-    },
+    resolve: { each: true },
   });
   const employee = useCoState(CoEmployee, employeeCoId as ID<CoEmployee>);
 

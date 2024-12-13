@@ -8,11 +8,7 @@ export function InvitePage() {
   const navigate = useNavigate();
 
   const { me } = useAccount({
-    resolve: {
-      root: {
-        playlists: true,
-      },
-    },
+    resolve: { root: { playlists: true } },
   });
 
   useAcceptInvite({

@@ -11,9 +11,7 @@ export function EmployeeList({
   employeeListCoId: ID<EmployeeCoList>;
 }) {
   const employees = useCoState(EmployeeCoList, employeeListCoId, {
-    resolve: {
-      items: true,
-    },
+    resolve: { each: true },
   });
 
   if (!employees) {

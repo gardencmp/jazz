@@ -23,9 +23,7 @@ export function NewEmployee({
   const { me } = useAccount();
 
   const employees = useCoState(EmployeeCoList, employeeListCoId, {
-    resolve: {
-      items: true,
-    },
+    resolve: { each: true },
   });
 
   const [employeeName, setEmployeeName] = useState<string>("");

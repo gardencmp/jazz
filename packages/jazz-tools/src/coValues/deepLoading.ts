@@ -22,14 +22,14 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
     value._type === "Group" ||
     value._type === "Account"
   ) {
-    if ("items" in depth) {
+    if ("each" in depth) {
       return Object.entries(value).every(([key, item]) => {
         return (
           value as unknown as {
             _refs: { [key: string]: Ref<CoValue> | undefined };
           }
         )._refs[key]
-          ? item && fulfillsDepth(depth.items, item)
+          ? item && fulfillsDepth(depth.each, item)
           : ((value as CoMap)._schema[ItemsSym] as RefEncoded<CoValue>)!
               .optional;
       });
@@ -53,14 +53,14 @@ export function fulfillsDepth(depth: any, value: CoValue): boolean {
       return true;
     }
   } else if (value._type === "CoList") {
-    const itemDepth = depth.items;
+    const itemDepth = depth.each;
     return (value as CoList).every((item, i) =>
       (value as CoList)._refs[i]
         ? item && fulfillsDepth(itemDepth, item)
         : ((value as CoList)._schema[ItemsSym] as RefEncoded<CoValue>).optional,
     );
   } else if (value._type === "CoStream") {
-    const itemDepth = depth.items;
+    const itemDepth = depth.each;
     return Object.values((value as CoFeed).perSession).every((entry) =>
       entry.ref
         ? entry.value && fulfillsDepth(itemDepth, entry.value)
@@ -90,7 +90,7 @@ export type RefsToResolve<
         V extends Array<infer Item>
         ?
             | {
-                items: RefsToResolve<
+                each: RefsToResolve<
                   UnCoNotNull<Item>,
                   DepthLimit,
                   [0, ...CurrentDepth]
@@ -111,7 +111,7 @@ export type RefsToResolve<
                 }
               | (ItemsSym extends keyof V
                   ? {
-                      items: RefsToResolve<
+                      each: RefsToResolve<
                         Clean<V[ItemsSym]>,
                         DepthLimit,
                         [0, ...CurrentDepth]
@@ -125,7 +125,7 @@ export type RefsToResolve<
               }
             ?
                 | {
-                    items: RefsToResolve<
+                    each: RefsToResolve<
                       UnCoNotNull<Item>,
                       DepthLimit,
                       [0, ...CurrentDepth]
@@ -151,7 +151,7 @@ export type DeeplyLoaded<
     : // Basically V extends CoList - but if we used that we'd introduce circularity into the definition of CoList itself
       [V] extends [Array<infer Item>]
       ? UnCoNotNull<Item> extends CoValue
-        ? Depth extends { items: infer ItemDepth }
+        ? Depth extends { each: infer ItemDepth }
           ? // Deeply loaded CoList
             (UnCoNotNull<Item> &
               DeeplyLoaded<
@@ -166,7 +166,7 @@ export type DeeplyLoaded<
       : // Basically V extends CoMap | Group | Account - but if we used that we'd introduce circularity into the definition of CoMap itself
         [V] extends [{ _type: "CoMap" | "Group" | "Account" }]
         ? ItemsSym extends keyof V
-          ? Depth extends { items: infer ItemDepth }
+          ? Depth extends { each: infer ItemDepth }
             ? // Deeply loaded Record-like CoMap
               {
                 [key: string]: DeeplyLoaded<

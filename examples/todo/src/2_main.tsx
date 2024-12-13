@@ -121,9 +121,7 @@ export default function App() {
 
 function HomeScreen() {
   const { me } = useAccount({
-    resolve: {
-      root: { projects: { items: true } },
-    },
+    resolve: { root: { projects: { each: true } } },
   });
   const navigate = useNavigate();
 

@@ -23,7 +23,7 @@ export default function Conversation() {
   const { me } = useAccount();
   const [chat, setChat] = useState<Chat>();
   const [message, setMessage] = useState("");
-  const loadedChat = useCoState(Chat, chat?.id, { resolve: { items: true } });
+  const loadedChat = useCoState(Chat, chat?.id, { resolve: { each: true } });
   const navigation = useNavigation();
 
   useEffect(() => {

@@ -73,9 +73,7 @@ const { me } = useAccount();
 
 const computedFoldersId = computed(() => me.value?.root?.folders?.id);
 const folders = useCoState(FolderList, computedFoldersId, {
-  resolve: {
-    items: { items: true },
-  },
+  resolve: { each: { items: true } },
 });
 
 const selectedFolder = ref<Folder>();

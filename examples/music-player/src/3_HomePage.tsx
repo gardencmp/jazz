@@ -50,9 +50,7 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
   const playlistId = params.playlistId ?? me?.root._refs.rootPlaylist.id;
 
   const playlist = useCoState(Playlist, playlistId, {
-    resolve: {
-      tracks: true,
-    },
+    resolve: { tracks: true },
   });
 
   const isRootPlaylist = !params.playlistId;

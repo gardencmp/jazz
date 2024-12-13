@@ -109,7 +109,7 @@ describe("Deep loading with depth arg", async () => {
     expect(map2.list[0]).toBe(null);
 
     const map3 = await TestMap.load(map.id, meOnSecondPeer, {
-      resolve: { list: { items: true } },
+      resolve: { list: { each: true } },
     });
     expectTypeOf(map3).toEqualTypeOf<
       | (TestMap & {
@@ -134,7 +134,7 @@ describe("Deep loading with depth arg", async () => {
     >();
 
     const map4 = await TestMap.load(map.id, meOnSecondPeer, {
-      resolve: { list: { items: { stream: true } } },
+      resolve: { list: { each: { stream: true } } },
     });
     expectTypeOf(map4).toEqualTypeOf<
       | (TestMap & {
@@ -150,7 +150,7 @@ describe("Deep loading with depth arg", async () => {
     expect(map4.list[0]?.stream?.byMe?.value).toBe(null);
 
     const map5 = await TestMap.load(map.id, meOnSecondPeer, {
-      resolve: { list: { items: { stream: { items: true } } } },
+      resolve: { list: { each: { stream: { each: true } } } },
     });
     type ExpectedMap5 =
       | (TestMap & {
@@ -300,7 +300,7 @@ test("Deep loading a record-like coMap", async () => {
 
   const recordLoaded = await RecordLike.load(record.id, meOnSecondPeer, {
     resolve: {
-      items: { list: { items: true } },
+      each: { list: { each: true } },
     },
   });
   expectTypeOf(recordLoaded).toEqualTypeOf<

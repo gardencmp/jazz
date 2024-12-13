@@ -12,11 +12,7 @@ export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
   const isPlaying = playState.value === "play";
 
   const activePlaylist = useAccount({
-    resolve: {
-      root: {
-        activePlaylist: true,
-      },
-    },
+    resolve: { root: { activePlaylist: true } },
   }).me?.root.activePlaylist;
 
   useMediaEndListener(mediaPlayer.playNextTrack);
@@ -27,9 +23,7 @@ export function PlayerControls({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
   });
 
   const activeTrack = useCoState(MusicTrack, mediaPlayer.activeTrackId, {
-    resolve: {
-      waveform: true,
-    },
+    resolve: { waveform: true },
   });
 
   if (!activeTrack) return null;
