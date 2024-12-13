@@ -1,14 +1,12 @@
-import { createImage } from "jazz-browser-media-images";
 import { ID } from "jazz-tools";
 import { useEffect, useState } from "react";
 import { useY } from "react-yjs";
 import { YjsJazzDoc } from "y-jazz";
 import { Array as YArray } from "yjs";
-import { useAccount, useCoState } from "./main.tsx";
+import { useAccount } from "./main.tsx";
 import {
   BubbleBody,
   BubbleContainer,
-  BubbleInfo,
   BubbleText,
   ChatBody,
   EmptyChatMessage,

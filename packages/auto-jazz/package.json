@@ -7,6 +7,7 @@
   "license": "MIT",
   "dependencies": {
     "@automerge/automerge": "^2.2.8",
+    "cojson": "workspace:0.8.38",
     "jazz-tools": "workspace:0.8.38",
     "typescript": "^5.3.3"
   },

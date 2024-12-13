@@ -1,6 +1,4 @@
 import clsx from "clsx";
-import { ProgressiveImg } from "jazz-react";
-import { ImageDefinition } from "jazz-tools";
 import { useId } from "react";
 
 export function AppContainer(props: { children: React.ReactNode }) {

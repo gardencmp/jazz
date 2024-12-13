@@ -1,6 +1,6 @@
 import { cojsonInternals } from "cojson";
 import { Account, CoFeed, Group, co } from "jazz-tools";
-import { LoroDoc, VersionVector } from "loro-crdt";
+import { LoroDoc } from "loro-crdt";
 
 type LoroUpdate = string & { __loroUpdate: true };
 

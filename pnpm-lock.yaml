@@ -1637,6 +1637,9 @@ importers:
       '@automerge/automerge':
         specifier: ^2.2.8
         version: 2.2.8
+      cojson:
+        specifier: workspace:0.8.38
+        version: link:../cojson
       jazz-tools:
         specifier: workspace:0.8.38
         version: link:../jazz-tools
@@ -2131,6 +2134,9 @@ importers:
 
   packages/loro-jazz:
     dependencies:
+      cojson:
+        specifier: workspace:0.8.38
+        version: link:../cojson
       jazz-tools:
         specifier: workspace:0.8.38
         version: link:../jazz-tools
@@ -2143,6 +2149,9 @@ importers:
 
   packages/y-jazz:
     dependencies:
+      cojson:
+        specifier: workspace:0.8.38
+        version: link:../cojson
       jazz-tools:
         specifier: workspace:0.8.38
         version: link:../jazz-tools
