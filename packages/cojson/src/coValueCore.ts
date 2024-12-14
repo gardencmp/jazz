@@ -13,6 +13,7 @@ import {
   SignerID,
   StreamingHash,
 } from "./crypto/crypto.js";
+import { CojsonInternalTypes } from "./exports.js";
 import {
   RawCoID,
   SessionID,
@@ -34,6 +35,7 @@ import { CoValueKnownState, NewContentMessage } from "./sync.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
+import ContentMessage = CojsonInternalTypes.ContentMessage;
 
 /**
     In order to not block other concurrently syncing CoValues we introduce a maximum size of transactions,
@@ -893,7 +895,7 @@ export class CoValueCore {
 
   newContentSince(
     knownState: CoValueKnownState | undefined,
-  ): NewContentMessage[] | undefined {
+  ): ContentMessage[] | undefined {
     const isKnownStateEmpty = !knownState?.header && !knownState?.sessions;
 
     if (isKnownStateEmpty && this._cachedNewContentSinceEmpty) {

@@ -62,6 +62,7 @@ import type {
 import {
   DisconnectedError,
   PingTimeoutError,
+  emptyDataMessage,
   emptyKnownState,
 } from "./sync.js";
 
@@ -129,6 +130,7 @@ export {
   isRawCoID,
   LSMStorage,
   emptyKnownState,
+  emptyDataMessage,
 };
 
 export type {
@@ -151,6 +153,11 @@ export namespace CojsonInternalTypes {
   export type KnownStateMessage = import("./sync.js").KnownStateMessage;
   export type LoadMessage = import("./sync.js").LoadMessage;
   export type NewContentMessage = import("./sync.js").NewContentMessage;
+  export type ContentMessage = import("./sync.js").ContentMessage;
+  export type PullMessage = import("./sync.js").PullMessage;
+  export type PushMessage = import("./sync.js").PushMessage;
+  export type DataMessage = import("./sync.js").DataMessage;
+  export type AckMessage = import("./sync.js").AckMessage;
   export type SessionNewContent = import("./sync.js").SessionNewContent;
   export type CoValueHeader = import("./coValueCore.js").CoValueHeader;
   export type Transaction = import("./coValueCore.js").Transaction;

@@ -5,17 +5,28 @@ import {
   SessionID,
   SyncMessage,
   cojsonInternals,
+  emptyDataMessage,
   emptyKnownState,
 } from "cojson";
 import { collectNewTxs, getDependedOnCoValues } from "./syncUtils.js";
-import { DBClientInterface, StoredSessionRow } from "./types.js";
+import {
+  DBClientInterface,
+  StoredCoValueRow,
+  StoredSessionRow,
+} from "./types.js";
 import NewContentMessage = CojsonInternalTypes.NewContentMessage;
 import KnownStateMessage = CojsonInternalTypes.KnownStateMessage;
+import DataMessage = CojsonInternalTypes.DataMessage;
+import PushMessage = CojsonInternalTypes.PushMessage;
 import RawCoID = CojsonInternalTypes.RawCoID;
 
 type OutputMessageMap = Record<
   RawCoID,
-  { knownMessage: KnownStateMessage; contentMessages?: NewContentMessage[] }
+  {
+    knownMessage: KnownStateMessage;
+    contentMessages?: NewContentMessage[];
+    dataMessages?: DataMessage[];
+  }
 >;
 
 export class SyncManager {
@@ -29,18 +40,16 @@ export class SyncManager {
 
   async handleSyncMessage(msg: SyncMessage) {
     switch (msg.action) {
-      case "load":
-        await this.handleLoad(msg);
-        break;
-      case "content":
-        await this.handleContent(msg);
-        break;
+      case "pull":
+        return this.handlePull(msg);
+      case "data":
+        return this.handleData(msg);
+      case "push":
+        return this.handlePush(msg);
       case "known":
-        await this.handleKnown(msg);
-        break;
+        return this.handleKnown(msg);
       case "done":
-        await this.handleDone(msg);
-        break;
+        return this.handleDone(msg);
     }
   }
 
@@ -80,6 +89,7 @@ export class SyncManager {
     });
   }
 
+  // actually, it's a handlePull method
   async sendNewContent(
     coValueKnownState: CojsonInternalTypes.CoValueKnownState,
   ): Promise<void> {
@@ -89,10 +99,31 @@ export class SyncManager {
     // reverse it to send the top level id the last in the order
     const collectedMessages = Object.values(outputMessages).reverse();
     collectedMessages.forEach(({ knownMessage, contentMessages }) => {
-      this.sendStateMessage(knownMessage);
+      // this.sendStateMessage(knownMessage);
+      // temporary ugly patch to make it work with "data" and "pull" actions
+      if (!knownMessage.header) {
+        this.sendStateMessage(emptyDataMessage(knownMessage.id));
 
-      contentMessages?.length &&
-        contentMessages.forEach((msg) => this.sendStateMessage(msg));
+        if (coValueKnownState.header) {
+          this.sendStateMessage({ ...knownMessage, action: "pull" });
+        }
+
+        return;
+      }
+
+      const dataMsg = contentMessages?.length
+        ? {
+            ...contentMessages[0],
+            action: "data",
+            asDependencyOf: knownMessage.asDependencyOf,
+          }
+        : { ...emptyDataMessage(knownMessage.id) };
+
+      this.sendStateMessage(dataMsg);
+      // contentMessages?.length &&
+      //   contentMessages.forEach((msg) => {
+      //     this.sendStateMessage(msg);
+      //   });
     });
   }
 
@@ -182,11 +213,11 @@ export class SyncManager {
     return messageMap;
   }
 
-  handleLoad(msg: CojsonInternalTypes.LoadMessage) {
+  handlePull(msg: CojsonInternalTypes.PullMessage) {
     return this.sendNewContent(msg);
   }
 
-  async handleContent(msg: CojsonInternalTypes.NewContentMessage) {
+  async handlePush(msg: PushMessage) {
     const coValueRow = await this.dbClient.getCoValue(msg.id);
 
     // We have no info about coValue header
@@ -194,14 +225,59 @@ export class SyncManager {
 
     if (invalidAssumptionOnHeaderPresence) {
       return this.sendStateMessage({
-        action: "known",
-        id: msg.id,
-        header: false,
-        sessions: {},
-        isCorrection: true,
+        ...emptyKnownState(msg.id),
+        action: "pull",
       });
     }
 
+    const { needMissingTransactions, ourKnown } = await this.addTransactions(
+      coValueRow,
+      msg,
+    );
+
+    if (needMissingTransactions) {
+      return this.sendStateMessage({
+        action: "pull",
+        ...ourKnown,
+      });
+    }
+
+    return this.sendStateMessage({
+      action: "ack",
+      ...ourKnown,
+    });
+  }
+
+  async handleData(msg: DataMessage) {
+    const coValueRow = await this.dbClient.getCoValue(msg.id);
+
+    // We have no info about coValue header
+    const invalidAssumptionOnHeaderPresence = !msg.header && !coValueRow;
+
+    if (invalidAssumptionOnHeaderPresence) {
+      console.error(
+        'invalidAssumptionOnHeaderPresence. We should never be here. "Data" action is a response to our specific request. TODO Log error. Fix this. Retry request',
+      );
+      return;
+    }
+
+    const { needMissingTransactions } = await this.addTransactions(
+      coValueRow,
+      msg,
+    );
+
+    if (needMissingTransactions) {
+      console.error(
+        'needMissingTransactions. We should never be here. "Data" action is a response to our specific request. TODO Log error. Fix this. Retry request',
+      );
+      return;
+    }
+  }
+
+  private async addTransactions(
+    coValueRow: StoredCoValueRow | undefined,
+    msg: DataMessage | PushMessage,
+  ) {
     const storedCoValueRowID: number = coValueRow
       ? coValueRow.rowID
       : await this.dbClient.addCoValue(msg);
@@ -221,7 +297,7 @@ export class SyncManager {
       sessions: {},
     };
 
-    let invalidAssumptions = false;
+    let needMissingTransactions = false;
 
     await this.dbClient.unitOfWork(() =>
       (Object.keys(msg.new) as SessionID[]).map((sessionID) => {
@@ -231,24 +307,17 @@ export class SyncManager {
         }
 
         if ((sessionRow?.lastIdx || 0) < (msg.new[sessionID]?.after || 0)) {
-          invalidAssumptions = true;
+          needMissingTransactions = true;
         } else {
           return this.putNewTxs(msg, sessionID, sessionRow, storedCoValueRowID);
         }
       }),
     );
-
-    if (invalidAssumptions) {
-      this.sendStateMessage({
-        action: "known",
-        ...ourKnown,
-        isCorrection: invalidAssumptions,
-      });
-    }
+    return { ourKnown, needMissingTransactions };
   }
 
   private async putNewTxs(
-    msg: CojsonInternalTypes.NewContentMessage,
+    msg: DataMessage | PushMessage,
     sessionID: SessionID,
     sessionRow: StoredSessionRow | undefined,
     storedCoValueRowID: number,

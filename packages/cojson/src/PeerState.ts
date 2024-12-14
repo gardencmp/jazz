@@ -6,6 +6,7 @@ import { TryAddTransactionsError } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
 import { CO_VALUE_PRIORITY } from "./priority.js";
 import { Peer, SyncMessage } from "./sync.js";
+import { transformOutgoingMessageToPeer } from "./transformers.js";
 
 export class PeerState {
   constructor(
@@ -100,12 +101,20 @@ export class PeerState {
       return Promise.resolve();
     }
 
-    console.log("🟢 <<<=== Sending to peer", this.id, msg);
-    const promise = this.queue.push(msg);
+    const transformedMessages = transformOutgoingMessageToPeer(msg, this.id);
+    transformedMessages.map((msg) => {
+      console.log("🟢 <<<=== Sending to peer", this.id, msg);
+    });
 
-    void this.processQueue();
+    return Promise.all(
+      transformedMessages.map((msg) => {
+        const promise = this.queue.push(msg);
 
-    return promise;
+        void this.processQueue();
+
+        return promise;
+      }),
+    );
   }
 
   get incoming() {

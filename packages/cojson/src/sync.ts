@@ -6,6 +6,7 @@ import { Signature } from "./crypto/crypto.js";
 import { RawCoID, SessionID } from "./ids.js";
 import { LocalNode } from "./localNode.js";
 import { CoValuePriority } from "./priority.js";
+import { transformIncomingMessageFromPeer } from "./transformers.js";
 
 export type CoValueKnownState = {
   id: RawCoID;
@@ -21,14 +22,36 @@ export function emptyKnownState(id: RawCoID): CoValueKnownState {
   };
 }
 
+export function emptyDataMessage(
+  id: RawCoID,
+  asDependencyOf?: RawCoID,
+): DataMessage {
+  const message: DataMessage = {
+    id,
+    known: false,
+    action: "data",
+    priority: 0,
+    new: {},
+  };
+  return asDependencyOf ? { ...message, asDependencyOf } : message;
+}
+
 export type SyncMessage =
   | LoadMessage
   | KnownStateMessage
   | NewContentMessage
-  | DoneMessage;
+  | DoneMessage
+  | PullMessage
+  | PushMessage
+  | AckMessage
+  | DataMessage;
 
 export type LoadMessage = {
   action: "load";
+} & CoValueKnownState;
+
+export type PullMessage = {
+  action: "pull";
 } & CoValueKnownState;
 
 export type KnownStateMessage = {
@@ -37,15 +60,32 @@ export type KnownStateMessage = {
   isCorrection?: boolean;
 } & CoValueKnownState;
 
-export type NewContentMessage = {
-  action: "content";
+export type AckMessage = {
+  action: "ack";
+} & CoValueKnownState;
+
+export type ContentMessage = {
   id: RawCoID;
   header?: CoValueHeader;
   priority: CoValuePriority;
+  asDependencyOf?: RawCoID;
   new: {
     [sessionID: SessionID]: SessionNewContent;
   };
 };
+
+export type NewContentMessage = {
+  action: "content";
+} & ContentMessage;
+
+export type DataMessage = {
+  known?: boolean;
+  action: "data";
+} & ContentMessage;
+
+export type PushMessage = {
+  action: "push";
+} & ContentMessage;
 
 export type SessionNewContent = {
   after: number;
@@ -148,8 +188,15 @@ export class SyncManager {
       );
       return;
     }
-    // TODO: validate
     switch (msg.action) {
+      case "data":
+        return this.handleData(msg, peer);
+      case "push":
+        return this.handlePush(msg, peer);
+      case "pull":
+        return this.handlePull(msg, peer);
+      case "ack":
+        return this.handleAck(msg, peer);
       case "load":
         return await this.handleLoad(msg, peer);
       case "known":
@@ -159,15 +206,176 @@ export class SyncManager {
           return await this.handleKnownState(msg, peer);
         }
       case "content":
-        // await new Promise<void>((resolve) => setTimeout(resolve, 0));
         return await this.handleNewContent(msg, peer);
       case "done":
         return await this.handleUnsubscribe(msg);
       default:
         throw new Error(
-          `Unknown message type ${(msg as { action: "string" }).action}`,
+          `Unknown message type ${(msg as unknown as { action: "string" }).action}`,
         );
     }
+  }
+
+  async handlePull(msg: PullMessage, peer: PeerState) {
+    const entry = this.local.coValuesStore.get(msg.id);
+
+    if (entry.state.type === "available") {
+      // send "data" action as a response
+      return this.sendNewContentIncludingDependencies(msg, peer, "data");
+    }
+
+    const respondWithEmptyData = async () => {
+      void this.trySendToPeer(peer, emptyDataMessage(msg.id));
+    };
+
+    if (entry.state.type === "loading") {
+      // We need to return from handleLoad immediately and wait for the CoValue to be loaded
+      // in a new task, otherwise we might block further incoming content messages that would
+      // resolve the CoValue as available. This can happen when we receive fresh
+      // content from a client, but we are a server with our own upstream server(s)
+      entry
+        .getCoValue()
+        .then(async (value) => {
+          if (value === "unavailable") {
+            void respondWithEmptyData();
+          } else {
+            void this.sendNewContentIncludingDependencies(msg, peer, "data");
+          }
+        })
+        .catch((e) => {
+          void respondWithEmptyData();
+          console.error("Error loading coValue in handleLoad loading state", e);
+        });
+
+      return;
+    }
+
+    void respondWithEmptyData();
+
+    if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
+      const eligiblePeers = this.getServerAndStoragePeers(peer.id);
+
+      if (eligiblePeers.length === 0) {
+        // If the load request contains a header or any session data
+        // and we don't have any eligible peers to load the coValue from
+        // we try to load it from the sender because it is the only place
+        // where we can get informations about the coValue
+        if (msg.header || Object.keys(msg.sessions).length > 0) {
+          entry.loadFromPeers([peer]).catch((e) => {
+            console.error("Error loading coValue in handleLoad", e);
+          });
+        }
+        return;
+      } else {
+        this.local.loadCoValueCore(msg.id, peer.id).catch((e) => {
+          console.error("Error loading coValue in handleLoad", e);
+        });
+      }
+    }
+  }
+
+  async handleData(msg: DataMessage, peer: PeerState) {
+    const entry = this.local.coValuesStore.get(msg.id);
+
+    if (msg.known === false) {
+      entry.dispatch({
+        type: "not-found-in-peer",
+        peerId: peer.id,
+      });
+      return;
+    }
+
+    if (!msg.header && entry.state.type !== "available") {
+      console.error(
+        '!!! We should never be here. "Data" action is a response to our specific request. TODO Log error. Fix this. Retry request',
+      );
+      return;
+    }
+
+    let coValue: CoValueCore;
+    if (entry.state.type !== "available") {
+      coValue = new CoValueCore(msg.header as CoValueHeader, this.local);
+
+      entry.dispatch({
+        type: "available",
+        coValue,
+      });
+    } else {
+      coValue = entry.state.coValue;
+    }
+
+    const hasMissedTransactions = this.addTransaction({
+      msg,
+      coValue,
+      peer,
+    });
+
+    if (hasMissedTransactions) {
+      console.error(
+        '!!! We should never be here. "Data" action is a response to our specific request. Log error. Fix this. Retry request',
+      );
+      return;
+    }
+  }
+
+  async handlePush(msg: PushMessage, peer: PeerState) {
+    const entry = this.local.coValuesStore.get(msg.id);
+
+    let coValue: CoValueCore;
+
+    if (entry.state.type !== "available") {
+      if (!msg.header) {
+        console.error("Expected header to be sent in first message");
+        return;
+      }
+
+      coValue = new CoValueCore(msg.header, this.local);
+
+      entry.dispatch({
+        type: "available",
+        coValue,
+      });
+    } else {
+      coValue = entry.state.coValue;
+    }
+
+    const prevKnownState = { ...coValue.knownState() };
+    const needCorrection = this.addTransaction({
+      msg,
+      coValue,
+      peer,
+    });
+
+    if (needCorrection) {
+      this.trySendToPeer(peer, {
+        action: "pull",
+        ...coValue.knownState(),
+      }).catch((e) => {
+        console.error("Error sending msg", msg, e);
+      });
+    } else {
+      this.trySendToPeer(peer, {
+        action: "ack",
+        ...coValue.knownState(),
+      }).catch((e: unknown) => {
+        console.error("Error sending", msg, e);
+      });
+    }
+    // TODO send excluded original peers to not to sync with
+    await this.syncCoValue(coValue, prevKnownState);
+  }
+
+  async handleAck(msg: AckMessage, peer: PeerState) {
+    const entry = this.local.coValuesStore.get(msg.id);
+
+    if (entry.state.type !== "available") {
+      console.error(
+        '!!! We should never be here. "Ack" action is a response to our specific request. Log error. Fix this. Retry request',
+      );
+      return;
+    }
+
+    // TODO if we need it - set loadedOnPeer flag on in the entry to use in waitForUploadIntoPeer
   }
 
   async subscribeToIncludingDependencies(id: RawCoID, peer: PeerState) {
@@ -232,6 +440,7 @@ export class SyncManager {
   async sendNewContentIncludingDependencies(
     known: CoValueKnownState,
     peer: PeerState,
+    action?: "push" | "data",
   ) {
     const coValue = this.local.expectCoValueLoaded(known.id);
 
@@ -255,7 +464,15 @@ export class SyncManager {
           //     // Object.values(piece.new).map((s) => s.newTransactions)
           // );
 
-          this.trySendToPeer(peer, piece).catch((e: unknown) => {
+          // TODO remove this when done
+          const msg = {
+            ...piece,
+          };
+          if (action) {
+            // @ts-ignore
+            msg.action = action;
+          }
+          this.trySendToPeer(peer, piece as SyncMessage).catch((e: unknown) => {
             console.error("Error sending content piece", e);
           });
 
@@ -270,7 +487,7 @@ export class SyncManager {
 
       sendPieces().catch((e) => {
         console.error("Error sending new content piece, retrying", e);
-        return this.sendNewContentIncludingDependencies(known, peer);
+        return this.sendNewContentIncludingDependencies(known, peer, action);
       });
     }
   }
@@ -311,7 +528,10 @@ export class SyncManager {
         }
         try {
           console.log("🔵 ===>>> Received from", peer.id, msg);
-          await this.handleSyncMessage(msg, peerState);
+          await this.handleSyncMessage(
+            transformIncomingMessageFromPeer(msg, peer.id),
+            peerState,
+          );
         } catch (e) {
           throw new Error(
             `Error reading from peer ${
@@ -528,7 +748,7 @@ export class SyncManager {
     coValue,
     peer,
   }: {
-    msg: NewContentMessage;
+    msg: NewContentMessage | ContentMessage;
     coValue: CoValueCore;
     peer: PeerState;
   }) {
