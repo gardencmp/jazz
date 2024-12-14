@@ -3,6 +3,7 @@ import { CoID, RawCoValue } from "../coValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { JsonObject, JsonValue } from "../jsonValue.js";
+import { CoValueKnownState } from "../sync.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { isAccountID } from "../typeUtils/isAccountID.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
@@ -53,14 +54,14 @@ export class RawCoStreamView<
     [key: SessionID]: CoStreamItem<Item>[];
   };
   /** @internal */
-  processedTransactionsSet: Set<`${SessionID}-${number}`>;
+  knownTransactions: CoValueKnownState["sessions"];
   readonly _item!: Item;
 
   constructor(core: CoValueCore) {
     this.id = core.id as CoID<this>;
     this.core = core;
     this.items = {};
-    this.processedTransactionsSet = new Set();
+    this.knownTransactions = {};
     this.fillFromCoValue();
   }
 
@@ -83,7 +84,7 @@ export class RawCoStreamView<
 
     for (const { txID, madeAt, changes } of this.core.getValidTransactions({
       ignorePrivateTransactions: false,
-      exclude: this.processedTransactionsSet,
+      knownTransactions: this.knownTransactions,
     })) {
       for (const changeUntyped of changes) {
         const change = changeUntyped as Item;
@@ -95,7 +96,10 @@ export class RawCoStreamView<
         entries.push({ value: change, madeAt, tx: txID });
         changeEntries.add(entries);
       }
-      this.processedTransactionsSet.add(`${txID.sessionID}-${txID.txIndex}`);
+      this.knownTransactions[txID.sessionID] = Math.max(
+        this.knownTransactions[txID.sessionID] ?? 0,
+        txID.txIndex,
+      );
     }
 
     for (const entries of changeEntries) {

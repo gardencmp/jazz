@@ -618,14 +618,14 @@ export class CoValueCore {
 
   getValidTransactions(options?: {
     ignorePrivateTransactions: boolean;
-    exclude?: Set<`${SessionID}-${number}`>;
+    knownTransactions?: CoValueKnownState["sessions"];
   }): DecryptedTransaction[] {
     const validTransactions = determineValidTransactions(this);
 
     const allTransactions: DecryptedTransaction[] = [];
 
     for (const { txID, tx } of validTransactions) {
-      if (options?.exclude?.has(`${txID.sessionID}-${txID.txIndex}`)) {
+      if (options?.knownTransactions?.[txID.sessionID]! >= txID.txIndex) {
         continue;
       }
 

@@ -1,7 +1,8 @@
 import { CoID, RawCoValue } from "../coValue.js";
-import { CoValueCore, DecryptedTransaction } from "../coValueCore.js";
-import { AgentID, SessionID, TransactionID } from "../ids.js";
+import { CoValueCore } from "../coValueCore.js";
+import { AgentID, TransactionID } from "../ids.js";
 import { JsonObject, JsonValue } from "../jsonValue.js";
+import { CoValueKnownState } from "../sync.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
 import { RawAccountID } from "./account.js";
@@ -50,7 +51,7 @@ export class RawCoMapView<
     [Key in keyof Shape & string]?: MapOp<Key, Shape[Key]>[];
   };
   /** @internal */
-  processedTransactionsSet: Set<`${SessionID}-${number}`>;
+  knownTransactions: CoValueKnownState["sessions"];
 
   /** @internal */
   ignorePrivateTransactions: boolean;
@@ -73,7 +74,7 @@ export class RawCoMapView<
       options?.ignorePrivateTransactions ?? false;
     this.ops = {};
     this.latest = {};
-    this.processedTransactionsSet = new Set();
+    this.knownTransactions = {};
 
     this.processLatestTransactions();
   }
@@ -81,7 +82,7 @@ export class RawCoMapView<
   private getNextValidTransactions() {
     const nextValidTransactions = this.core.getValidTransactions({
       ignorePrivateTransactions: this.ignorePrivateTransactions,
-      exclude: this.processedTransactionsSet,
+      knownTransactions: this.knownTransactions,
     });
 
     return nextValidTransactions;
@@ -125,7 +126,10 @@ export class RawCoMapView<
           entries.push(entry);
           changedEntries.set(change.key, entries);
         }
-        this.processedTransactionsSet.add(`${txID.sessionID}-${txID.txIndex}`);
+        this.knownTransactions[txID.sessionID] = Math.max(
+          this.knownTransactions[txID.sessionID] ?? 0,
+          txID.txIndex,
+        );
       }
     }
 
