@@ -1,4 +1,4 @@
-import { PackageIcon, Type } from "lucide-react";
+import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import {
   CommentDisplayPart,
   DeclarationReflection,
@@ -30,7 +30,7 @@ export async function PackageDocs({
   return (
     <>
       <h2 className="flex items-center gap-2">
-        <code>{packageName}</code> <PackageIcon />
+        <code>{packageName}</code> <Icon name="package" size="md" />
       </h2>
       {project.categories?.map((category) => {
         return (

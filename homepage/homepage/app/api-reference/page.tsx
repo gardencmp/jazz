@@ -1,6 +1,6 @@
 import { packages } from "@/lib/packages";
 import { clsx } from "clsx";
-import { MessageCircleQuestionIcon, PackageIcon } from "lucide-react";
+import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import Link from "next/link";
 
 const CardHeading = ({
@@ -64,9 +64,8 @@ export default function Page() {
             key={name}
           >
             <Card className="border shadow-sm">
-              <PackageIcon
-                size={25}
-                strokeWidth={1.5}
+              <Icon
+                name="package"
                 className="text-stone-500 dark:text-stone-400"
               />
               <CardHeading className="group-hover:text-blue dark:group-hover:text-blue-600">
@@ -78,9 +77,9 @@ export default function Page() {
         ))}
 
         <Card className="bg-stone-50 dark:bg-stone-925">
-          <MessageCircleQuestionIcon
-            size={25}
-            strokeWidth={1.5}
+          <Icon
+            name="help"
+            size="md"
             className="text-stone-500 dark:text-stone-400"
           />
           <CardHeading>

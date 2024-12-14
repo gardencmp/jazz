@@ -6,7 +6,7 @@ import { RustLogo } from "@/components/icons/RustLogo";
 import { SvelteLogo } from "@/components/icons/SvelteLogo";
 import { SwiftLogo } from "@/components/icons/SwiftLogo";
 import { VueLogo } from "@/components/icons/VueLogo";
-import { GlobeIcon } from "lucide-react";
+import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import React from "react";
 
 export function SupportedEnvironmentsSection() {
@@ -14,8 +14,9 @@ export function SupportedEnvironmentsSection() {
     {
       name: "Browser (vanilla JS)",
       icon: (
-        <GlobeIcon
-          strokeWidth={1}
+        <Icon
+          name="browser"
+          size="3xl"
           className="text-stone-900 dark:text-white"
           height="1em"
           width="1em"

@@ -1,4 +1,4 @@
-import { LinkIcon } from "lucide-react";
+import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import Link from "next/link";
 import { ReactNode } from "react";
 import { getHighlighter } from "shiki";
@@ -79,7 +79,7 @@ export function ClassOrInterface({
           href={"#" + name}
           className="inline-flex items-center gap-2 lg:-ml-[22px]"
         >
-          <LinkIcon size={14} className="hidden lg:inline" />
+          <Icon name="link" size="xs" className="hidden lg:inline" />
           <h3 className="text-lg lg:text-xl">
             <Highlight>
               {(isInterface ? "interface " : "class ") + name + typeParameters}

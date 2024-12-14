@@ -1,12 +1,9 @@
-import { SideNav } from "@/components/SideNav";
 import { SideNavHeader } from "@/components/SideNavHeader";
 import { SideNavItem } from "@/components/SideNavItem";
-import { docNavigationItems } from "@/lib/docNavigationItems";
 import { packages } from "@/lib/packages";
 import { clsx } from "clsx";
-import { ChevronRight, PackageIcon } from "lucide-react";
+import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import Link from "next/link";
-import { twMerge } from "tailwind-merge";
 import { requestProject } from "./requestProject";
 
 export function ApiNav({ className }: { className?: string }) {
@@ -37,7 +34,7 @@ export async function PackageNavItem({
         className="mb-1 flex gap-2 items-center"
         href={`/api-reference/${packageName}`}
       >
-        <PackageIcon size={15} strokeWidth={1.5} />
+        <Icon name="package" size="xs" />
         {packageName}
       </SideNavItem>
       {project.categories?.map((category) => {
@@ -50,7 +47,11 @@ export async function PackageNavItem({
             <summary className="pl-[13px] py-1 cursor-pointer flex gap-2 items-center justify-between hover:text-stone-800 dark:hover:text-stone-200 [&::-webkit-details-marker]:hidden">
               {category.title}
 
-              <ChevronRight className="w-4 h-4 text-stone-300 group-open:rotate-90 transition-transform dark:text-stone-800" />
+              <Icon
+                name="chevronRight"
+                size="sm"
+                className="text-stone-300 group-open:rotate-90 transition-transform dark:text-stone-800"
+              />
             </summary>
             <div className="pl-6">
               {category.children.map(
