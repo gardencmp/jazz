@@ -7,9 +7,11 @@ export function Button({
   text,
   onClick,
   disabled,
+  type = "button",
   ...props
 }: {
   text: string;
+  type?: "button" | "submit";
   onClick?: () => void;
   disabled?: boolean;
 }) {
@@ -17,7 +19,7 @@ export function Button({
     <button
       {...props}
       onClick={onClick}
-      type="button"
+      type={type}
       disabled={disabled}
       className={`${
         disabled ? disabledClasses : regularClasses
