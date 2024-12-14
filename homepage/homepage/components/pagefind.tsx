@@ -1,5 +1,6 @@
 "use client";
 
+import { clsx } from "clsx";
 import { Command } from "cmdk";
 import React, { useState, useEffect, useRef } from "react";
 import { singletonHook } from "react-singleton-hook";
@@ -83,28 +84,31 @@ export function PagefindSearch() {
       shouldFilter={false}
     >
       <div
-        className="w-full sm:w-[640px] mx-auto max-w-[calc(100%-2rem)] overflow-hidden rounded-xl bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl border border-gray-700
+        className="w-full sm:w-[640px] mx-auto max-w-[calc(100%-2rem)] overflow-hidden
         origin-center animate-in fade-in
         data-[state=open]:animate-in data-[state=closed]:animate-out
         data-[state=open]:scale-100 data-[state=closed]:scale-95
         data-[state=closed]:opacity-0 data-[state=open]:opacity-100
         transition-all duration-200 ease-in-out
-        hover:border-gray-600
-        hover:shadow-[0_0_30px_rgba(0,0,0,0.2)]
-        hover:shadow-indigo-500/10"
+        rounded-xl bg-white ring-1 ring-stone-400/20 shadow-2xl shadow-stone-900/25
+        dark:bg-stone-925 dark:ring-stone-600/20
+        "
       >
         <Command.Input
           value={query}
           onValueChange={handleSearch}
           placeholder="Search documentation..."
-          className="w-full text-base sm:text-lg px-4 sm:px-5 py-4 sm:py-5 outline-none border-b border-gray-700 bg-transparent text-gray-100 placeholder:text-gray-400 caret-indigo-500"
+          className={clsx(
+            "w-full text-base sm:text-lg px-4 sm:px-5 py-4 sm:py-5 outline-none border-b bg-transparent text-stone-900 placeholder:text-stone-600 placeholder:font-normal caret-blue",
+            "dark:text-stone-100 dark:placeholder:text-stone-400 dark:caret-blue-500",
+          )}
         />
         <Command.List
           ref={listRef}
           className="h-[50vh] sm:h-[300px] max-h-[60vh] sm:max-h-[400px] overflow-y-auto overflow-x-hidden overscroll-contain transition-all duration-100 ease-in p-2"
         >
           {results.length === 0 ? (
-            <Command.Empty className="flex items-center justify-center h-16 text-sm text-gray-400">
+            <Command.Empty className="flex items-center justify-center h-16 text-sm dark:text-stone-400">
               No results found.
             </Command.Empty>
           ) : (
@@ -129,14 +133,14 @@ function HighlightedText({ text }: { text: string }) {
   const parts = decodedText.split(/(<mark>.*?<\/mark>)/g);
 
   return (
-    <p className="text-xs text-gray-400 mt-1">
+    <p className="text-xs dark:text-stone-400 leading-relaxed mt-1">
       {parts.map((part, i) => {
         if (part.startsWith("<mark>")) {
           const content = part.replace(/<\/?mark>/g, "");
           return (
             <mark
               key={i}
-              className="bg-indigo-500/20 text-indigo-200 rounded px-0.5"
+              className="font-medium px-0.5 bg-blue-100 text-stone-800 dark:text-stone-100 dark:bg-blue-500/20"
             >
               {content}
             </mark>
@@ -183,24 +187,25 @@ function SearchResult({
           window.location.href = `${window.location.origin}${cleanUrl}`;
           setOpen(false);
         }}
-        className={`group relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 cursor-pointer text-sm rounded-md mt-1 select-none 
+        className={`group relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 cursor-pointer text-sm mt-1 select-none 
       transition-all duration-200 ease-in-out
       animate-in fade-in-0
-      text-gray-100 data-[selected=true]:bg-gray-800/50 hover:bg-gray-800/30 active:bg-gray-800/50
+      data-[selected=true]:bg-stone-100 hover:bg-stone-50 active:bg-stone-100
+      dark:text-stone-100 dark:data-[selected=true]:bg-stone-900 dark:hover:bg-stone-925 dark:active:bg-stone-900
       max-w-full`}
       >
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-medium text-gray-200 truncate">
+          <h3 className="text-sm font-medium truncate text-stone-900 dark:text-stone-100">
             {result.meta?.title || "No title"}
           </h3>
           <HighlightedText text={result.excerpt || ""} />
         </div>
 
-        <div className="absolute left-0 w-[3px] h-full bg-indigo-500 transition-opacity duration-200 ease-in-out opacity-0 group-data-[selected=true]:opacity-100" />
+        <div className="absolute -left-px w-[3px] h-full bg-blue transition-opacity duration-200 ease-in-out opacity-0 group-data-[selected=true]:opacity-100 dark:bg-blue-500" />
       </Command.Item>
       {/* Sub-results section */}
       {result.sub_results && result.sub_results.length > 0 && (
-        <div className="ml-4 border-l border-gray-700">
+        <div className="ml-4 border-l">
           {result.sub_results.map((subResult: any) => {
             // to avoid showing the same result twice
             if (subResult.title === result.meta.title) return null;
@@ -220,19 +225,20 @@ function SearchResult({
                   window.location.href = `${window.location.origin}${cleanSubUrl}${hash}`;
                   setOpen(false);
                 }}
-                className={`group relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 cursor-pointer text-sm rounded-md mt-1 select-none 
+                className={`group relative flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 cursor-pointer text-sm mt-1 select-none 
             transition-all duration-200 ease-in-out
             animate-in fade-in-0
-            text-gray-100 data-[selected=true]:bg-gray-800/50 hover:bg-gray-800/30 active:bg-gray-800/50
+            data-[selected=true]:bg-stone-100 hover:bg-stone-50 active:bg-stone-100
+            dark:text-stone-100 dark:data-[selected=true]:bg-stone-900 dark:hover:bg-stone-925 dark:active:bg-stone-900
             max-w-full`}
               >
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-medium text-gray-200/80 truncate">
+                  <h3 className="text-sm font-medium truncate text-stone-900 dark:text-stone-100">
                     {subResult?.title || "No title"}
                   </h3>
                   <HighlightedText text={subResult?.excerpt || ""} />
                 </div>
-                <div className="absolute left-0 w-[3px] h-full bg-indigo-500/70 transition-opacity duration-200 ease-in-out opacity-0 group-data-[selected=true]:opacity-100" />
+                <div className="absolute -left-px w-[3px] h-full bg-blue transition-opacity duration-200 ease-in-out opacity-0 group-data-[selected=true]:opacity-100 dark:bg-blue-500" />
               </Command.Item>
             );
           })}
