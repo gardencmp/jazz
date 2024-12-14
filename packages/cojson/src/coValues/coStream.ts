@@ -62,7 +62,7 @@ export class RawCoStreamView<
     this.core = core;
     this.items = {};
     this.knownTransactions = {};
-    this.fillFromCoValue();
+    this.processNewTransactions();
   }
 
   get headerMeta(): Meta {
@@ -79,7 +79,7 @@ export class RawCoStreamView<
   }
 
   /** @internal */
-  protected fillFromCoValue() {
+  protected processNewTransactions() {
     const changeEntries = new Set<CoStreamItem<Item>[]>();
 
     for (const { txID, madeAt, changes } of this.core.getValidTransactions({
@@ -272,7 +272,7 @@ export class RawCoStream<
 {
   push(item: Item, privacy: "private" | "trusting" = "private"): void {
     this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);
-    this.fillFromCoValue();
+    this.processNewTransactions();
   }
 }
 
@@ -360,7 +360,7 @@ export class RawBinaryCoStream<
   ): void {
     this.core.makeTransaction([item], privacy);
     if (updateView) {
-      this.fillFromCoValue();
+      this.processNewTransactions();
     }
   }
 

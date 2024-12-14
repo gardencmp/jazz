@@ -76,19 +76,10 @@ export class RawCoMapView<
     this.latest = {};
     this.knownTransactions = {};
 
-    this.processLatestTransactions();
+    this.processNewTransactions();
   }
 
-  private getNextValidTransactions() {
-    const nextValidTransactions = this.core.getValidTransactions({
-      ignorePrivateTransactions: this.ignorePrivateTransactions,
-      knownTransactions: this.knownTransactions,
-    });
-
-    return nextValidTransactions;
-  }
-
-  private processLatestTransactions() {
+  processNewTransactions() {
     if (this.isTimeTravelEntity()) {
       throw new Error("Cannot process transactions on a time travel entity");
     }
@@ -100,7 +91,12 @@ export class RawCoMapView<
       NonNullable<(typeof ops)[keyof typeof ops]>
     >();
 
-    for (const { txID, changes, madeAt } of this.getNextValidTransactions()) {
+    const nextValidTransactions = this.core.getValidTransactions({
+      ignorePrivateTransactions: this.ignorePrivateTransactions,
+      knownTransactions: this.knownTransactions,
+    });
+
+    for (const { txID, changes, madeAt } of nextValidTransactions) {
       for (let changeIdx = 0; changeIdx < changes.length; changeIdx++) {
         const change = changes[changeIdx] as MapOpPayload<
           keyof Shape & string,
@@ -146,30 +142,6 @@ export class RawCoMapView<
     return Boolean(this.atTimeFilter);
   }
 
-  resetLatest() {
-    this.latest = {};
-
-    const atTimeFilter = this.atTimeFilter;
-
-    for (const [key, entries] of Object.entries(this.ops)) {
-      if (!entries) {
-        continue;
-      }
-
-      for (const entry of entries) {
-        if (atTimeFilter && entry.madeAt > atTimeFilter) {
-          continue;
-        }
-
-        this.latest[key as keyof typeof this.latest] = entry;
-      }
-    }
-  }
-
-  revalidateTransactions() {
-    this.processLatestTransactions();
-  }
-
   /** @category 6. Meta */
   get headerMeta(): Meta {
     return this.core.header.meta as Meta;
@@ -185,11 +157,10 @@ export class RawCoMapView<
     if (time >= this.latestTxMadeAt) {
       return this;
     } else {
-      const clone = Object.create(this);
+      const clone = Object.create(this) as RawCoMapView<Shape, Meta>;
 
       clone.atTimeFilter = time;
       clone.latest = {};
-      clone.resetLatest();
 
       return clone as this;
     }
@@ -217,19 +188,46 @@ export class RawCoMapView<
    *
    * @category 1. Reading */
   keys<K extends keyof Shape & string = keyof Shape & string>(): K[] {
-    return (Object.keys(this.latest) as K[]).filter((key) => {
-      const latestChange = this.latest[key];
+    return (Object.keys(this.ops) as K[]).filter((key) => {
+      const entry = this.getRaw(key);
 
-      if (!latestChange) {
+      if (entry === undefined) {
         return false;
       }
 
-      if (latestChange.change.op === "del") {
+      if (entry.change.op === "del") {
         return false;
-      } else {
-        return true;
       }
+
+      return true;
     });
+  }
+
+  getRaw<K extends keyof Shape & string>(key: K) {
+    let latestChange = this.latest[key];
+
+    if (latestChange === undefined) {
+      const entries = this.ops[key];
+
+      // Time travel values are lazily computed
+      if (entries && !(key in this.latest)) {
+        const atTimeFilter = this.atTimeFilter;
+
+        if (!atTimeFilter) {
+          latestChange = entries[entries.length - 1];
+        } else {
+          latestChange = entries.findLast((op) => op.madeAt <= atTimeFilter);
+        }
+
+        this.latest[key] = latestChange;
+      }
+
+      if (latestChange === undefined) {
+        return undefined;
+      }
+    }
+
+    return latestChange;
   }
 
   /**
@@ -238,15 +236,16 @@ export class RawCoMapView<
    * @category 1. Reading
    **/
   get<K extends keyof Shape & string>(key: K): Shape[K] | undefined {
-    const latestChange = this.latest[key];
-    if (!latestChange) {
+    const entry = this.getRaw(key);
+
+    if (entry === undefined) {
       return undefined;
     }
 
-    if (latestChange.change.op === "del") {
+    if (entry.change.op === "del") {
       return undefined;
     } else {
-      return latestChange.change.value as Shape[K];
+      return entry.change.value as Shape[K];
     }
   }
 
@@ -258,7 +257,7 @@ export class RawCoMapView<
       [K in keyof Shape & string]: Shape[K];
     }> = {};
 
-    for (const key of Object.keys(this.latest) as (keyof Shape & string)[]) {
+    for (const key of Object.keys(this.ops) as (keyof Shape & string)[]) {
       const value = this.get(key);
       if (value !== undefined) {
         object[key] = value;
@@ -306,24 +305,31 @@ export class RawCoMapView<
         value?: Shape[K];
       }
     | undefined {
-    const ops = this.timeFilteredOps(key);
-    const lastEntry = ops?.[ops.length - 1];
+    const entry = this.getRaw(key);
 
-    if (!lastEntry) {
+    if (!entry) {
       return undefined;
     }
 
-    return operationToEditEntry(lastEntry);
+    return operationToEditEntry(entry);
   }
 
   /** @category 5. Edit history */
   *editsAt<K extends keyof Shape & string>(key: K) {
-    const ops = this.timeFilteredOps(key);
-    if (!ops) {
+    const entries = this.ops[key];
+
+    if (!entries) {
       return;
     }
 
-    for (const entry of ops) {
+    const atTimeFilter = this.atTimeFilter;
+
+    for (const entry of entries) {
+      // Entries are sorted by madeAt
+      if (atTimeFilter && entry.madeAt > atTimeFilter) {
+        return;
+      }
+
       yield operationToEditEntry(entry);
     }
   }
@@ -374,7 +380,7 @@ export class RawCoMap<
       privacy,
     );
 
-    this.revalidateTransactions();
+    this.processNewTransactions();
   }
 
   /** Delete the given key (setting it to undefined).
@@ -403,7 +409,7 @@ export class RawCoMap<
       privacy,
     );
 
-    this.revalidateTransactions();
+    this.processNewTransactions();
   }
 }
 
