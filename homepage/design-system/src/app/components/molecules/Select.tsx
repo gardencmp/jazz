@@ -18,7 +18,8 @@ export function Select(
     "w-full rounded-md border shadow-sm px-2 py-1.5 text-sm",
     "font-medium text-stone-900",
     "dark:text-white",
-    "appearance-none",
+    "appearance-none cursor-pointer",
+    "transition-colors hover:border-stone-300 dark:hover:border-stone-800",
   );
 
   return (
