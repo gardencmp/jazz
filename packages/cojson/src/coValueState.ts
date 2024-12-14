@@ -278,7 +278,7 @@ async function loadCoValueFromPeers(
        */
       peer
         .pushOutgoingMessage({
-          action: "load",
+          action: "pull",
           ...coValueEntry.state.coValue.knownState(),
         })
         .catch((err) => {
@@ -290,7 +290,7 @@ async function loadCoValueFromPeers(
        */
       peer
         .pushOutgoingMessage({
-          action: "load",
+          action: "pull",
           id: coValueEntry.id,
           header: false,
           sessions: {},

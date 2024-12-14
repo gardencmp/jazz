@@ -383,7 +383,7 @@ export class SyncManager {
 
     if (entry.state.type !== "available") {
       entry.loadFromPeers([peer]).catch((e: unknown) => {
-        console.error("Error sending load", e);
+        console.error("Error sending pull", e);
       });
       return;
     }
@@ -394,15 +394,12 @@ export class SyncManager {
       await this.subscribeToIncludingDependencies(id, peer);
     }
 
-    if (!peer.toldKnownState.has(id)) {
-      peer.toldKnownState.add(id);
-      this.trySendToPeer(peer, {
-        action: "load",
-        ...coValue.knownState(),
-      }).catch((e: unknown) => {
-        console.error("Error sending load", e);
-      });
-    }
+    this.trySendToPeer(peer, {
+      action: "pull",
+      ...coValue.knownState(),
+    }).catch((e: unknown) => {
+      console.error("Error sending load", e);
+    });
   }
 
   async tellUntoldKnownStateIncludingDependencies(
