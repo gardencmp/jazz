@@ -10,7 +10,11 @@ import {
   CloudUploadIcon,
   FingerprintIcon,
   FolderArchiveIcon,
+  Icon,
   ImageIcon,
+  LockIcon,
+  PencilLineIcon,
+  UserPlusIcon,
 } from "lucide-react";
 
 import {
@@ -69,6 +73,28 @@ const FormIllustration = () => (
         <div className="w-16 h-1 rounded-full bg-stone-400" />
       </div>
       <MockButton>Submit</MockButton>
+    </div>
+  </div>
+);
+
+const OnboardingIllustration = () => (
+  <div className="flex h-full flex-col justify-center text-sm dark:bg-transparent">
+    <div className="mx-auto grid gap-3">
+      {[
+        { icon: UserPlusIcon, text: "Add new employee" },
+        {
+          icon: PencilLineIcon,
+          text: "Invite employee to fill in their profile",
+        },
+        { icon: LockIcon, text: "Get confirmation from admin" },
+      ].map(({ text, icon: Icon }, index) => (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-green-800 bg-green-100 leading-none font-medium text-center p-1.5 block rounded-full dark:bg-green-800 dark:text-green-200">
+            <Icon strokeWidth={2} size={15} />
+          </span>
+          {text}
+        </div>
+      ))}
     </div>
   </div>
 );
@@ -321,6 +347,15 @@ const reactExamples: Example[] = [
     tech: [tech.react],
     demoUrl: "https://form-demo.jazz.tools",
     illustration: <FormIllustration />,
+  },
+  {
+    name: "HR Onboarding",
+    slug: "onboarding",
+    description:
+      "See how admin and writer permissions work while onboarding new employees",
+    tech: [tech.react],
+    features: [features.imageUpload, features.inviteLink],
+    illustration: <OnboardingIllustration />,
   },
 ];
 
