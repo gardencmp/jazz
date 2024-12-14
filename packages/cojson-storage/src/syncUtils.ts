@@ -5,30 +5,19 @@ import {
   Stringified,
   cojsonInternals,
 } from "cojson";
-import {
-  SignatureAfterRow,
-  StoredCoValueRow,
-  StoredSessionRow,
-  TransactionRow,
-} from "./types.js";
+import { StoredCoValueRow, StoredSessionRow, TransactionRow } from "./types.js";
 
 export function collectNewTxs({
   newTxsInSession,
   newContentMessages,
   sessionRow,
-  signaturesAndIdxs,
-  peerKnownState,
   firstNewTxIdx,
 }: {
   newTxsInSession: TransactionRow[];
   newContentMessages: CojsonInternalTypes.NewContentMessage[];
   sessionRow: StoredSessionRow;
-  signaturesAndIdxs: SignatureAfterRow[];
-  peerKnownState: CojsonInternalTypes.CoValueKnownState;
   firstNewTxIdx: number;
 }) {
-  let idx = firstNewTxIdx;
-
   for (const tx of newTxsInSession) {
     let sessionEntry =
       newContentMessages[newContentMessages.length - 1]!.new[
@@ -36,7 +25,7 @@ export function collectNewTxs({
       ];
     if (!sessionEntry) {
       sessionEntry = {
-        after: idx,
+        after: firstNewTxIdx,
         lastSignature: "WILL_BE_REPLACED" as CojsonInternalTypes.Signature,
         newTransactions: [],
       };
@@ -46,20 +35,7 @@ export function collectNewTxs({
     }
 
     sessionEntry.newTransactions.push(tx.tx);
-
-    if (signaturesAndIdxs[0] && idx === signaturesAndIdxs[0].idx) {
-      sessionEntry.lastSignature = signaturesAndIdxs[0].signature;
-      signaturesAndIdxs.shift();
-      newContentMessages.push({
-        action: "content",
-        id: peerKnownState.id,
-        new: {},
-        priority: cojsonInternals.getPriorityFromHeader(undefined),
-      });
-    } else if (idx === firstNewTxIdx + newTxsInSession.length - 1) {
-      sessionEntry.lastSignature = sessionRow.lastSignature;
-    }
-    idx += 1;
+    sessionEntry.lastSignature = sessionRow.lastSignature;
   }
 }
 
