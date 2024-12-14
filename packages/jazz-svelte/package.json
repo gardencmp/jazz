@@ -1,6 +1,6 @@
 {
   "name": "jazz-svelte",
-  "version": "0.8.39",
+  "version": "0.8.40",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run package",
