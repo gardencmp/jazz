@@ -1,5 +1,11 @@
 # cojson-storage
 
+## 0.8.40
+
+### Patch Changes
+
+- e905c84: Stop the use of incremental streaming of large CoValue content from local storage peers that triggers sync protocol bug leading to redundant syncing from server peers.
+
 ## 0.8.39
 
 ### Patch Changes
