@@ -270,36 +270,19 @@ export class SyncManager {
 
       sendPieces().catch((e) => {
         console.error("Error sending new content piece, retrying", e);
-        peer.optimisticKnownStates.dispatch({
-          type: "SET",
-          id: known.id,
-          value: known,
-        });
         return this.sendNewContentIncludingDependencies(known, peer);
-      });
-
-      peer.optimisticKnownStates.dispatch({
-        type: "COMBINE_WITH",
-        id: known.id,
-        value: coValue.knownState(),
       });
     }
   }
 
   addPeer(peer: Peer) {
     const prevPeer = this.peers[peer.id];
-    const peerState = new PeerState(peer, prevPeer?.knownStates);
+    const peerState = new PeerState(peer);
     this.peers[peer.id] = peerState;
 
     if (prevPeer && !prevPeer.closed) {
       prevPeer.gracefulShutdown();
     }
-
-    const unsubscribeFromKnownStatesUpdates = peerState.knownStates.subscribe(
-      (id) => {
-        this.syncStateSubscriptionManager.triggerUpdate(peer.id, id);
-      },
-    );
 
     if (peerState.isServerOrStoragePeer()) {
       const initialSync = async () => {
@@ -311,13 +294,6 @@ export class SyncManager {
               emptyKnownState(entry.id),
               peerState,
             );
-          }
-
-          if (!peerState.optimisticKnownStates.has(entry.id)) {
-            peerState.optimisticKnownStates.dispatch({
-              type: "SET_AS_EMPTY",
-              id: entry.id,
-            });
           }
         }
       };
@@ -369,7 +345,6 @@ export class SyncManager {
       .finally(() => {
         const state = this.peers[peer.id];
         state?.gracefulShutdown();
-        unsubscribeFromKnownStatesUpdates();
 
         if (peer.deletePeerStateOnClose) {
           delete this.peers[peer.id];
@@ -382,11 +357,6 @@ export class SyncManager {
   }
 
   async handleLoad(msg: LoadMessage, peer: PeerState) {
-    peer.dispatchToKnownStates({
-      type: "SET",
-      id: msg.id,
-      value: knownStateIn(msg),
-    });
     const entry = this.local.coValuesStore.get(msg.id);
 
     if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
@@ -419,11 +389,6 @@ export class SyncManager {
         .getCoValue()
         .then(async (value) => {
           if (value === "unavailable") {
-            peer.dispatchToKnownStates({
-              type: "SET",
-              id: msg.id,
-              value: knownStateIn(msg),
-            });
             peer.toldKnownState.add(msg.id);
 
             this.trySendToPeer(peer, {
@@ -455,12 +420,6 @@ export class SyncManager {
   async handleKnownState(msg: KnownStateMessage, peer: PeerState) {
     const entry = this.local.coValuesStore.get(msg.id);
 
-    peer.dispatchToKnownStates({
-      type: "COMBINE_WITH",
-      id: msg.id,
-      value: knownStateIn(msg),
-    });
-
     if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
       if (msg.asDependencyOf) {
         const dependencyEntry = this.local.coValuesStore.get(
@@ -489,9 +448,8 @@ export class SyncManager {
     // The header is a boolean value that tells us if the other peer do have information about the header.
     // If it's false in this point it means that the coValue is unavailable on the other peer.
     if (entry.state.type !== "available") {
-      const availableOnPeer = peer.optimisticKnownStates.get(msg.id)?.header;
-
-      if (!availableOnPeer) {
+      // TODO msg.known
+      if (!msg.header) {
         entry.dispatch({
           type: "not-found-in-peer",
           peerId: peer.id,
@@ -518,12 +476,6 @@ export class SyncManager {
         return;
       }
 
-      peer.dispatchToKnownStates({
-        type: "UPDATE_HEADER",
-        id: msg.id,
-        header: true,
-      });
-
       coValue = new CoValueCore(msg.header, this.local);
 
       entry.dispatch({
@@ -534,7 +486,8 @@ export class SyncManager {
       coValue = entry.state.coValue;
     }
 
-    const prevKnownState = { ...coValue.knownState() };
+    // optimistically made assumption the peer is in sync
+    const peersKnownState = { ...coValue.knownState() };
     const needCorrection = this.addTransaction({ msg, coValue, peer });
 
     if (needCorrection) {
@@ -567,7 +520,7 @@ export class SyncManager {
      * fully synced
      */
     // TODO send excluded original peers to not to sync with
-    await this.syncCoValue(coValue, prevKnownState);
+    await this.syncCoValue(coValue, peersKnownState);
   }
 
   private addTransaction({
@@ -646,27 +599,12 @@ export class SyncManager {
         peer.erroredCoValues.set(msg.id, result.error);
         continue;
       }
-
-      peer.dispatchToKnownStates({
-        type: "UPDATE_SESSION_COUNTER",
-        id: msg.id,
-        sessionId: sessionID,
-        value:
-          newContentForSession.after +
-          newContentForSession.newTransactions.length,
-      });
     }
 
     return isMissingTransactions;
   }
 
   async handleCorrection(msg: KnownStateMessage, peer: PeerState) {
-    peer.dispatchToKnownStates({
-      type: "SET",
-      id: msg.id,
-      value: knownStateIn(msg),
-    });
-
     return this.sendNewContentIncludingDependencies(msg, peer);
   }
 
@@ -674,7 +612,7 @@ export class SyncManager {
     throw new Error("Method not implemented.");
   }
 
-  async syncCoValue(coValue: CoValueCore, prevKnownState: CoValueKnownState) {
+  async syncCoValue(coValue: CoValueCore, peersKnownState: CoValueKnownState) {
     if (this.requestedSyncs[coValue.id]) {
       this.requestedSyncs[coValue.id]!.nRequestsThisTick++;
       return this.requestedSyncs[coValue.id]!.done;
@@ -685,7 +623,7 @@ export class SyncManager {
           // if (entry.nRequestsThisTick >= 2) {
           //     console.log("Syncing", coValue.id, "for", entry.nRequestsThisTick, "requests");
           // }
-          await this.actuallySyncCoValue(coValue, prevKnownState);
+          await this.actuallySyncCoValue(coValue, peersKnownState);
           resolve();
         });
       });
@@ -700,7 +638,7 @@ export class SyncManager {
 
   async actuallySyncCoValue(
     coValue: CoValueCore,
-    prevKnownState: CoValueKnownState,
+    peersKnownState: CoValueKnownState,
   ) {
     // let blockingSince = performance.now();
     for (const peer of this.peersInPriorityOrder()) {
@@ -712,44 +650,41 @@ export class SyncManager {
       //     });
       //     blockingSince = performance.now();
       // }
-      if (peer.optimisticKnownStates.has(coValue.id)) {
+      if (peersKnownState.header) {
         await this.tellUntoldKnownStateIncludingDependencies(coValue.id, peer);
-        await this.sendNewContentIncludingDependencies(prevKnownState, peer);
+        await this.sendNewContentIncludingDependencies(peersKnownState, peer);
       } else if (peer.isServerOrStoragePeer()) {
         await this.subscribeToIncludingDependencies(coValue.id, peer);
-        await this.sendNewContentIncludingDependencies(prevKnownState, peer);
+        await this.sendNewContentIncludingDependencies(peersKnownState, peer);
       }
     }
-
-    for (const peer of this.getPeers()) {
-      this.syncStateSubscriptionManager.triggerUpdate(peer.id, coValue.id);
-    }
   }
 
-  async waitForUploadIntoPeer(peerId: PeerID, id: RawCoID) {
-    const isAlreadyUploaded =
-      this.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
-        peerId,
-        id,
-      );
-
-    if (isAlreadyUploaded) {
-      return true;
-    }
-
-    return new Promise((resolve) => {
-      const unsubscribe =
-        this.syncStateSubscriptionManager.subscribeToPeerUpdates(
-          peerId,
-          (knownState, syncState) => {
-            if (syncState.isUploaded && knownState.id === id) {
-              resolve(true);
-              unsubscribe?.();
-            }
-          },
-        );
-    });
-  }
+  // FIXME
+  // async waitForUploadIntoPeer(peerId: PeerID, id: RawCoID) {
+  //   const isAlreadyUploaded =
+  //     this.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
+  //       peerId,
+  //       id,
+  //     );
+  //
+  //   if (isAlreadyUploaded) {
+  //     return true;
+  //   }
+  //
+  //   return new Promise((resolve) => {
+  //     const unsubscribe =
+  //       this.syncStateSubscriptionManager.subscribeToPeerUpdates(
+  //         peerId,
+  //         (knownState, syncState) => {
+  //           if (syncState.isUploaded && knownState.id === id) {
+  //             resolve(true);
+  //             unsubscribe?.();
+  //           }
+  //         },
+  //       );
+  //   });
+  // }
 
   gracefulShutdown() {
     for (const peer of Object.values(this.peers)) {

@@ -1,4 +1,3 @@
-import { PeerKnownStateActions, PeerKnownStates } from "./PeerKnownStates.js";
 import {
   PriorityBasedMessageQueue,
   QueueEntry,
@@ -11,10 +10,10 @@ import { Peer, SyncMessage } from "./sync.js";
 export class PeerState {
   constructor(
     private peer: Peer,
-    knownStates: PeerKnownStates | undefined,
+    // knownStates: PeerKnownStates | undefined,
   ) {
-    this.optimisticKnownStates = knownStates?.clone() ?? new PeerKnownStates();
-    this.knownStates = knownStates?.clone() ?? new PeerKnownStates();
+    // this.optimisticKnownStates = knownStates?.clone() ?? new PeerKnownStates();
+    // this.knownStates = knownStates?.clone() ?? new PeerKnownStates();
   }
 
   /**
@@ -22,7 +21,7 @@ export class PeerState {
    *
    * This can be used to safely track the sync state of a coValue in a given peer.
    */
-  readonly knownStates: PeerKnownStates;
+  // readonly knownStates: PeerKnownStates;
 
   /**
    * This one collects the known states "optimistically".
@@ -31,13 +30,13 @@ export class PeerState {
    * The main difference with knownState is that this is updated when the content is sent to the peer without
    * waiting for any acknowledgement from the peer.
    */
-  readonly optimisticKnownStates: PeerKnownStates;
+  // readonly optimisticKnownStates: PeerKnownStates;
   readonly toldKnownState: Set<RawCoID> = new Set();
 
-  dispatchToKnownStates(action: PeerKnownStateActions) {
-    this.knownStates.dispatch(action);
-    this.optimisticKnownStates.dispatch(action);
-  }
+  // dispatchToKnownStates(action: PeerKnownStateActions) {
+  //   this.knownStates.dispatch(action);
+  //   this.optimisticKnownStates.dispatch(action);
+  // }
 
   readonly erroredCoValues: Map<RawCoID, TryAddTransactionsError> = new Map();
 

@@ -55,71 +55,71 @@ export class SyncStateSubscriptionManager {
     };
   }
 
-  triggerUpdate(peerId: PeerID, id: RawCoID) {
-    const peer = this.syncManager.peers[peerId];
+  // triggerUpdate(peerId: PeerID, id: RawCoID) {
+  //   const peer = this.syncManager.peers[peerId];
+  //
+  //   if (!peer) {
+  //     return;
+  //   }
+  //
+  //   const peerListeners = this.listenersByPeers.get(peer.id);
+  //
+  //   // If we don't have any active listeners do nothing
+  //   if (!peerListeners?.size && !this.listeners.size) {
+  //     return;
+  //   }
+  //
+  //   const knownState = peer.knownStates.get(id) ?? emptyKnownState(id);
+  //
+  //   // Build a lazy sync state object to process the isUploaded info
+  //   // only when requested
+  //   const syncState = {} as SyncStateGetter;
+  //
+  //   const getIsUploaded = simpleMemoize(() =>
+  //     this.getIsCoValueFullyUploadedIntoPeer(peerId, id),
+  //   );
+  //   Object.defineProperties(syncState, {
+  //     isUploaded: {
+  //       enumerable: true,
+  //       get: getIsUploaded,
+  //     },
+  //   });
+  //
+  //   for (const listener of this.listeners) {
+  //     listener(peerId, knownState, syncState);
+  //   }
+  //
+  //   if (!peerListeners) return;
+  //
+  //   for (const listener of peerListeners) {
+  //     listener(knownState, syncState);
+  //   }
+  // }
 
-    if (!peer) {
-      return;
-    }
-
-    const peerListeners = this.listenersByPeers.get(peer.id);
-
-    // If we don't have any active listeners do nothing
-    if (!peerListeners?.size && !this.listeners.size) {
-      return;
-    }
-
-    const knownState = peer.knownStates.get(id) ?? emptyKnownState(id);
-
-    // Build a lazy sync state object to process the isUploaded info
-    // only when requested
-    const syncState = {} as SyncStateGetter;
-
-    const getIsUploaded = simpleMemoize(() =>
-      this.getIsCoValueFullyUploadedIntoPeer(peerId, id),
-    );
-    Object.defineProperties(syncState, {
-      isUploaded: {
-        enumerable: true,
-        get: getIsUploaded,
-      },
-    });
-
-    for (const listener of this.listeners) {
-      listener(peerId, knownState, syncState);
-    }
-
-    if (!peerListeners) return;
-
-    for (const listener of peerListeners) {
-      listener(knownState, syncState);
-    }
-  }
-
-  getIsCoValueFullyUploadedIntoPeer(peerId: PeerID, id: RawCoID) {
-    const peer = this.syncManager.peers[peerId];
-    const entry = this.syncManager.local.coValuesStore.get(id);
-
-    if (!peer) {
-      return false;
-    }
-
-    if (entry.state.type !== "available") {
-      return false;
-    }
-
-    const coValue = entry.state.coValue;
-    const knownState = peer.knownStates.get(id);
-
-    if (!knownState) {
-      return false;
-    }
-
-    return getIsUploadCompleted(
-      coValue.knownState().sessions,
-      knownState.sessions,
-    );
-  }
+  // getIsCoValueFullyUploadedIntoPeer(peerId: PeerID, id: RawCoID) {
+  //   const peer = this.syncManager.peers[peerId];
+  //   const entry = this.syncManager.local.coValuesStore.get(id);
+  //
+  //   if (!peer) {
+  //     return false;
+  //   }
+  //
+  //   if (entry.state.type !== "available") {
+  //     return false;
+  //   }
+  //
+  //   const coValue = entry.state.coValue;
+  //   const knownState = peer.knownStates.get(id);
+  //
+  //   if (!knownState) {
+  //     return false;
+  //   }
+  //
+  //   return getIsUploadCompleted(
+  //     coValue.knownState().sessions,
+  //     knownState.sessions,
+  //   );
+  // }
 }
 
 function getIsUploadCompleted(
