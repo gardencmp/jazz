@@ -52,12 +52,15 @@ export class RawCoStreamView<
   items: {
     [key: SessionID]: CoStreamItem<Item>[];
   };
+  /** @internal */
+  processedTransactionsSet: Set<`${SessionID}-${number}`>;
   readonly _item!: Item;
 
   constructor(core: CoValueCore) {
     this.id = core.id as CoID<this>;
     this.core = core;
     this.items = {};
+    this.processedTransactionsSet = new Set();
     this.fillFromCoValue();
   }
 
@@ -76,13 +79,12 @@ export class RawCoStreamView<
 
   /** @internal */
   protected fillFromCoValue() {
-    this.items = {};
+    const changeEntries = new Set<CoStreamItem<Item>[]>();
 
-    for (const {
-      txID,
-      madeAt,
-      changes,
-    } of this.core.getValidSortedTransactions()) {
+    for (const { txID, madeAt, changes } of this.core.getValidTransactions({
+      ignorePrivateTransactions: false,
+      exclude: this.processedTransactionsSet,
+    })) {
       for (const changeUntyped of changes) {
         const change = changeUntyped as Item;
         let entries = this.items[txID.sessionID];
@@ -91,7 +93,18 @@ export class RawCoStreamView<
           this.items[txID.sessionID] = entries;
         }
         entries.push({ value: change, madeAt, tx: txID });
+        changeEntries.add(entries);
       }
+      this.processedTransactionsSet.add(`${txID.sessionID}-${txID.txIndex}`);
+    }
+
+    for (const entries of changeEntries) {
+      entries.sort(
+        (a, b) =>
+          a.madeAt - b.madeAt ||
+          (a.tx.sessionID < b.tx.sessionID ? -1 : 1) ||
+          a.tx.txIndex - b.tx.txIndex,
+      );
     }
   }
 
