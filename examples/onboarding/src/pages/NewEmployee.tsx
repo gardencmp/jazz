@@ -66,23 +66,23 @@ export function NewEmployee({
     <div className="w-96">
       <Stack>
         <NavigateBack />
-        <form>
+        <form className="grid gap-3">
           <TextInput
             label="Employee name"
             id="employee-name"
             value={employeeName}
             onChange={({ target: { value } }) => setEmployeeName(value)}
           />
+          <Button
+            type="submit"
+            disabled={!employeeName}
+            onClick={() => {
+              createEmployee();
+              navigate("/");
+            }}
+            text="Create Employee"
+          />
         </form>
-
-        <Button
-          disabled={!employeeName}
-          onClick={() => {
-            createEmployee();
-            navigate("/");
-          }}
-          text="Create Employee"
-        />
       </Stack>
     </div>
   );
