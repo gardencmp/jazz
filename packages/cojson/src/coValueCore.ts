@@ -616,14 +616,19 @@ export class CoValueCore {
     return newContent;
   }
 
-  getValidSortedTransactions(options?: {
+  getValidTransactions(options?: {
     ignorePrivateTransactions: boolean;
+    exclude?: Set<`${SessionID}-${number}`>;
   }): DecryptedTransaction[] {
     const validTransactions = determineValidTransactions(this);
 
     const allTransactions: DecryptedTransaction[] = [];
 
     for (const { txID, tx } of validTransactions) {
+      if (options?.exclude?.has(`${txID.sessionID}-${txID.txIndex}`)) {
+        continue;
+      }
+
       if (tx.privacy === "trusting") {
         allTransactions.push({
           txID,
@@ -670,14 +675,28 @@ export class CoValueCore {
       });
     }
 
-    allTransactions.sort(
-      (a, b) =>
-        a.madeAt - b.madeAt ||
-        (a.txID.sessionID < b.txID.sessionID ? -1 : 1) ||
-        a.txID.txIndex - b.txID.txIndex,
-    );
+    return allTransactions;
+  }
+
+  getValidSortedTransactions(options?: {
+    ignorePrivateTransactions: boolean;
+  }): DecryptedTransaction[] {
+    const allTransactions = this.getValidTransactions(options);
+
+    allTransactions.sort(this.compareTransactions);
 
     return allTransactions;
+  }
+
+  compareTransactions(
+    a: Pick<DecryptedTransaction, "madeAt" | "txID">,
+    b: Pick<DecryptedTransaction, "madeAt" | "txID">,
+  ) {
+    return (
+      a.madeAt - b.madeAt ||
+      (a.txID.sessionID < b.txID.sessionID ? -1 : 1) ||
+      a.txID.txIndex - b.txID.txIndex
+    );
   }
 
   getCurrentReadKey(): { secret: KeySecret | undefined; id: KeyID } {

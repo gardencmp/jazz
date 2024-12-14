@@ -75,10 +75,10 @@ test("Can get CoMap entry values at different points in time", () => {
   expect(content.atTime(beforeB).get("hello")).toEqual("A");
   expect(content.atTime(beforeC).get("hello")).toEqual("B");
 
-  const ops = content.timeFilteredOps("hello");
+  const ops = content.ops["hello"]!;
 
   expect(content.atTime(beforeC).lastEditAt("hello")).toEqual(
-    operationToEditEntry(ops![1]!),
+    operationToEditEntry(ops[1]!),
   );
   expect(content.atTime(beforeC).nthEditAt("hello", 0)).toEqual(
     operationToEditEntry(ops![0]!),

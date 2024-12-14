@@ -1,6 +1,6 @@
 import { CoID, RawCoValue } from "../coValue.js";
 import { CoValueCore, DecryptedTransaction } from "../coValueCore.js";
-import { AgentID, TransactionID } from "../ids.js";
+import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { JsonObject, JsonValue } from "../jsonValue.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
@@ -46,14 +46,14 @@ export class RawCoMapView<
   /** @internal */
   latestTxMadeAt: number;
   /** @internal */
-  cachedOps?: {
+  ops: {
     [Key in keyof Shape & string]?: MapOp<Key, Shape[Key]>[];
   };
   /** @internal */
-  validSortedTransactions?: DecryptedTransaction[];
+  processedTransactionsSet: Set<`${SessionID}-${number}`>;
 
   /** @internal */
-  options?: { ignorePrivateTransactions: boolean; atTime?: number };
+  ignorePrivateTransactions: boolean;
   /** @internal */
   atTimeFilter?: number = undefined;
   /** @category 6. Meta */
@@ -64,123 +64,106 @@ export class RawCoMapView<
     core: CoValueCore,
     options?: {
       ignorePrivateTransactions: boolean;
-      atTime?: number;
-      validSortedTransactions?: DecryptedTransaction[];
-      cachedOps?: {
-        [Key in keyof Shape & string]?: MapOp<Key, Shape[Key]>[];
-      };
     },
   ) {
     this.id = core.id as CoID<this>;
     this.core = core;
-    this.latest = {};
     this.latestTxMadeAt = 0;
-    this.options = options;
-    this.cachedOps = options?.cachedOps;
-    this.validSortedTransactions = options?.validSortedTransactions;
+    this.ignorePrivateTransactions =
+      options?.ignorePrivateTransactions ?? false;
+    this.ops = {};
+    this.latest = {};
+    this.processedTransactionsSet = new Set();
 
     this.processLatestTransactions();
   }
 
-  /** @internal */
-  private getValidSortedTransactions() {
-    if (this.validSortedTransactions) {
-      return this.validSortedTransactions;
-    }
-
-    const validSortedTransactions = this.core.getValidSortedTransactions({
-      ignorePrivateTransactions:
-        this.options?.ignorePrivateTransactions ?? false,
+  private getNextValidTransactions() {
+    const nextValidTransactions = this.core.getValidTransactions({
+      ignorePrivateTransactions: this.ignorePrivateTransactions,
+      exclude: this.processedTransactionsSet,
     });
 
-    this.validSortedTransactions = validSortedTransactions;
-
-    return validSortedTransactions;
-  }
-
-  private resetCachedValues() {
-    this.validSortedTransactions = undefined;
-    this.cachedOps = undefined;
+    return nextValidTransactions;
   }
 
   private processLatestTransactions() {
-    // Reset all internal state and cached values
-    this.latest = {};
-    this.latestTxMadeAt = 0;
+    if (this.isTimeTravelEntity()) {
+      throw new Error("Cannot process transactions on a time travel entity");
+    }
 
-    const { latest } = this;
+    const { ops } = this;
 
-    const atTimeFilter = this.options?.atTime;
+    const changedEntries = new Map<
+      keyof typeof ops,
+      NonNullable<(typeof ops)[keyof typeof ops]>
+    >();
 
-    for (const { txID, changes, madeAt } of this.getValidSortedTransactions()) {
-      if (atTimeFilter && madeAt > atTimeFilter) {
-        continue;
-      }
-
-      if (madeAt > this.latestTxMadeAt) {
-        this.latestTxMadeAt = madeAt;
-      }
-
+    for (const { txID, changes, madeAt } of this.getNextValidTransactions()) {
       for (let changeIdx = 0; changeIdx < changes.length; changeIdx++) {
         const change = changes[changeIdx] as MapOpPayload<
           keyof Shape & string,
           Shape[keyof Shape & string]
         >;
-        const entry = latest[change.key];
-        if (!entry) {
-          latest[change.key] = {
-            txID,
-            madeAt,
-            changeIdx,
-            change,
-          };
-        } else if (madeAt >= entry.madeAt) {
-          entry.txID = txID;
-          entry.madeAt = madeAt;
-          entry.changeIdx = changeIdx;
-          entry.change = change;
+        const entry = {
+          txID,
+          madeAt,
+          changeIdx,
+          change,
+        };
+
+        if (madeAt > this.latestTxMadeAt) {
+          this.latestTxMadeAt = madeAt;
         }
+
+        const entries = ops[change.key];
+        if (!entries) {
+          const entries = [entry];
+          ops[change.key] = entries;
+          changedEntries.set(change.key, entries);
+        } else {
+          entries.push(entry);
+          changedEntries.set(change.key, entries);
+        }
+        this.processedTransactionsSet.add(`${txID.sessionID}-${txID.txIndex}`);
+      }
+    }
+
+    for (const entries of changedEntries.values()) {
+      entries.sort(this.core.compareTransactions);
+    }
+
+    for (const [key, entries] of changedEntries.entries()) {
+      this.latest[key] = entries[entries.length - 1];
+    }
+  }
+
+  isTimeTravelEntity() {
+    return Boolean(this.atTimeFilter);
+  }
+
+  resetLatest() {
+    this.latest = {};
+
+    const atTimeFilter = this.atTimeFilter;
+
+    for (const [key, entries] of Object.entries(this.ops)) {
+      if (!entries) {
+        continue;
+      }
+
+      for (const entry of entries) {
+        if (atTimeFilter && entry.madeAt > atTimeFilter) {
+          continue;
+        }
+
+        this.latest[key as keyof typeof this.latest] = entry;
       }
     }
   }
 
   revalidateTransactions() {
-    this.resetCachedValues();
     this.processLatestTransactions();
-  }
-
-  private getOps() {
-    if (this.cachedOps) {
-      return this.cachedOps;
-    }
-
-    const ops: {
-      [Key in keyof Shape & string]?: MapOp<Key, Shape[Key]>[];
-    } = {};
-
-    for (const { txID, changes, madeAt } of this.getValidSortedTransactions()) {
-      for (let changeIdx = 0; changeIdx < changes.length; changeIdx++) {
-        const change = changes[changeIdx] as MapOpPayload<
-          keyof Shape & string,
-          Shape[keyof Shape & string]
-        >;
-        let entries = ops[change.key];
-        if (!entries) {
-          entries = [];
-          ops[change.key] = entries;
-        }
-        entries.push({
-          txID,
-          madeAt,
-          changeIdx,
-          change,
-        });
-      }
-    }
-
-    this.cachedOps = ops;
-
-    return ops;
   }
 
   /** @category 6. Meta */
@@ -198,14 +181,12 @@ export class RawCoMapView<
     if (time >= this.latestTxMadeAt) {
       return this;
     } else {
-      const clone = new RawCoMapView(this.core, {
-        ignorePrivateTransactions:
-          this.options?.ignorePrivateTransactions ?? false,
-        atTime: time,
-        cachedOps: this.cachedOps,
-        validSortedTransactions: this.validSortedTransactions,
-      });
-      Object.setPrototypeOf(clone, this);
+      const clone = Object.create(this);
+
+      clone.atTimeFilter = time;
+      clone.latest = {};
+      clone.resetLatest();
+
       return clone as this;
     }
   }
@@ -218,12 +199,12 @@ export class RawCoMapView<
       return undefined;
     }
 
-    const atTimeFilter = this.options?.atTime;
+    const atTimeFilter = this.atTimeFilter;
 
     if (atTimeFilter) {
-      return this.getOps()[key]?.filter((op) => op.madeAt <= atTimeFilter);
+      return this.ops[key]?.filter((op) => op.madeAt <= atTimeFilter);
     } else {
-      return this.getOps()[key];
+      return this.ops[key];
     }
   }
 
@@ -294,9 +275,9 @@ export class RawCoMapView<
 
   /** @category 5. Edit history */
   nthEditAt<K extends keyof Shape & string>(key: K, n: number) {
-    const ops = this.getOps()[key];
+    const ops = this.ops[key];
 
-    const atTimeFilter = this.options?.atTime;
+    const atTimeFilter = this.atTimeFilter;
     const entry = ops?.[n];
 
     if (!entry) {
@@ -374,6 +355,10 @@ export class RawCoMap<
     value: Shape[K],
     privacy: "private" | "trusting" = "private",
   ): void {
+    if (this.isTimeTravelEntity()) {
+      throw new Error("Cannot set value on a time travel entity");
+    }
+
     this.core.makeTransaction(
       [
         {
@@ -400,6 +385,10 @@ export class RawCoMap<
     key: keyof Shape & string,
     privacy: "private" | "trusting" = "private",
   ) {
+    if (this.isTimeTravelEntity()) {
+      throw new Error("Cannot delete value on a time travel entity");
+    }
+
     this.core.makeTransaction(
       [
         {

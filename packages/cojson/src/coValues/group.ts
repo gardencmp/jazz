@@ -93,7 +93,7 @@ export class RawGroup<
         }
       | undefined = roleHere && { role: roleHere, via: undefined };
 
-    const parentGroups = this.getParentGroups(this.options?.atTime);
+    const parentGroups = this.getParentGroups(this.atTimeFilter);
 
     for (const parentGroup of parentGroups) {
       const roleInParent = parentGroup.roleOfInternal(accountID);
