@@ -586,6 +586,8 @@ export class CoValueCore {
       expectedNewHash,
     );
 
+    const prevKnownState = { ...this.knownState() };
+
     const success = this.tryAddTransactions(
       sessionID,
       [transaction],
@@ -594,7 +596,7 @@ export class CoValueCore {
     )._unsafeUnwrap({ withStackTrace: true });
 
     if (success) {
-      void this.node.syncManager.syncCoValue(this);
+      void this.node.syncManager.syncCoValue(this, prevKnownState);
     }
 
     return success;

@@ -1,4 +1,4 @@
-import { CoValueCore, Profile } from "cojson";
+import { CoValueCore, Profile, emptyKnownState } from "cojson";
 import { createWebSocketPeer } from "cojson-transport-ws";
 import {
   Account,
@@ -41,8 +41,11 @@ export const createWorkerAccount = async ({
   const syncManager = account._raw.core.node.syncManager;
 
   await Promise.all([
-    syncManager.syncCoValue(accountCoValue),
-    syncManager.syncCoValue(accountProfileCoValue),
+    syncManager.syncCoValue(accountCoValue, emptyKnownState(accountCoValue.id)),
+    syncManager.syncCoValue(
+      accountProfileCoValue,
+      emptyKnownState(accountProfileCoValue.id),
+    ),
   ]);
 
   await Promise.race([

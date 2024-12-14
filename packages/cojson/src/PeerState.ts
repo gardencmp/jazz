@@ -101,6 +101,7 @@ export class PeerState {
       return Promise.resolve();
     }
 
+    console.log("🟢 <<<=== Sending to peer", this.id, msg);
     const promise = this.queue.push(msg);
 
     void this.processQueue();

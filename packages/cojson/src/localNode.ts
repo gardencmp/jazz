@@ -27,7 +27,7 @@ import {
 } from "./coValues/group.js";
 import { AgentSecret, CryptoProvider } from "./crypto/crypto.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
-import { Peer, PeerID, SyncManager } from "./sync.js";
+import { Peer, PeerID, SyncManager, emptyKnownState } from "./sync.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
@@ -141,6 +141,7 @@ export class LocalNode {
         if (coValueEntry.state.type === "available") {
           void nodeWithAccount.syncManager.syncCoValue(
             coValueEntry.state.coValue,
+            emptyKnownState(coValueEntry.id),
           );
         }
       }
@@ -246,7 +247,7 @@ export class LocalNode {
     const coValue = new CoValueCore(header, this);
     this.coValuesStore.setAsAvailable(coValue.id, coValue);
 
-    void this.syncManager.syncCoValue(coValue);
+    void this.syncManager.syncCoValue(coValue, emptyKnownState(coValue.id));
 
     return coValue;
   }

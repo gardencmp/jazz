@@ -229,23 +229,22 @@ export class SyncManager {
     }
   }
 
-  async sendNewContentIncludingDependencies(id: RawCoID, peer: PeerState) {
-    const coValue = this.local.expectCoValueLoaded(id);
+  async sendNewContentIncludingDependencies(
+    known: CoValueKnownState,
+    peer: PeerState,
+  ) {
+    const coValue = this.local.expectCoValueLoaded(known.id);
 
-    await Promise.all(
-      coValue
-        .getDependedOnCoValues()
-        .map((id) => this.sendNewContentIncludingDependencies(id, peer)),
-    );
+    // TODO probably, dependencies don't have new data? Do we really need it within the new algorythm
+    // await Promise.all(
+    //   coValue
+    //     .getDependedOnCoValues()
+    //     .map((id) => this.sendNewContentIncludingDependencies(id, peer)),
+    // );
 
-    const newContentPieces = coValue.newContentSince(
-      peer.optimisticKnownStates.get(id),
-    );
+    const newContentPieces = coValue.newContentSince(known);
 
     if (newContentPieces) {
-      const optimisticKnownStateBefore =
-        peer.optimisticKnownStates.get(id) || emptyKnownState(id);
-
       const sendPieces = async () => {
         let lastYield = performance.now();
         for (const [_i, piece] of newContentPieces.entries()) {
@@ -273,15 +272,15 @@ export class SyncManager {
         console.error("Error sending new content piece, retrying", e);
         peer.optimisticKnownStates.dispatch({
           type: "SET",
-          id,
-          value: optimisticKnownStateBefore ?? emptyKnownState(id),
+          id: known.id,
+          value: known,
         });
-        return this.sendNewContentIncludingDependencies(id, peer);
+        return this.sendNewContentIncludingDependencies(known, peer);
       });
 
       peer.optimisticKnownStates.dispatch({
         type: "COMBINE_WITH",
-        id,
+        id: known.id,
         value: coValue.knownState(),
       });
     }
@@ -308,7 +307,10 @@ export class SyncManager {
           await this.subscribeToIncludingDependencies(entry.id, peerState);
 
           if (entry.state.type === "available") {
-            await this.sendNewContentIncludingDependencies(entry.id, peerState);
+            await this.sendNewContentIncludingDependencies(
+              emptyKnownState(entry.id),
+              peerState,
+            );
           }
 
           if (!peerState.optimisticKnownStates.has(entry.id)) {
@@ -332,6 +334,7 @@ export class SyncManager {
           return;
         }
         try {
+          console.log("🔵 ===>>> Received from", peer.id, msg);
           await this.handleSyncMessage(msg, peerState);
         } catch (e) {
           throw new Error(
@@ -436,7 +439,7 @@ export class SyncManager {
           }
 
           await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
-          await this.sendNewContentIncludingDependencies(msg.id, peer);
+          await this.sendNewContentIncludingDependencies(msg, peer);
         })
         .catch((e) => {
           console.error("Error loading coValue in handleLoad loading state", e);
@@ -445,7 +448,7 @@ export class SyncManager {
 
     if (entry.state.type === "available") {
       await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
-      await this.sendNewContentIncludingDependencies(msg.id, peer);
+      await this.sendNewContentIncludingDependencies(msg, peer);
     }
   }
 
@@ -500,7 +503,7 @@ export class SyncManager {
 
     if (entry.state.type === "available") {
       await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
-      await this.sendNewContentIncludingDependencies(msg.id, peer);
+      await this.sendNewContentIncludingDependencies(msg, peer);
     }
   }
 
@@ -531,7 +534,52 @@ export class SyncManager {
       coValue = entry.state.coValue;
     }
 
-    let invalidStateAssumed = false;
+    const prevKnownState = { ...coValue.knownState() };
+    const needCorrection = this.addTransaction({ msg, coValue, peer });
+
+    if (needCorrection) {
+      this.trySendToPeer(peer, {
+        action: "known",
+        isCorrection: true,
+        ...coValue.knownState(),
+      }).catch((e) => {
+        console.error("Error sending known state correction", e);
+      });
+    } else {
+      /**
+       * We are sending a known state message to the peer to acknowledge the
+       * receipt of the new content.
+       *
+       * This way the sender knows that the content has been received and applied
+       * and can update their peer's knownState accordingly.
+       */
+      this.trySendToPeer(peer, {
+        action: "known",
+        ...coValue.knownState(),
+      }).catch((e: unknown) => {
+        console.error("Error sending known state", e);
+      });
+    }
+
+    /**
+     * We do send a correction/ack message before syncing to give an immediate
+     * response to the peers that are waiting for confirmation that a coValue is
+     * fully synced
+     */
+    // TODO send excluded original peers to not to sync with
+    await this.syncCoValue(coValue, prevKnownState);
+  }
+
+  private addTransaction({
+    msg,
+    coValue,
+    peer,
+  }: {
+    msg: NewContentMessage;
+    coValue: CoValueCore;
+    peer: PeerState;
+  }) {
+    let isMissingTransactions = false;
 
     for (const [sessionID, newContentForSession] of Object.entries(msg.new) as [
       SessionID,
@@ -542,7 +590,7 @@ export class SyncManager {
       const theirFirstNewTxIdx = newContentForSession.after;
 
       if ((ourKnownTxIdx || 0) < theirFirstNewTxIdx) {
-        invalidStateAssumed = true;
+        isMissingTransactions = true;
         continue;
       }
 
@@ -583,14 +631,6 @@ export class SyncManager {
         );
       }
 
-      // const theirTotalnTxs = Object.values(
-      //     peer.optimisticKnownStates[msg.id]?.sessions || {},
-      // ).reduce((sum, nTxs) => sum + nTxs, 0);
-      // const ourTotalnTxs = [...coValue.sessionLogs.values()].reduce(
-      //     (sum, session) => sum + session.transactions.length,
-      //     0,
-      // );
-
       if (result.isErr()) {
         console.error(
           "Failed to add transactions from",
@@ -617,36 +657,7 @@ export class SyncManager {
       });
     }
 
-    if (invalidStateAssumed) {
-      this.trySendToPeer(peer, {
-        action: "known",
-        isCorrection: true,
-        ...coValue.knownState(),
-      }).catch((e) => {
-        console.error("Error sending known state correction", e);
-      });
-    } else {
-      /**
-       * We are sending a known state message to the peer to acknowledge the
-       * receipt of the new content.
-       *
-       * This way the sender knows that the content has been received and applied
-       * and can update their peer's knownState accordingly.
-       */
-      this.trySendToPeer(peer, {
-        action: "known",
-        ...coValue.knownState(),
-      }).catch((e: unknown) => {
-        console.error("Error sending known state", e);
-      });
-    }
-
-    /**
-     * We do send a correction/ack message before syncing to give an immediate
-     * response to the peers that are waiting for confirmation that a coValue is
-     * fully synced
-     */
-    await this.syncCoValue(coValue);
+    return isMissingTransactions;
   }
 
   async handleCorrection(msg: KnownStateMessage, peer: PeerState) {
@@ -656,14 +667,14 @@ export class SyncManager {
       value: knownStateIn(msg),
     });
 
-    return this.sendNewContentIncludingDependencies(msg.id, peer);
+    return this.sendNewContentIncludingDependencies(msg, peer);
   }
 
   handleUnsubscribe(_msg: DoneMessage) {
     throw new Error("Method not implemented.");
   }
 
-  async syncCoValue(coValue: CoValueCore) {
+  async syncCoValue(coValue: CoValueCore, prevKnownState: CoValueKnownState) {
     if (this.requestedSyncs[coValue.id]) {
       this.requestedSyncs[coValue.id]!.nRequestsThisTick++;
       return this.requestedSyncs[coValue.id]!.done;
@@ -674,7 +685,7 @@ export class SyncManager {
           // if (entry.nRequestsThisTick >= 2) {
           //     console.log("Syncing", coValue.id, "for", entry.nRequestsThisTick, "requests");
           // }
-          await this.actuallySyncCoValue(coValue);
+          await this.actuallySyncCoValue(coValue, prevKnownState);
           resolve();
         });
       });
@@ -687,7 +698,10 @@ export class SyncManager {
     }
   }
 
-  async actuallySyncCoValue(coValue: CoValueCore) {
+  async actuallySyncCoValue(
+    coValue: CoValueCore,
+    prevKnownState: CoValueKnownState,
+  ) {
     // let blockingSince = performance.now();
     for (const peer of this.peersInPriorityOrder()) {
       if (peer.closed) continue;
@@ -700,10 +714,10 @@ export class SyncManager {
       // }
       if (peer.optimisticKnownStates.has(coValue.id)) {
         await this.tellUntoldKnownStateIncludingDependencies(coValue.id, peer);
-        await this.sendNewContentIncludingDependencies(coValue.id, peer);
+        await this.sendNewContentIncludingDependencies(prevKnownState, peer);
       } else if (peer.isServerOrStoragePeer()) {
         await this.subscribeToIncludingDependencies(coValue.id, peer);
-        await this.sendNewContentIncludingDependencies(coValue.id, peer);
+        await this.sendNewContentIncludingDependencies(prevKnownState, peer);
       }
     }
 
