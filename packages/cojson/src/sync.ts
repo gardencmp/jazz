@@ -205,8 +205,6 @@ export class SyncManager {
         } else {
           return await this.handleKnownState(msg, peer);
         }
-      case "content":
-        return await this.handleNewContent(msg, peer);
       case "done":
         return await this.handleUnsubscribe(msg);
       default:
@@ -515,9 +513,11 @@ export class SyncManager {
     if (peerState.isServerOrStoragePeer()) {
       const initialSync = async () => {
         for (const entry of this.local.coValuesStore.getValues()) {
+          // TODO here
           await this.subscribeToIncludingDependencies(entry.id, peerState);
 
           if (entry.state.type === "available") {
+            // TODO here
             await this.sendNewContentIncludingDependencies(
               emptyKnownState(entry.id),
               peerState,
@@ -587,67 +587,6 @@ export class SyncManager {
     return peer.pushOutgoingMessage(msg);
   }
 
-  async handleLoad(msg: LoadMessage, peer: PeerState) {
-    const entry = this.local.coValuesStore.get(msg.id);
-
-    if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
-      const eligiblePeers = this.getServerAndStoragePeers(peer.id);
-
-      if (eligiblePeers.length === 0) {
-        // If the load request contains a header or any session data
-        // and we don't have any eligible peers to load the coValue from
-        // we try to load it from the sender because it is the only place
-        // where we can get informations about the coValue
-        if (msg.header || Object.keys(msg.sessions).length > 0) {
-          entry.loadFromPeers([peer]).catch((e) => {
-            console.error("Error loading coValue in handleLoad", e);
-          });
-        }
-        return;
-      } else {
-        this.local.loadCoValueCore(msg.id, peer.id).catch((e) => {
-          console.error("Error loading coValue in handleLoad", e);
-        });
-      }
-    }
-
-    if (entry.state.type === "loading") {
-      // We need to return from handleLoad immediately and wait for the CoValue to be loaded
-      // in a new task, otherwise we might block further incoming content messages that would
-      // resolve the CoValue as available. This can happen when we receive fresh
-      // content from a client, but we are a server with our own upstream server(s)
-      entry
-        .getCoValue()
-        .then(async (value) => {
-          if (value === "unavailable") {
-            peer.toldKnownState.add(msg.id);
-
-            this.trySendToPeer(peer, {
-              action: "known",
-              id: msg.id,
-              header: false,
-              sessions: {},
-            }).catch((e) => {
-              console.error("Error sending known state back", e);
-            });
-
-            return;
-          }
-
-          await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
-          await this.sendNewContentIncludingDependencies(msg, peer);
-        })
-        .catch((e) => {
-          console.error("Error loading coValue in handleLoad loading state", e);
-        });
-    }
-
-    if (entry.state.type === "available") {
-      await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
-      await this.sendNewContentIncludingDependencies(msg, peer);
-    }
-  }
-
   async handleKnownState(msg: KnownStateMessage, peer: PeerState) {
     const entry = this.local.coValuesStore.get(msg.id);
 
@@ -694,64 +633,6 @@ export class SyncManager {
       await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
       await this.sendNewContentIncludingDependencies(msg, peer);
     }
-  }
-
-  async handleNewContent(msg: NewContentMessage, peer: PeerState) {
-    const entry = this.local.coValuesStore.get(msg.id);
-
-    let coValue: CoValueCore;
-
-    if (entry.state.type !== "available") {
-      if (!msg.header) {
-        console.error("Expected header to be sent in first message");
-        return;
-      }
-
-      coValue = new CoValueCore(msg.header, this.local);
-
-      entry.dispatch({
-        type: "available",
-        coValue,
-      });
-    } else {
-      coValue = entry.state.coValue;
-    }
-
-    // optimistically made assumption the peer is in sync
-    const peersKnownState = { ...coValue.knownState() };
-    const needCorrection = this.addTransaction({ msg, coValue, peer });
-
-    if (needCorrection) {
-      this.trySendToPeer(peer, {
-        action: "known",
-        isCorrection: true,
-        ...coValue.knownState(),
-      }).catch((e) => {
-        console.error("Error sending known state correction", e);
-      });
-    } else {
-      /**
-       * We are sending a known state message to the peer to acknowledge the
-       * receipt of the new content.
-       *
-       * This way the sender knows that the content has been received and applied
-       * and can update their peer's knownState accordingly.
-       */
-      this.trySendToPeer(peer, {
-        action: "known",
-        ...coValue.knownState(),
-      }).catch((e: unknown) => {
-        console.error("Error sending known state", e);
-      });
-    }
-
-    /**
-     * We do send a correction/ack message before syncing to give an immediate
-     * response to the peers that are waiting for confirmation that a coValue is
-     * fully synced
-     */
-    // TODO send excluded original peers to not to sync with
-    await this.syncCoValue(coValue, peersKnownState);
   }
 
   private addTransaction({
@@ -881,13 +762,11 @@ export class SyncManager {
       //     });
       //     blockingSince = performance.now();
       // }
-      if (peersKnownState.header) {
-        await this.tellUntoldKnownStateIncludingDependencies(coValue.id, peer);
-        await this.sendNewContentIncludingDependencies(peersKnownState, peer);
-      } else if (peer.isServerOrStoragePeer()) {
-        await this.subscribeToIncludingDependencies(coValue.id, peer);
-        await this.sendNewContentIncludingDependencies(peersKnownState, peer);
-      }
+      await this.sendNewContentIncludingDependencies(
+        peersKnownState,
+        peer,
+        "push",
+      );
     }
   }
 

@@ -72,8 +72,8 @@ export const transformIncomingMessageFromPeer = (
   switch (msg.action) {
     case "load":
       return { ...msg, action: "pull" };
-    //   case "content":
-    //     return { ...msg, action: "push" };
+    case "content":
+      return { ...msg, action: "push" };
     // case "known":
     //   return { ...msg, action: "ack" };
     default:
