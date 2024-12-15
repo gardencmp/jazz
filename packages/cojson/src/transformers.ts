@@ -1,5 +1,5 @@
 import { SessionID } from "./ids.js";
-import { ContentMessage, SyncMessage } from "./sync.js";
+import { ContentMessage, SyncMessage, emptyDataMessage } from "./sync.js";
 
 export const transformOutgoingMessageToPeer = (
   msg: SyncMessage,
@@ -7,8 +7,6 @@ export const transformOutgoingMessageToPeer = (
 ): SyncMessage[] => {
   if (id.includes("indexedDB")) {
     switch (msg.action) {
-      case "content":
-        return [{ ...msg, action: "push" }];
       case "known":
         return [{ ...msg, action: "ack" }];
       default:
@@ -74,8 +72,10 @@ export const transformIncomingMessageFromPeer = (
       return { ...msg, action: "pull" };
     case "content":
       return { ...msg, action: "push" };
-    // case "known":
-    //   return { ...msg, action: "ack" };
+    case "known":
+      if (!msg.header) return emptyDataMessage(msg.id);
+      if (msg.isCorrection) return { ...msg, action: "pull" };
+      return { ...msg, action: "ack" };
     default:
       return msg;
   }

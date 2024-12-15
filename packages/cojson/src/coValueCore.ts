@@ -36,6 +36,8 @@ import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromS
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
 import ContentMessage = CojsonInternalTypes.ContentMessage;
+import DataMessage = CojsonInternalTypes.DataMessage;
+import PushMessage = CojsonInternalTypes.PushMessage;
 
 /**
     In order to not block other concurrently syncing CoValues we introduce a maximum size of transactions,
@@ -109,7 +111,7 @@ export class CoValueCore {
   } = {};
   _cachedKnownState?: CoValueKnownState;
   _cachedDependentOn?: RawCoID[];
-  _cachedNewContentSinceEmpty?: NewContentMessage[] | undefined;
+  _cachedNewContentSinceEmpty?: ContentMessage[] | undefined;
   _currentAsyncAddTransaction?: Promise<void>;
 
   constructor(
@@ -895,6 +897,7 @@ export class CoValueCore {
 
   newContentSince(
     knownState: CoValueKnownState | undefined,
+    action: "data" | "push",
   ): ContentMessage[] | undefined {
     const isKnownStateEmpty = !knownState?.header && !knownState?.sessions;
 
@@ -902,8 +905,8 @@ export class CoValueCore {
       return this._cachedNewContentSinceEmpty;
     }
 
-    let currentPiece: NewContentMessage = {
-      action: "content",
+    let currentPiece: DataMessage | PushMessage = {
+      action,
       id: this.id,
       header: knownState?.header ? undefined : this.header,
       priority: getPriorityFromHeader(this.header),
@@ -967,7 +970,7 @@ export class CoValueCore {
 
         if (pieceSize >= MAX_RECOMMENDED_TX_SIZE) {
           currentPiece = {
-            action: "content",
+            action,
             id: this.id,
             header: undefined,
             new: {},
