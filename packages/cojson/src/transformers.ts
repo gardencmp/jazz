@@ -7,8 +7,6 @@ export const transformOutgoingMessageToPeer = (
 ): SyncMessage[] => {
   if (id.includes("indexedDB")) {
     switch (msg.action) {
-      // case "load":
-      //   return [{ ...msg, action: "pull" }];
       case "content":
         return [{ ...msg, action: "push" }];
       case "known":
@@ -67,19 +65,18 @@ export const transformIncomingMessageFromPeer = (
   msg: SyncMessage,
   id: string,
 ): SyncMessage => {
-  return msg;
+  if (id.includes("indexedDB")) {
+    return msg;
+  }
 
-  // if (id.includes("indexedDB")) {
-  //   return msg;
-  // }
-  // switch (msg.action) {
-  //   case "load":
-  //     return { ...msg, action: "pull" };
-  //   case "content":
-  //     return { ...msg, action: "push" };
-  //   case "known":
-  //     return { ...msg, action: "ack" };
-  //   default:
-  //     return msg;
-  // }
+  switch (msg.action) {
+    case "load":
+      return { ...msg, action: "pull" };
+    //   case "content":
+    //     return { ...msg, action: "push" };
+    // case "known":
+    //   return { ...msg, action: "ack" };
+    default:
+      return msg;
+  }
 };

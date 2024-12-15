@@ -197,8 +197,8 @@ export class SyncManager {
         return this.handlePull(msg, peer);
       case "ack":
         return this.handleAck(msg, peer);
-      case "load":
-        return await this.handleLoad(msg, peer);
+      // case "load":
+      //   return await this.handleLoad(msg, peer);
       case "known":
         if (msg.isCorrection) {
           return await this.handleCorrection(msg, peer);
@@ -239,7 +239,14 @@ export class SyncManager {
           if (value === "unavailable") {
             void respondWithEmptyData();
           } else {
-            void this.sendNewContentIncludingDependencies(msg, peer, "data");
+            const sentAmount = await this.sendNewContentIncludingDependencies(
+              msg,
+              peer,
+              "data",
+            );
+            if (sentAmount) {
+              void respondWithEmptyData();
+            }
           }
         })
         .catch((e) => {
@@ -304,6 +311,8 @@ export class SyncManager {
       coValue = entry.state.coValue;
     }
 
+    const peerKnownState = { ...coValue.knownState() };
+
     const hasMissedTransactions = this.addTransaction({
       msg,
       coValue,
@@ -316,6 +325,9 @@ export class SyncManager {
       );
       return;
     }
+
+    // TODO exclude original peers to not to sync with
+    await this.syncCoValue(coValue, peerKnownState);
   }
 
   async handlePush(msg: PushMessage, peer: PeerState) {
@@ -339,14 +351,14 @@ export class SyncManager {
       coValue = entry.state.coValue;
     }
 
-    const prevKnownState = { ...coValue.knownState() };
-    const needCorrection = this.addTransaction({
+    const peerKnownState = { ...coValue.knownState() };
+    const anyMissedTransactions = this.addTransaction({
       msg,
       coValue,
       peer,
     });
 
-    if (needCorrection) {
+    if (anyMissedTransactions) {
       this.trySendToPeer(peer, {
         action: "pull",
         ...coValue.knownState(),
@@ -361,8 +373,8 @@ export class SyncManager {
         console.error("Error sending", msg, e);
       });
     }
-    // TODO send excluded original peers to not to sync with
-    await this.syncCoValue(coValue, prevKnownState);
+    // TODO exclude original peers to not to sync with
+    await this.syncCoValue(coValue, peerKnownState);
   }
 
   async handleAck(msg: AckMessage, peer: PeerState) {
@@ -487,6 +499,8 @@ export class SyncManager {
         return this.sendNewContentIncludingDependencies(known, peer, action);
       });
     }
+
+    return newContentPieces?.length || 0;
   }
 
   addPeer(peer: Peer) {
