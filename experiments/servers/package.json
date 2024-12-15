@@ -16,8 +16,10 @@
     "dev:node-ws": "npx ts-node-dev --respawn src/node-js/websocket.ts",
     "dev:node-http1": "npx ts-node-dev --respawn src/node-js/http1-sse.ts",
     "dev:node-http2": "npx ts-node-dev --respawn src/node-js/http2-sse.ts",
-    "dev:uws": "npx ts-node-dev --respawn src/uws-js/websocket.ts",
-    "dev:uws-http": "npx ts-node-dev --respawn src/uws-js/http-sse.ts",
+    "dev:uws-ws": "npx ts-node-dev --respawn src/uws-js/websocket.ts",
+    "dev:uws-http1": "npx ts-node-dev --respawn src/uws-js/http1-sse.ts",
+    "dev:caddy-http1": "PORT=3001 npx ts-node-dev --respawn src/caddy/http1-sse.ts",
+    "dev:caddy-http3": "CERT_PATH=./cert/localhost+1.pem KEY_PATH=./cert/localhost+1-key.pem caddy start --config ./src/caddy/Caddyfile && pnpm run dev:caddy-http1",
     "test": "playwright test",
     "test-text": "playwright test tests/covalue-text.spec.ts",
     "test-binary": "playwright test tests/covalue-binary.spec.ts"

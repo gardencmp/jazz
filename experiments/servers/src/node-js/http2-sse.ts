@@ -1,3 +1,3 @@
-import { createHTTPServer } from "./http-sse";
+import { createWebServer } from "./http-sse";
 
-createHTTPServer(true);
+createWebServer(true);

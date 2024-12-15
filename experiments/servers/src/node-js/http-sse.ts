@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import https from "https";
+import http from "http";
 import spdy from "spdy";
 import path from "path";
 import bodyParser from "body-parser";
@@ -22,6 +23,16 @@ const fileManager = new FileStreamManager();
 
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(express.static("public/client/http"));
+// Allow testing from plain HTTP/1.1 (without SSL)
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3001'); // Allow requests from http://localhost:3001
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+    res.header('Access-Control-Allow-Credentials', 'true'); // Allow cookies
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 app.use(
     "/faker",
     express.static(
@@ -163,7 +174,7 @@ app.get("/covalue/:uuid/subscribe/:ua", (req: Request, res: Response) => {
     });
 });
 
-export function createHTTPServer(isHttp2: boolean) {
+export function createWebServer(isHttp2: boolean, useTLS: boolean = true) {
     if (isHttp2) {
         // Start a HTTPS server using HTTP/2
         const server = spdy.createServer(tlsCert, app);
@@ -173,12 +184,22 @@ export function createHTTPServer(isHttp2: boolean) {
             );
         });
     } else {
-        // Start a HTTPS server using HTTP/1.1
-        const server = https.createServer(tlsCert, app);
-        server.listen(PORT, () => {
-            logger.info(
-                `HTTP/1.1 + TLSv1.3 Server is running on: https://localhost:${PORT}`,
-            );
-        });
+        if (useTLS) {
+            // Start a HTTPS server using HTTP/1.1
+            const server = https.createServer(tlsCert, app);
+            server.listen(PORT, () => {
+                logger.info(
+                    `HTTP/1.1 + TLSv1.3 Server is running on: https://localhost:${PORT}`,
+                );
+            });
+        } else {
+            // Start a HTTP-only server using HTTP/1.1
+            const server = http.createServer(app);
+            server.listen(PORT, () => {
+                logger.info(
+                    `HTTP/1.1 Server is running on: http://localhost:${PORT}`,
+                );
+            });
+        }
     }
 }

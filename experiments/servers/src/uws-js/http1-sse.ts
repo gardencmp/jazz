@@ -3,7 +3,6 @@ import path from "path";
 import fs from "fs";
 import { lookup } from "mime-types";
 import {
-    CoValue,
     MutationEvent,
     covalues,
     events,
