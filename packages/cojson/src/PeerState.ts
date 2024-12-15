@@ -32,7 +32,7 @@ export class PeerState {
    * waiting for any acknowledgement from the peer.
    */
   // readonly optimisticKnownStates: PeerKnownStates;
-  readonly toldKnownState: Set<RawCoID> = new Set();
+  // readonly toldKnownState: Set<RawCoID> = new Set();
 
   // dispatchToKnownStates(action: PeerKnownStateActions) {
   //   this.knownStates.dispatch(action);

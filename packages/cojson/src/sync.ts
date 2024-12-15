@@ -182,6 +182,7 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage, peer: PeerState) {
+    // TODO peer.erroredCoValues??
     if (peer.erroredCoValues.has(msg.id)) {
       console.error(
         `Skipping message ${msg.action} on errored coValue ${msg.id} from peer ${peer.id}`,
@@ -210,14 +211,14 @@ export class SyncManager {
   async handlePull(msg: PullMessage, peer: PeerState) {
     const entry = this.local.coValuesStore.get(msg.id);
 
+    const respondWithEmptyData = async () => {
+      void this.trySendToPeer(peer, emptyDataMessage(msg.id));
+    };
+
     if (entry.state.type === "available") {
       // send "data" action as a response
       return this.sendNewContentIncludingDependencies(msg, peer, "data");
     }
-
-    const respondWithEmptyData = async () => {
-      void this.trySendToPeer(peer, emptyDataMessage(msg.id));
-    };
 
     if (entry.state.type === "loading") {
       // We need to return from handleLoad immediately and wait for the CoValue to be loaded
@@ -250,6 +251,8 @@ export class SyncManager {
 
     void respondWithEmptyData();
 
+    // TODO maybe to send a PULL req if we have less data?
+    // Initiate a new PULL flow
     if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
       const eligiblePeers = this.getServerAndStoragePeers(peer.id);
 
@@ -285,7 +288,7 @@ export class SyncManager {
 
     if (!msg.header && entry.state.type !== "available") {
       console.error(
-        '!!! We should never be here. "Data" action is a response to our specific request. TODO Log error. Fix this. Retry request',
+        '!!! We should never be here. "Data" action is a response to our specific request.',
       );
       return;
     }
@@ -312,13 +315,13 @@ export class SyncManager {
 
     if (anyMissedTransaction) {
       console.error(
-        '!!! We should never be here. "Data" action is a response to our specific request. Log error. Fix this. Retry request',
+        '!!! We should never be here. "Data" action is a response to our specific request.',
       );
       return;
     }
 
-    // TODO exclude original peers from sync
-    await this.syncCoValue(coValue, peerKnownState);
+    const peers = this.peersInPriorityOrder().filter((p) => p.id !== peer.id);
+    await this.syncCoValue(coValue, peerKnownState, peers);
   }
 
   async handlePush(msg: PushMessage, peer: PeerState) {
@@ -364,8 +367,9 @@ export class SyncManager {
         console.error("Error sending", msg, e);
       });
     }
-    // TODO exclude original peers to not to sync with
-    await this.syncCoValue(coValue, peerKnownState);
+
+    const peers = this.peersInPriorityOrder().filter((p) => p.id !== peer.id);
+    await this.syncCoValue(coValue, peerKnownState, peers);
   }
 
   async handleAck(msg: AckMessage, peer: PeerState) {
@@ -373,7 +377,7 @@ export class SyncManager {
 
     if (entry.state.type !== "available") {
       console.error(
-        '!!! We should never be here. "Ack" action is a response to our specific request. Log error. Fix this. Retry request',
+        '!!! We should never be here. "Ack" action is a response to our specific request.',
       );
       return;
     }
@@ -405,38 +409,6 @@ export class SyncManager {
     });
   }
 
-  // async tellUntoldKnownStateIncludingDependencies(
-  //   id: RawCoID,
-  //   peer: PeerState,
-  //   asDependencyOf?: RawCoID,
-  // ) {
-  //   const coValue = this.local.expectCoValueLoaded(id);
-  //
-  //   await Promise.all(
-  //     coValue
-  //       .getDependedOnCoValues()
-  //       .map((dependentCoID) =>
-  //         this.tellUntoldKnownStateIncludingDependencies(
-  //           dependentCoID,
-  //           peer,
-  //           asDependencyOf || id,
-  //         ),
-  //       ),
-  //   );
-  //
-  //   if (!peer.toldKnownState.has(id)) {
-  //     this.trySendToPeer(peer, {
-  //       action: "known",
-  //       asDependencyOf,
-  //       ...coValue.knownState(),
-  //     }).catch((e: unknown) => {
-  //       console.error("Error sending known state", e);
-  //     });
-  //
-  //     peer.toldKnownState.add(id);
-  //   }
-  // }
-
   async sendNewContentIncludingDependencies(
     peerknownState: CoValueKnownState,
     peer: PeerState,
@@ -444,7 +416,7 @@ export class SyncManager {
   ) {
     const coValue = this.local.expectCoValueLoaded(peerknownState.id);
 
-    // TODO probably, dependencies don't have new data? Do we really need it within the new algorythm
+    // TODO probably, dependencies don't provide any new data? Do we really need it within the new algorythm
     // await Promise.all(
     //   coValue
     //     .getDependedOnCoValues()
@@ -457,23 +429,9 @@ export class SyncManager {
       const sendPieces = async () => {
         let lastYield = performance.now();
         for (const [_i, piece] of newContentPieces.entries()) {
-          // console.log(
-          //     `${id} -> ${peer.id}: Sending content piece ${i + 1}/${
-          //         newContentPieces.length
-          //     } header: ${!!piece.header}`,
-          //     // Object.values(piece.new).map((s) => s.newTransactions)
-          // );
-
           this.trySendToPeer(peer, piece as SyncMessage).catch((e: unknown) => {
             console.error("Error sending content piece", e);
           });
-
-          if (performance.now() - lastYield > 10) {
-            await new Promise<void>((resolve) => {
-              setTimeout(resolve, 0);
-            });
-            lastYield = performance.now();
-          }
         }
       };
 
@@ -502,11 +460,9 @@ export class SyncManager {
     if (peerState.isServerOrStoragePeer()) {
       const initialSync = async () => {
         for (const entry of this.local.coValuesStore.getValues()) {
-          // TODO here
           await this.subscribeToIncludingDependencies(entry.id, peerState);
 
           if (entry.state.type === "available") {
-            // TODO here
             await this.sendNewContentIncludingDependencies(
               emptyKnownState(entry.id),
               peerState,
@@ -576,53 +532,6 @@ export class SyncManager {
   trySendToPeer(peer: PeerState, msg: SyncMessage) {
     return peer.pushOutgoingMessage(msg);
   }
-
-  // async handleKnownState(msg: KnownStateMessage, peer: PeerState) {
-  //   const entry = this.local.coValuesStore.get(msg.id);
-  //
-  //   if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
-  //     if (msg.asDependencyOf) {
-  //       const dependencyEntry = this.local.coValuesStore.get(
-  //         msg.asDependencyOf,
-  //       );
-  //
-  //       if (
-  //         dependencyEntry.state.type === "available" ||
-  //         dependencyEntry.state.type === "loading"
-  //       ) {
-  //         this.local
-  //           .loadCoValueCore(
-  //             msg.id,
-  //             peer.role === "storage" ? undefined : peer.id,
-  //           )
-  //           .catch((e) => {
-  //             console.error(
-  //               `Error loading coValue ${msg.id} to create loading state, as dependency of ${msg.asDependencyOf}`,
-  //               e,
-  //             );
-  //           });
-  //       }
-  //     }
-  //   }
-  //
-  //   // The header is a boolean value that tells us if the other peer do have information about the header.
-  //   // If it's false in this point it means that the coValue is unavailable on the other peer.
-  //   if (entry.state.type !== "available") {
-  //     if (!msg.header) {
-  //       entry.dispatch({
-  //         type: "not-found-in-peer",
-  //         peerId: peer.id,
-  //       });
-  //     }
-  //
-  //     return;
-  //   }
-  //
-  //   if (entry.state.type === "available") {
-  //     await this.tellUntoldKnownStateIncludingDependencies(msg.id, peer);
-  //     await this.sendNewContentIncludingDependencies(msg, peer);
-  //   }
-  // }
 
   private addTransaction({
     msg,
@@ -705,7 +614,11 @@ export class SyncManager {
     return isMissingTransactions;
   }
 
-  async syncCoValue(coValue: CoValueCore, peersKnownState: CoValueKnownState) {
+  async syncCoValue(
+    coValue: CoValueCore,
+    peersKnownState: CoValueKnownState,
+    peers?: PeerState[],
+  ) {
     if (this.requestedSyncs[coValue.id]) {
       this.requestedSyncs[coValue.id]!.nRequestsThisTick++;
       return this.requestedSyncs[coValue.id]!.done;
@@ -716,7 +629,7 @@ export class SyncManager {
           // if (entry.nRequestsThisTick >= 2) {
           //     console.log("Syncing", coValue.id, "for", entry.nRequestsThisTick, "requests");
           // }
-          await this.actuallySyncCoValue(coValue, peersKnownState);
+          await this.actuallySyncCoValue(coValue, peersKnownState, peers);
           resolve();
         });
       });
@@ -732,9 +645,11 @@ export class SyncManager {
   async actuallySyncCoValue(
     coValue: CoValueCore,
     peersKnownState: CoValueKnownState,
+    peers?: PeerState[],
   ) {
     // let blockingSince = performance.now();
-    for (const peer of this.peersInPriorityOrder()) {
+    const peersToSync = peers || this.peersInPriorityOrder();
+    for (const peer of peersToSync) {
       if (peer.closed) continue;
       if (peer.erroredCoValues.has(coValue.id)) continue;
       // if (performance.now() - blockingSince > 5) {
@@ -751,7 +666,7 @@ export class SyncManager {
     }
   }
 
-  // FIXME
+  // FIXME TODO
   // async waitForUploadIntoPeer(peerId: PeerID, id: RawCoID) {
   //   const isAlreadyUploaded =
   //     this.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
@@ -782,12 +697,4 @@ export class SyncManager {
       peer.gracefulShutdown();
     }
   }
-}
-
-function knownStateIn(msg: LoadMessage | KnownStateMessage) {
-  return {
-    id: msg.id,
-    header: msg.header,
-    sessions: msg.sessions,
-  };
 }

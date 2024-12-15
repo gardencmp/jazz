@@ -58,7 +58,7 @@ export const transformOutgoingMessageToPeer = (
       return [msg];
   }
 };
-// TODO !!!!!!!! When yo encounter anything you don't have your own you have to save it first!!!
+
 export const transformIncomingMessageFromPeer = (
   msg: SyncMessage,
   id: string,
