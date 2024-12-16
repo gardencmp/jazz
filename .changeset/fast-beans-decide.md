@@ -1,5 +1,5 @@
 ---
-"jazz-tools": patch
+"jazz-tools": minor
 ---
 
 Implement new API for deep loading
