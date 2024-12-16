@@ -5,9 +5,20 @@
 You can add group members by ID by using `Account.load` and `Group.addMember`.
 
 ```tsx
+import { Group, Account } from "jazz-tools";
+
 const group = Group.create({ owner: me });
 
 const bob = await Account.load(bobsID, me, []);
+group.addMember(bob, "writer");
+```
+
+Note: if the account ID is of type `string`, because it comes from a URL parameter or something similar, you need to cast it to `ID<Account>` first:
+
+```tsx
+import { Group, Account, ID } from "jazz-tools";
+
+const bob = await Account.load(bobsID as ID<Account>, me, []);
 group.addMember(bob, "writer");
 ```
 
