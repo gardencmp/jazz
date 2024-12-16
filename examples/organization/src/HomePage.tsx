@@ -1,11 +1,10 @@
 import { CreateOrganization } from "./CreateOrganization.tsx";
-import { OrganizationSelector } from "./OrganizationSelector.tsx";
+import { Layout } from "./Layout.tsx";
 
 export function HomePage() {
   return (
-    <>
-      <OrganizationSelector />
+    <Layout>
       <CreateOrganization />
-    </>
+    </Layout>
   );
 }

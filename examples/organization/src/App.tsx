@@ -1,5 +1,6 @@
 import { RouterProvider, createHashRouter } from "react-router-dom";
 import { HomePage } from "./HomePage.tsx";
+import { OrganizationPage } from "./OrganizationPage.tsx";
 import { useAccount } from "./main";
 
 function App() {
@@ -14,7 +15,7 @@ function App() {
     },
     {
       path: "/organizations/:organizationId",
-      element: <HomePage />,
+      element: <OrganizationPage />,
     },
   ]);
 
@@ -34,7 +35,7 @@ function App() {
         </nav>
       </header>
 
-      <RouterProvider router={router} />
+      <RouterProvider router={router}></RouterProvider>
     </div>
   );
 }
