@@ -2,9 +2,9 @@ import { cn } from "@/lib/utils";
 import { useCoState } from "@/main";
 import {
   type Card,
+  CardList,
   type CardValue,
   Game,
-  type ListaDiCarte,
   type Player,
 } from "@/schema";
 import { createFileRoute } from "@tanstack/react-router";
@@ -24,68 +24,84 @@ function RouteComponent() {
   const { gameId } = Route.useParams();
   const game = useCoState(Game, gameId as ID<Game>, {
     deck: [{}],
-    player1: { hand: [{}] },
+    player1: { hand: [{}], scoredCards: [{}] },
+    player2: { hand: [{}], scoredCards: [{}] },
+    activePlayer: {},
   });
-  // console.log({ deck: game?.deck });
-  // const [cards, setCards] = useState<CardValue[]>(["SA", "C8", "D2"]);
+
+  // TODO: loading
+  if (!game) return null;
 
   return (
     <div className="flex flex-col h-full p-2 bg-green-800">
-      {/* <Reorder.Group axis="x" values={cards} onReorder={setCards}>
-        <div className="flex place-content-center gap-2">
-          {cards.map((card) => (
-            <Reorder.Item key={card} value={card}>
-              <PlayingCard card={card} />
-            </Reorder.Item>
-          ))}
-        </div>
-      </Reorder.Group> */}
+      <PlayerArea player={game.player2}>
+        <Reorder.Group
+          axis="x"
+          values={game.player2.hand}
+          onReorder={(cards) => {
+            // TODO: this is weird AF
+            // @ts-expect-error
+            game.player2.hand = CardList.create(cards, {
+              owner: game.player2.hand._owner,
+            });
+          }}
+        >
+          <div className="flex place-content-center gap-2">
+            {game.player2.hand.map((card) => (
+              <Reorder.Item key={card.value} value={card}>
+                <PlayingCard card={card} />
+              </Reorder.Item>
+            ))}
+          </div>
+        </Reorder.Group>
+      </PlayerArea>
 
       <div className="grow items-center justify-center flex ">
-        {game?.deck && (
-          <>
-            {game.deck[0] && (
-              <PlayingCard
-                className="rotate-[88deg] left-1/2 absolute"
-                card={game.deck[0]}
-              />
-            )}
-            <CardStack cards={game?.deck} className="" />
-          </>
-        )}
+        <>
+          {game.deck[0] && (
+            <PlayingCard
+              className="rotate-[88deg] left-1/2 absolute"
+              card={game.deck[0]}
+            />
+          )}
+          <CardStack cards={game.deck} className="" />
+        </>
       </div>
 
-      {game?.player1 && (
-        <PlayerArea player={game?.player1}>
-          <Reorder.Group
-            axis="x"
-            values={game.player1.hand || []}
-            onReorder={() => {}}
-          >
-            <div className="flex place-content-center gap-2">
-              {JSON.stringify(game.player1.hand)}
-              {game.player1.hand?.map((card, i) => (
-                <Reorder.Item key={card?.value} value={card}>
-                  <PlayingCard card={card} />
-                </Reorder.Item>
-              ))}
-            </div>
-          </Reorder.Group>
-        </PlayerArea>
-      )}
+      <PlayerArea player={game.player1}>
+        <Reorder.Group
+          axis="x"
+          values={game.player1.hand}
+          onReorder={(cards) => {
+            // TODO: this is weird AF
+            // @ts-expect-error
+            game.player1.hand = CardList.create(cards, {
+              owner: game.player1.hand._owner,
+            });
+          }}
+        >
+          <div className="flex place-content-center gap-2">
+            {game.player1.hand.map((card) => (
+              <Reorder.Item key={card.value} value={card}>
+                <PlayingCard card={card} />
+              </Reorder.Item>
+            ))}
+          </div>
+        </Reorder.Group>
+      </PlayerArea>
     </div>
   );
 }
 
 interface CardStackProps {
-  cards?: co<ListaDiCarte | null>;
+  cards: CardList;
   className?: string;
 }
 function CardStack({ cards, className }: CardStackProps) {
   return (
     <div className={cn("relative p-4 w-[200px] h-[280px]", className)}>
       <AnimatePresence>
-        {cards?.map((card, i) => (
+        {cards.map((card, i) => (
           <motion.div
             initial={{ left: -1000 }}
             animate={{ left: 0 }}
@@ -97,7 +113,9 @@ function CardStack({ cards, className }: CardStackProps) {
               backgroundImage: `url(https://placecats.com/150/243)`,
               backgroundSize: "cover",
             }}
-          />
+          >
+            {card?.value}
+          </motion.div>
         ))}
       </AnimatePresence>
     </div>
@@ -150,7 +168,7 @@ function getValue(card: typeof CardValue) {
 }
 
 interface PlayerAreaProps {
-  player: co<Player>;
+  player: Player;
   children: ReactNode;
 }
 function PlayerArea({ children, player }: PlayerAreaProps) {
@@ -159,7 +177,7 @@ function PlayerArea({ children, player }: PlayerAreaProps) {
       <div></div>
       {children}
       <div className="flex justify-center">
-        <CardStack cards={player.carteAcchiappate} className="rotate-90" />
+        <CardStack cards={player.scoredCards} className="rotate-90" />
       </div>
     </div>
   );

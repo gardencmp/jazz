@@ -1,4 +1,4 @@
-import { Card, CardValue, Game, ListaDiCarte, Player } from "@/schema";
+import { Card, CardList, CardValues, Game, Player } from "@/schema";
 import { startWorker } from "jazz-nodejs";
 import { Group } from "jazz-tools";
 
@@ -24,6 +24,14 @@ function createGame() {
     }
   }
 
+  for (let i = 0; i < 3; i++) {
+    const card = deck.pop();
+    if (card) {
+      // TODO: set permission of the card to read-only player1
+      player2.hand?.push(card);
+    }
+  }
+
   const newGame = Game.create(
     {
       deck,
@@ -43,65 +51,24 @@ interface CreatePlayerParams {
 function createPlayer({ owner }: CreatePlayerParams) {
   const player = Player.create(
     {
-      carteAcchiappate: ListaDiCarte.create([], {
+      scoredCards: CardList.create([], {
         owner,
       }),
       // giocata: null,
-      hand: ListaDiCarte.create([], { owner }),
+      hand: CardList.create([], { owner }),
     },
-    { owner: worker },
+    { owner },
   );
 
   return player;
 }
 
 function createDeck({ owner }: { owner: Group }) {
-  const cards = [
-    "S1",
-    "S2",
-    "S3",
-    "S4",
-    "S5",
-    "S6",
-    "S7",
-    "S8",
-    "S9",
-    "S10",
-    "C1",
-    "C2",
-    "C3",
-    "C4",
-    "C5",
-    "C6",
-    "C7",
-    "C8",
-    "C9",
-    "C10",
-    "D1",
-    "D2",
-    "D3",
-    "D4",
-    "D5",
-    "D6",
-    "D7",
-    "D8",
-    "D9",
-    "D10",
-    "B1",
-    "B2",
-    "B3",
-    "B4",
-    "B5",
-    "B6",
-    "B7",
-    "B8",
-    "B9",
-    "B10",
-  ];
+  const cards = [...CardValues];
 
   shuffle(cards);
 
-  const deck = ListaDiCarte.create(
+  const deck = CardList.create(
     cards.map((card) => {
       return Card.create({ value: card }, { owner });
     }),

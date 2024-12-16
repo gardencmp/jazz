@@ -1,6 +1,6 @@
 import { CoFeed, CoList, CoMap, co } from "jazz-tools";
 
-export const CardValue = co.literal(
+export const CardValues = [
   "S1",
   "S2",
   "S3",
@@ -41,26 +41,28 @@ export const CardValue = co.literal(
   "B8",
   "B9",
   "B10",
-);
+] as const;
+
+export const CardValue = co.literal(...CardValues);
 
 export class Card extends CoMap {
   value = CardValue;
 }
 
-export class ListaDiCarte extends CoList.Of(co.ref(Card)) {}
+export class CardList extends CoList.Of(co.ref(Card)) {}
 
 export class Player extends CoMap {
   giocata? = co.ref(Card); // write Tavolo - write me - quando un giocatore gioca una carta la scrive qui, il Game la legge, la valida e la mette sul tavolo
-  hand = co.ref(ListaDiCarte); // write Tavolo - read me - quando il Game mi da le carte le scrive qui, quando valida la giocata la toglie da qui
-  carteAcchiappate = co.ref(ListaDiCarte); // write Tavolo - read everyone -
+  hand = co.ref(CardList); // write Tavolo - read me - quando il Game mi da le carte le scrive qui, quando valida la giocata la toglie da qui
+  scoredCards = co.ref(CardList); // write Tavolo - read everyone -
 }
 
 export class Game extends CoMap {
-  deck = co.ref(ListaDiCarte);
+  deck = co.ref(CardList);
 
-  briscola? = co.literal("A", "B", "C", "D");
+  // briscola? = co.literal("A", "B", "C", "D");
   //
-  tavolo? = co.ref(Card);
+  // tavolo? = co.ref(Card);
 
   activePlayer? = co.ref(Player);
   player1 = co.ref(Player);
