@@ -29,7 +29,7 @@ if (
     process.exit(1); // Continue with the build
   } else {
     console.log(`🛑 Skipping build for ${currentAppName} on "docs" branch.`);
-    process.exit(0); // Skip the build
+    process.exit(0); // Skip the build.
   }
 }
 
