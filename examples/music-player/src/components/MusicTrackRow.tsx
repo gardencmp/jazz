@@ -29,7 +29,7 @@ export function MusicTrackRow({
   const track = useCoState(MusicTrack, trackId);
 
   const { me } = useAccount({
-    resolve: { root: { playlists: { each: true } } },
+    resolve: { root: { playlists: { $each: true } } },
   });
 
   const playlists = me?.root.playlists ?? [];

@@ -45,7 +45,7 @@ const VaultPage: React.FC = () => {
   );
   const folders = useCoState(FolderList, me.root?._refs.folders?.id, {
     resolve: {
-      each: { items: { each: true } },
+      $each: { items: { $each: true } },
     },
   });
 

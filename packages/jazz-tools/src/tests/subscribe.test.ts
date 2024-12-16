@@ -149,7 +149,7 @@ describe("subscribeToCoValue", () => {
       {
         resolve: {
           messages: {
-            items: true,
+            $each: true,
           },
         },
       },
@@ -198,7 +198,7 @@ describe("subscribeToCoValue", () => {
       {
         resolve: {
           messages: {
-            items: {
+            $each: {
               reactions: true,
             },
           },
@@ -266,7 +266,7 @@ describe("subscribeToCoValue", () => {
       {
         resolve: {
           messages: {
-            items: {
+            $each: {
               reactions: true,
             },
           },

@@ -14,7 +14,7 @@ export default function UserProfile({ id }: { id: ID<JazzAccount> }) {
     ListOfBookReviews,
     user?.profile?._refs.bookReviews?.id,
     {
-      resolve: { each: true },
+      resolve: { $each: true },
     },
   );
 
