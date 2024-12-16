@@ -1,4 +1,4 @@
-const { execSync } = require("child_process");
+import { execSync } from "child_process";
 
 // Get the current branch name from environment variables or Git
 const branchName =
