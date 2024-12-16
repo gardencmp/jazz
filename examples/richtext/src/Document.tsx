@@ -16,7 +16,8 @@ import { AddMarkStep, ReplaceStep } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import "prosemirror-view/style/prosemirror.css";
 import { useEffect, useState } from "react";
-import { Document, useAccount } from "./app";
+import { useAccount } from "./main";
+import { Document } from "./schema";
 
 /**
  * Component that integrates CoRichText with ProseMirror editor.

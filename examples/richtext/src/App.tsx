@@ -1,39 +1,8 @@
 import { useIframeHashRouter } from "hash-slash";
-import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
-import { CoRichText, Group, ID, Marks } from "jazz-tools";
-import { createRoot } from "react-dom/client";
-import { DocumentComponent } from "./document";
-
-/**
- * Extends CoRichText to represent a collaborative rich text document.
- * Used as the underlying data structure for the ProseMirror editor.
- */
-export class Document extends CoRichText {}
-
-const Jazz = createJazzReactApp();
-export const { useAccount, useCoState } = Jazz;
-
-/**
- * Main component that sets up Jazz and authentication.
- * Provides the Jazz context and handles user authentication state.
- */
-function JazzAndAuth({ children }: { children: React.ReactNode }) {
-  const [auth, state] = useDemoAuth();
-
-  return (
-    <>
-      <Jazz.Provider
-        auth={auth}
-        peer="wss://cloud.jazz.tools/?key=richtext-example-jazz@gcmp.io"
-      >
-        {children}
-      </Jazz.Provider>
-      {state.state !== "signedIn" && (
-        <DemoAuthBasicUI appName="Jazz Richtext Doc" state={state} />
-      )}
-    </>
-  );
-}
+import { Group, ID, Marks } from "jazz-tools";
+import { DocumentComponent } from "./Document";
+import { useAccount } from "./main";
+import { Document } from "./schema";
 
 /**
  * Main application component that handles document creation and routing.
@@ -70,8 +39,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(
-  <JazzAndAuth>
-    <App />
-  </JazzAndAuth>,
-);
+export default App;

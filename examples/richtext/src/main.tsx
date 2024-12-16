@@ -1,7 +1,7 @@
 import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./app.js";
+import App from "./App";
 import "./index.css";
 
 const Jazz = createJazzReactApp();
