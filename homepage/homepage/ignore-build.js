@@ -13,4 +13,4 @@ if (branchName === "main" || branchName.includes("docs")) {
 
 // Skip builds for all other branches
 console.log(`🛑 Ignoring build for branch: ${branchName}`);
-process.exit(0); // Skip build
+process.exit(0); // Skip build.
