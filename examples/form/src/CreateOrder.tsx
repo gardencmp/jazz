@@ -12,7 +12,9 @@ import {
 } from "./schema.ts";
 
 export function CreateOrder() {
-  const { me } = useAccount({ profile: { draft: {}, orders: [] } });
+  const { me } = useAccount({
+    resolve: { profile: { draft: true, orders: true } },
+  });
   const router = useIframeHashRouter();
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -63,7 +65,7 @@ function CreateOrderForm({
   onSave: (draft: DraftBubbleTeaOrder) => void;
 }) {
   const draft = useCoState(DraftBubbleTeaOrder, id, {
-    addOns: [],
+    resolve: { addOns: true },
   });
 
   if (!draft) return;

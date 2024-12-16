@@ -65,7 +65,7 @@ export default function Conversation() {
 
   const loadChat = async (chatId: ID<Chat>) => {
     try {
-      const chat = await Chat.load(chatId, me, []);
+      const chat = await Chat.load(chatId, me);
       setChat(chat);
     } catch (error) {
       console.log("Error loading chat", error);

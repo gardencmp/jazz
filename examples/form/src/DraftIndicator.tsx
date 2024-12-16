@@ -2,7 +2,7 @@ import { useAccount } from "./main.tsx";
 
 export function DraftIndicator() {
   const { me } = useAccount({
-    profile: { draft: {} },
+    resolve: { profile: { draft: true } },
   });
 
   if (me?.profile.draft?.hasChanges) {
