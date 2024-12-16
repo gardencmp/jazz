@@ -3,6 +3,7 @@ import { RawProfile as Profile, RawAccount } from "./coValues/account.js";
 import { RawCoList } from "./coValues/coList.js";
 import { RawCoMap } from "./coValues/coMap.js";
 import { RawBinaryCoStream, RawCoStream } from "./coValues/coStream.js";
+import { RawCoStreamLite } from "./coValues/coStreamLite.js";
 import { RawGroup } from "./coValues/group.js";
 import { RawCoID } from "./ids.js";
 import { JsonObject, JsonValue } from "./jsonValue.js";
@@ -41,7 +42,8 @@ export type AnyRawCoValue =
   | Profile
   | RawCoList
   | RawCoStream
-  | RawBinaryCoStream;
+  | RawBinaryCoStream
+  | RawCoStreamLite;
 
 export function expectMap(content: RawCoValue): RawCoMap {
   if (content.type !== "comap") {

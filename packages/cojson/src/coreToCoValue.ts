@@ -4,6 +4,7 @@ import { RawCoList } from "./coValues/coList.js";
 import { RawCoMap } from "./coValues/coMap.js";
 import { RawCoStream } from "./coValues/coStream.js";
 import { RawBinaryCoStream } from "./coValues/coStream.js";
+import { RawCoStreamLite } from "./coValues/coStreamLite.js";
 import { RawGroup } from "./coValues/group.js";
 
 export function coreToCoValue(
@@ -32,6 +33,8 @@ export function coreToCoValue(
   } else if (core.header.type === "costream") {
     if (core.header.meta && core.header.meta.type === "binary") {
       return new RawBinaryCoStream(core);
+    } else if (core.header.meta && core.header.meta.type === "lite") {
+      return new RawCoStreamLite(core);
     } else {
       return new RawCoStream(core);
     }

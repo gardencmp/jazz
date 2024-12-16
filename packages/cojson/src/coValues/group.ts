@@ -23,6 +23,7 @@ import {
 import { RawCoList } from "./coList.js";
 import { RawCoMap } from "./coMap.js";
 import { RawBinaryCoStream, RawCoStream } from "./coStream.js";
+import { RawCoStreamLite } from "./coStreamLite.js";
 
 export const EVERYONE = "everyone" as const;
 export type Everyone = "everyone";
@@ -519,6 +520,31 @@ export class RawGroup<
         ...uniqueness,
       })
       .getCurrentContent() as C;
+  }
+
+  /**
+   * Creates a new `CoStreamLite` within this group, with the specified specialized
+   * `CoStreamLite` type `L` and optional static metadata.
+   *
+   * @category 3. Value creation
+   */
+  createStreamLite<L extends RawCoStreamLite>(
+    meta: L["headerMeta"] = { type: "lite" },
+    uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique(),
+  ): L {
+    const list = this.core.node
+      .createCoValue({
+        type: "costream",
+        ruleset: {
+          type: "ownedByGroup",
+          group: this.id,
+        },
+        meta: meta || null,
+        ...uniqueness,
+      })
+      .getCurrentContent() as L;
+
+    return list;
   }
 
   /** @category 3. Value creation */
