@@ -10,7 +10,7 @@ if (
   branchName === "main" &&
   process.env.VERCEL_GIT_COMMIT_MESSAGE?.includes("docs")
 ) {
-  // If merging a "docs" branch into "main", skip all apps except "homepage"
+  // If merging a "docs" branch into "main" (commit message contains "docs"), skip all apps except "homepage"
   if (currentAppName === homepageAppName) {
     console.log(
       `✅ Building homepage because a "docs" branch was merged into "main".`,
