@@ -1,9 +1,11 @@
-import { useIframeHashRouter } from "hash-slash";
+import { CreateOrganization } from "./CreateOrganization.tsx";
+import { OrganizationSelector } from "./OrganizationSelector.tsx";
 import { useAccount } from "./main";
 
 function App() {
-  const { me, logOut } = useAccount();
-  const router = useIframeHashRouter();
+  const { me, logOut } = useAccount({
+    root: { draftOrganization: {} },
+  });
 
   return (
     <>
@@ -22,9 +24,8 @@ function App() {
       </header>
 
       <main className="container py-8 space-y-8">
-        {router.route({
-          "/": () => <div>Welcome</div>,
-        })}
+        <OrganizationSelector />
+        <CreateOrganization />
       </main>
     </>
   );
