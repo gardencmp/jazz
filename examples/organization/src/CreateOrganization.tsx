@@ -1,5 +1,6 @@
 import { ID } from "jazz-tools";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Errors } from "./Errors.tsx";
 import { OrganizationForm } from "./OrganizationForm.tsx";
 import { useAccount, useCoState } from "./main.tsx";
@@ -10,8 +11,7 @@ export function CreateOrganization() {
     root: { draftOrganization: {}, organizations: [] },
   });
   const [errors, setErrors] = useState<string[]>([]);
-
-  console.log(me?.root?.draftOrganization);
+  const navigate = useNavigate();
 
   if (!me?.root?.organizations) return;
 
@@ -31,6 +31,8 @@ export function CreateOrganization() {
       },
       { owner: me },
     );
+
+    navigate(`/organizations/${draft.id}`);
   };
 
   return (

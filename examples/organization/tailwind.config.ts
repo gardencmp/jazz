@@ -42,8 +42,8 @@ const config: Config = {
         },
         screens: {
           md: "500px",
-          lg: "500px",
-          xl: "500px",
+          lg: "800px",
+          xl: "1100px",
         },
       },
     },

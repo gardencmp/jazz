@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { useAccount } from "./main.tsx";
 import { Organization } from "./schema.ts";
 
-export function OrganizationSelector() {
+export function OrganizationSelector({ className }: { className?: string }) {
   const { me } = useAccount({
     root: { organizations: [{}] },
   });
@@ -29,12 +29,15 @@ export function OrganizationSelector() {
   }, [organizationId]);
 
   return (
-    <div className="flex gap-2 items-center">
-      <label htmlFor="organization">Organization</label>
+    <div className={[className, "flex flex-col gap-2"].join(" ")}>
+      <label htmlFor="organization" className="md:sr-only">
+        Organization
+      </label>
       <select
         id="organization"
         value={organizationId}
         onChange={(e) => setOrganizationId(e.target.value)}
+        className="dark:bg-transparent w-full"
       >
         {me?.root.organizations.map((organization) => {
           return (

@@ -46,7 +46,7 @@ Collaborative Values (CoValues), build a UI and subscribe to changes, set permis
     ```tsx
     import React from "react"; // old
     import ReactDOM from "react-dom/client"; // old
-    import App from "./App.tsx"; // old
+    import App from "./Router.tsx"; // old
     import "./index.css"; // old
     import {
         createJazzReactApp,
@@ -155,7 +155,7 @@ Simple enough!
 
 To actually see an Issue, we have to create one. This is where things start to get interesting...
 
-Let's modify `src/App.tsx` to prepare for creating an Issue and then rendering it:
+Let's modify `src/Router.tsx` to prepare for creating an Issue and then rendering it:
 
 <CodeGroup>
 {/* prettier-ignore */}
@@ -410,7 +410,7 @@ This works because CoValues
 
 </aside>
 
-We have one subscriber on our Issue, with `useCoState` in `src/App.tsx`, which will cause the `App` component and its children **to** re-render whenever the Issue changes.
+We have one subscriber on our Issue, with `useCoState` in `src/Router.tsx`, which will cause the `App` component and its children **to** re-render whenever the Issue changes.
 
 ### Automatic local & cloud persistence
 
@@ -573,7 +573,7 @@ export class Project extends CoMap {
 
 Now let's change things up a bit in terms of components as well.
 
-First, we'll change `App.tsx` to create and render `Project`s instead of `Issue`s. (We'll move the `useCoState` into the `ProjectComponent` we'll create in a second).
+First, we'll change `Router.tsx` to create and render `Project`s instead of `Issue`s. (We'll move the `useCoState` into the `ProjectComponent` we'll create in a second).
 
 <CodeGroup>
 {/* prettier-ignore */}

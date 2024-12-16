@@ -2,7 +2,6 @@ import { ID } from "jazz-tools";
 import { useParams } from "react-router";
 import { CreateProject } from "./CreateProject.tsx";
 import { Layout } from "./Layout.tsx";
-import { LinkToHome } from "./LinkToHome.tsx";
 import { useCoState } from "./main.tsx";
 import { Organization } from "./schema.ts";
 
@@ -18,30 +17,23 @@ export function OrganizationPage() {
 
   return (
     <Layout>
-      <LinkToHome />
-      <h1>Organization</h1>
-      <p>
-        This is the organization page for <strong>{organization.name}</strong>.
-      </p>
-
-      <div>
-        <h2>
+      <div className="grid gap-8">
+        <h1 className="text-2xl font-medium">
           <strong>Projects</strong>
-        </h2>
+        </h1>
 
-        {organization.projects.length > 0 ? (
-          <ul className="list-disc pl-4">
-            {organization.projects.map((project) =>
-              project ? <li>{project.name}</li> : null,
-            )}
-          </ul>
-        ) : (
-          <p>No projects</p>
-        )}
-      </div>
-
-      <div>
-        <CreateProject organizationId={organization.id} />
+        <div className="grid gap-3 md:grid-cols-3 md:gap-8">
+          {organization.projects.length > 0 ? (
+            organization.projects.map((project) =>
+              project ? <div className="p-3 border">{project.name}</div> : null,
+            )
+          ) : (
+            <p className="col-span-full">You have no projects yet.</p>
+          )}
+        </div>
+        <div className="max-w-md">
+          <CreateProject organizationId={organization.id} />
+        </div>
       </div>
     </Layout>
   );

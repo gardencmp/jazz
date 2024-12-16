@@ -1,8 +1,8 @@
 import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
 import "./index.css";
+import Router from "./Router.tsx";
 import { JazzAccount } from "./schema.ts";
 
 const Jazz = createJazzReactApp({
@@ -33,7 +33,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <JazzAndAuth>
-      <App />
+      <Router />
     </JazzAndAuth>
   </StrictMode>,
 );
