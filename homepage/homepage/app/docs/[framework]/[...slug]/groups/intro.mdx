@@ -1,0 +1,14 @@
+...more docs coming soon
+
+## Adding Group Members by ID
+
+You can add group members by ID by using `Account.load` and `Group.addMember`.
+
+```tsx
+const group = Group.create({ owner: me });
+
+const bob = await Account.load(bobsID, me, []);
+group.addMember(bob, "writer");
+```
+
+...more docs coming soon
