@@ -443,7 +443,16 @@ export class CoValueCore {
       signatureAfter: signatureAfter,
     });
 
-    this._cachedContent = undefined;
+    if (
+      this._cachedContent &&
+      "processNewTransactions" in this._cachedContent &&
+      typeof this._cachedContent.processNewTransactions === "function"
+    ) {
+      this._cachedContent.processNewTransactions();
+    } else {
+      this._cachedContent = undefined;
+    }
+
     this._cachedKnownState = undefined;
     this._cachedDependentOn = undefined;
     this._cachedNewContentSinceEmpty = undefined;

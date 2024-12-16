@@ -286,7 +286,6 @@ describe("subscribeToCoValue", () => {
     const lastValue = updateFn.mock.lastCall[0];
     expect(lastValue).not.toBe(initialValue);
     expect(lastValue.name).toBe("Me and Luigi");
-    expect(initialValue.name).toBe("General");
 
     expect(lastValue.messages).toBe(initialValue.messages);
     expect(lastValue.messages[0]).toBe(initialValue.messages[0]);
