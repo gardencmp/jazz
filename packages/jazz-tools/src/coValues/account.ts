@@ -37,6 +37,7 @@ import {
   subscriptionsScopes,
 } from "../internal.js";
 import { coValuesCache } from "../lib/cache.js";
+import { Inbox } from "./inbox.js";
 
 /** @category Identity & Permissions */
 export class Account extends CoValueBase implements CoValue {
@@ -242,7 +243,7 @@ export class Account extends CoValueBase implements CoValue {
       const profileGroup = Group.create({ owner: this });
       profileGroup.addMember("everyone", "reader");
       this.profile = Profile.create(
-        { name: creationProps.name },
+        { name: creationProps.name, inbox: Inbox.create(this).root },
         { owner: profileGroup },
       );
     }

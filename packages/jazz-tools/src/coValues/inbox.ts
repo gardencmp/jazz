@@ -1,23 +1,28 @@
-import { InviteSecret } from "cojson";
-import { Account, Group, co } from "../internal.js";
+import { InviteSecret, SessionID } from "cojson";
+import { CoStreamItem } from "cojson/src/coValues/coStream.js";
+import { JsonValue } from "fast-check";
+import { type Account, Group, co, resolveAccount } from "../internal.js";
 import { CoFeed } from "./coFeed.js";
 import { CoMap } from "./coMap.js";
 import { CoValue, ID } from "./interfaces.js";
 
-export type WriteOnlyTicket =
-  `writeOnly:${ID<InboxRoot<CoValue>>}/${InviteSecret}`;
-export type AdminTicket = `admin:${ID<InboxRoot<CoValue>>}/${InviteSecret}`;
+export type InboxInvite<M extends CoValue> =
+  `writeOnly:${ID<InboxRoot<M>>}/${InviteSecret}`;
+
+export type TxKey = `${SessionID}/${number}`;
 
 // TODO: We want probably to scale to millions of entries, so we need to optimize more the consumption of the feed
 // or rotate it when a certain size is reached
 export class InboxRoot<M extends CoValue> extends CoMap {
   incoming = co.ref(CoFeed<M>);
-  processed = co.ref(CoFeed<M>);
+  processed = co.ref(CoFeed<TxKey>);
+  failed = co.ref(CoFeed<M>);
 }
 
 type InboxRootWithFeeds<M extends CoValue> = InboxRoot<M> & {
   incoming: CoFeed<M>;
-  processed: CoFeed<M>;
+  processed: CoFeed<TxKey>;
+  failed: CoFeed<M>;
 };
 
 export class Inbox<M extends CoValue> {
@@ -27,49 +32,93 @@ export class Inbox<M extends CoValue> {
     this.root = root;
   }
 
-  async createTickets() {
+  async createInvite(): Promise<InboxInvite<M>> {
     const group = this.root._owner;
     const writeOnlyInvite = group._raw.createInvite("writeOnly");
-    const adminInvite = group._raw.createInvite("admin");
 
-    return {
-      inboxWriteOnlyTicket:
-        `writeOnly:${this.root.id}/${writeOnlyInvite}` as const,
-      inboxAdminTicket: `admin:${this.root.id}/${adminInvite}` as const,
-    };
+    return `writeOnly:${this.root.id}/${writeOnlyInvite}` as const;
+  }
+
+  static async acceptInvite<M extends CoValue>(
+    account: Account,
+    invite: InboxInvite<M>,
+  ) {
+    const id = invite.slice("writeOnly:".length, invite.indexOf("/")) as ID<
+      InboxRoot<M>
+    >;
+
+    const inviteSecret = invite.slice(invite.indexOf("/") + 1) as InviteSecret;
+
+    if (!id?.startsWith("co_z") || !inviteSecret.startsWith("inviteSecret_")) {
+      throw new Error("Invalid inbox ticket");
+    }
+
+    const result = await account.acceptInvite(id, inviteSecret, InboxRoot);
+
+    if (!result) {
+      throw new Error("Failed to accept invite");
+    }
+
+    return result.id;
+  }
+
+  getOwnerAccount() {
+    return resolveAccount(this.root._owner);
   }
 
   subscribe(callback: (id: ID<M>) => Promise<void>) {
-    const processedSet = new Set<ID<M>>();
+    // TODO: Register the subscription to get a % of the new messages
+
+    const processed = new Set<`${SessionID}/${number}`>();
+    const processing = new Set<`${SessionID}/${number}`>();
+    const failed = new Map<`${SessionID}/${number}`, number>();
     const processedFeed = this.root.processed._raw;
+    const failedFeed = this.root.failed._raw;
 
     // TODO: We don't take into account a possible concurrency between multiple Workers
-    for (const session of Object.values(processedFeed.items)) {
-      for (const item of session) {
-        processedSet.add(item.value as ID<M>);
+    for (const items of Object.values(processedFeed.items)) {
+      for (const item of items) {
+        processed.add(item.value as TxKey);
       }
     }
 
     return this.root.incoming.subscribe([], (incoming) => {
-      for (const session of Object.values(incoming._raw.items)) {
-        for (const item of session) {
-          const id = item.value as ID<M>;
+      for (const [sessionID, items] of Object.entries(incoming._raw.items) as [
+        SessionID,
+        CoStreamItem<JsonValue>[],
+      ][]) {
+        for (const item of items) {
+          const txKey = `${sessionID}/${item.tx.txIndex}` as const;
 
-          if (!processedSet.has(id)) {
-            callback(id)
+          if (!processed.has(txKey) && !processing.has(txKey)) {
+            const failures = failed.get(txKey);
+
+            if (failures && failures > 3) {
+              processed.add(txKey);
+              processedFeed.push(txKey);
+              failedFeed.push(item.value);
+              continue;
+            }
+
+            processing.add(txKey);
+
+            callback(item.value as ID<M>)
               .then(() => {
-                processedSet.add(id);
                 // hack: we add a transaction without triggering an update on processedFeed
-                processedFeed.core.makeTransaction([id], "private");
+                processedFeed.push(txKey);
+                processing.delete(txKey);
+                processed.add(txKey);
               })
-              .catch(() => {});
+              .catch(() => {
+                processing.delete(txKey);
+              });
           }
         }
       }
     });
   }
 
-  static create<M extends CoMap>(as: Account) {
+  static create<M extends CoValue>(as: Account) {
     const group = Group.create({
       owner: as,
     });
@@ -79,7 +128,10 @@ export class Inbox<M extends CoValue> {
         incoming: CoFeed.create<CoFeed<M>>([], {
           owner: group,
         }),
-        processed: CoFeed.create<CoFeed<M>>([], {
+        processed: CoFeed.create<CoFeed<TxKey>>([], {
+          owner: group,
+        }),
+        failed: CoFeed.create<CoFeed<M>>([], {
           owner: group,
         }),
       },
@@ -91,52 +143,21 @@ export class Inbox<M extends CoValue> {
     return new Inbox(root as InboxRootWithFeeds<M>);
   }
 
-  static parseTicket<M extends CoValue>(ticket: WriteOnlyTicket | AdminTicket) {
-    let id: ID<InboxRoot<M>> | null = null;
-
-    if (isWriteOnlyInboxTicket(ticket)) {
-      id = ticket.slice("writeOnly:".length, ticket.indexOf("/")) as ID<
-        InboxRoot<M>
-      >;
-    } else if (isAdminInboxTicket(ticket)) {
-      id = ticket.slice("admin:".length, ticket.indexOf("/")) as ID<
-        InboxRoot<M>
-      >;
-    }
-
-    const invite = ticket.slice(ticket.indexOf("/") + 1) as InviteSecret;
-
-    if (!id?.startsWith("co_z") || !invite.startsWith("inviteSecret_")) {
-      throw new Error("Invalid inbox ticket");
-    }
-
-    return {
-      id,
-      invite,
-    };
-  }
-
   static async load<M extends CoValue>(
-    ticket: WriteOnlyTicket | AdminTicket,
+    id: ID<InboxRoot<any>>,
     account: Account,
   ) {
-    const { id, invite } = this.parseTicket<M>(ticket);
-
-    const result = await account.acceptInvite(id, invite, InboxRoot);
-
-    if (!result) {
-      throw new Error("Failed to accept invite");
-    }
-
     const root = await InboxRoot.load<
       InboxRoot<M>,
       {
         incoming: [];
         processed: [];
+        failed: [];
       }
     >(id, account, {
       incoming: [],
       processed: [],
+      failed: [],
     });
 
     if (!root) {
@@ -145,14 +166,4 @@ export class Inbox<M extends CoValue> {
 
     return new Inbox(root);
   }
-}
-
-export function isWriteOnlyInboxTicket(
-  ticket: string,
-): ticket is WriteOnlyTicket {
-  return ticket.startsWith("writeOnly:");
-}
-
-export function isAdminInboxTicket(ticket: string): ticket is AdminTicket {
-  return ticket.startsWith("admin:");
 }

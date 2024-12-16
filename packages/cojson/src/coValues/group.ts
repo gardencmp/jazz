@@ -77,6 +77,14 @@ export class RawGroup<
     return this.roleOfInternal(accountID)?.role;
   }
 
+  getRoleFromInviteSecret(inviteSecret: InviteSecret): Role | undefined {
+    const inviteAgentSecret = this.core.node.crypto.agentSecretFromSecretSeed(
+      secretSeedFromInviteSecret(inviteSecret),
+    );
+    const agentID = this.core.node.crypto.getAgentID(inviteAgentSecret);
+    return this.roleOfInternal(agentID)?.role;
+  }
+
   /** @internal */
   roleOfInternal(
     accountID: RawAccountID | AgentID | typeof EVERYONE,

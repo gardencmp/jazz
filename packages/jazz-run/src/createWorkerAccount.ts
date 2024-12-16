@@ -1,5 +1,5 @@
 import { createWebSocketPeer } from "cojson-transport-ws";
-import { Account, WasmCrypto, isControlledAccount } from "jazz-tools";
+import { Account, Inbox, WasmCrypto, isControlledAccount } from "jazz-tools";
 import { WebSocket } from "ws";
 
 export const createWorkerAccount = async ({
@@ -27,19 +27,14 @@ export const createWorkerAccount = async ({
     throw new Error("account is not a controlled account");
   }
 
-  const accountCoValue = account._raw.core;
-  const accountProfileCoValue = account.profile!._raw.core;
-  const syncManager = account._raw.core.node.syncManager;
-
-  await Promise.all([
-    syncManager.syncCoValue(accountCoValue),
-    syncManager.syncCoValue(accountProfileCoValue),
-  ]);
+  const inbox = await Inbox.load(account.profile!.inbox!.id, account);
+  const inboxInvite = inbox.createInvite();
 
   await account.waitForAllCoValuesSync({ timeout: 4_000 });
 
   return {
     accountId: account.id,
     agentSecret: account._raw.agentSecret,
+    inboxInvite,
   };
 };

@@ -4,7 +4,6 @@ import { Command, Options } from "@effect/cli";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Console, Effect } from "effect";
 import { createWorkerAccount } from "./createWorkerAccount.js";
-import { createWorkerInbox } from "./createWorkerInbox.js";
 import { startSyncServer } from "./startSyncServer.js";
 
 const jazzTools = Command.make("jazz-tools");
@@ -20,37 +19,17 @@ const createAccountCommand = Command.make(
   { name: nameOption, peer: peerOption, json: jsonOption },
   ({ name, peer, json }) => {
     return Effect.gen(function* () {
-      const { accountId, agentSecret } = yield* Effect.promise(() =>
-        createWorkerAccount({ name, peer }),
+      const { accountId, agentSecret, inboxInvite } = yield* Effect.promise(
+        () => createWorkerAccount({ name, peer }),
       );
 
       if (json) {
-        Console.log(JSON.stringify({ accountId, agentSecret }));
+        Console.log(JSON.stringify({ accountId, agentSecret, inboxInvite }));
       } else {
         yield* Console.log(`# Credentials for Jazz account "${name}":
 JAZZ_WORKER_ACCOUNT=${accountId}
 JAZZ_WORKER_SECRET=${agentSecret}
-`);
-      }
-    });
-  },
-);
-
-const createInboxCommand = Command.make(
-  "create",
-  { peer: peerOption, json: jsonOption },
-  ({ peer, json }) => {
-    return Effect.gen(function* () {
-      const { inboxWriteOnlyTicket, inboxAdminTicket } = yield* Effect.promise(
-        () => createWorkerInbox({ peer }),
-      );
-
-      if (json) {
-        Console.log(JSON.stringify({ inboxWriteOnlyTicket, inboxAdminTicket }));
-      } else {
-        yield* Console.log(`# Tickets for Jazz inbox:
-JAZZ_WORKER_INBOX_WRITE_ONLY_TICKET=${inboxWriteOnlyTicket}
-JAZZ_WORKER_INBOX_ADMIN_TICKET=${inboxAdminTicket}
+JAZZ_WORKER_INBOX_INVITE=${inboxInvite}
 `);
       }
     });
@@ -59,9 +38,6 @@ JAZZ_WORKER_INBOX_ADMIN_TICKET=${inboxAdminTicket}
 
 const accountCommand = Command.make("account").pipe(
   Command.withSubcommands([createAccountCommand]),
-);
-const inboxCommand = Command.make("inbox").pipe(
-  Command.withSubcommands([createInboxCommand]),
 );
 
 const portOption = Options.text("port")
@@ -103,11 +79,7 @@ const startSyncServerCommand = Command.make(
 );
 
 const command = jazzTools.pipe(
-  Command.withSubcommands([
-    accountCommand,
-    inboxCommand,
-    startSyncServerCommand,
-  ]),
+  Command.withSubcommands([accountCommand, startSyncServerCommand]),
 );
 
 const cli = Command.run(command, {
