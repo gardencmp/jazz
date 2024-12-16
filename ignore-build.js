@@ -33,7 +33,7 @@ if (
   }
 }
 
-// Default behavior: build everything
+// Default behavior: build everything.
 console.log(
   `✅ Proceeding with build for ${currentAppName} on branch ${branchName}.`,
 );
