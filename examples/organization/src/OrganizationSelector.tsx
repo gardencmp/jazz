@@ -28,6 +28,17 @@ export function OrganizationSelector({ className }: { className?: string }) {
     }
   }, [organizationId]);
 
+  const onSelectOrganization = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+
+    if (value === "add") {
+      navigate("/#");
+      return;
+    }
+
+    setOrganizationId(e.target.value);
+  };
+
   return (
     <div className={[className, "flex flex-col gap-2"].join(" ")}>
       <label htmlFor="organization" className="md:sr-only">
@@ -36,7 +47,7 @@ export function OrganizationSelector({ className }: { className?: string }) {
       <select
         id="organization"
         value={organizationId}
-        onChange={(e) => setOrganizationId(e.target.value)}
+        onChange={onSelectOrganization}
         className="dark:bg-transparent w-full"
       >
         {me?.root.organizations.map((organization) => {
@@ -46,6 +57,8 @@ export function OrganizationSelector({ className }: { className?: string }) {
             </option>
           );
         })}
+
+        <option value="add">+ Create new organization</option>
       </select>
     </div>
   );

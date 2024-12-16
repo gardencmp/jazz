@@ -1,15 +1,21 @@
+import { ID } from "jazz-tools";
+import { useParams } from "react-router";
 import { OrganizationSelector } from "./OrganizationSelector.tsx";
 import { useAccount } from "./main.tsx";
+import { Organization } from "./schema.ts";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { me, logOut } = useAccount({
     root: { draftOrganization: {} },
   });
 
+  const paramOrganizationId = useParams<{ organizationId: ID<Organization> }>()
+    .organizationId;
+
   return (
     <div className="flex flex-col gap-10">
       <header className="flex gap-4 items-center border-b px-4 py-3">
-        <a href="/#">Home</a>
+        <a href={`/#/organizations/${paramOrganizationId}`}>Home</a>
 
         <OrganizationSelector className="hidden md:block" />
 

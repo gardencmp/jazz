@@ -31,7 +31,8 @@ export function OrganizationPage() {
             <p className="col-span-full">You have no projects yet.</p>
           )}
         </div>
-        <div className="max-w-md">
+
+        <div>
           <CreateProject organizationId={organization.id} />
         </div>
       </div>

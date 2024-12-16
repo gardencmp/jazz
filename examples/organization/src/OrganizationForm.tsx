@@ -8,7 +8,7 @@ export function OrganizationForm({
   onSave?: (e: React.FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <form onSubmit={onSave} className="grid gap-5">
+    <form onSubmit={onSave} className="grid gap-5 max-w-md">
       <div className="flex flex-col gap-2">
         <label htmlFor="name">Organization name</label>
         <input
