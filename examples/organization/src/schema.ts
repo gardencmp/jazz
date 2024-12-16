@@ -4,6 +4,22 @@ export class Project extends CoMap {
   name = co.string;
 }
 
+export class DraftProject extends CoMap {
+  name = co.optional.string;
+
+  validate() {
+    const errors: string[] = [];
+
+    if (!this.name) {
+      errors.push("Please enter a name.");
+    }
+
+    return {
+      errors,
+    };
+  }
+}
+
 export class ListOfProjects extends CoList.Of(co.ref(Project)) {}
 
 export class Organization extends CoMap {
@@ -33,6 +49,7 @@ export class ListOfOrganizations extends CoList.Of(co.ref(Organization)) {}
 export class JazzAccountRoot extends CoMap {
   organizations = co.ref(ListOfOrganizations);
   draftOrganization = co.ref(DraftOrganization);
+  draftProject = co.ref(DraftProject);
 }
 
 export class JazzAccount extends Account {
@@ -46,6 +63,7 @@ export class JazzAccount extends Account {
 
       this.root = JazzAccountRoot.create(
         {
+          draftProject: DraftProject.create({}, ownership),
           draftOrganization: DraftOrganization.create(
             {
               projects: ListOfProjects.create([], ownership),

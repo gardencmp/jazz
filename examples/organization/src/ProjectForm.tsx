@@ -1,23 +1,23 @@
-import { DraftOrganization, Organization } from "./schema.ts";
+import { DraftProject, Project } from "./schema.ts";
 
-export function OrganizationForm({
-  organization,
+export function ProjectForm({
+  project,
   onSave,
 }: {
-  organization: Organization | DraftOrganization;
+  project: Project | DraftProject;
   onSave?: (e: React.FormEvent<HTMLFormElement>) => void;
 }) {
   return (
     <form onSubmit={onSave} className="grid gap-5">
       <div className="flex flex-col gap-2">
-        <label htmlFor="name">Organization name</label>
+        <label htmlFor="name">Project name</label>
         <input
           type="text"
           name="name"
           id="name"
-          value={organization.name}
+          value={project.name}
           className="dark:bg-transparent"
-          onChange={(e) => (organization.name = e.target.value)}
+          onChange={(e) => (project.name = e.target.value)}
           required
         />
       </div>
