@@ -4,5 +4,5 @@
       "APP_NAME": "jazz-todo"
     }
   },
-  "ignoreCommand": "node ../../ignore-build.js"
+  "ignoreCommand": "node ../../ignore-vercel-build.js"
 }

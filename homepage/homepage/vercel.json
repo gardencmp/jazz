@@ -4,5 +4,5 @@
       "APP_NAME": "jazz-homepage"
     }
   },
-  "ignoreCommand": "node ../../ignore-build.js"
+  "ignoreCommand": "node ../../ignore-vercel-build.js"
 }
