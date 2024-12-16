@@ -41,7 +41,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Pnpm Build
-        run: pnpm turbo build
+        run: pnpm turbo build --filter="./packages/*"
 
       - name: Unit Tests
         run: pnpm test:ci

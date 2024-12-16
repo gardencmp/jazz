@@ -1,5 +1,22 @@
 # cojson-storage-sqlite
 
+## 0.8.40
+
+### Patch Changes
+
+- Updated dependencies [e905c84]
+  - cojson-storage@0.8.40
+
+## 0.8.39
+
+### Patch Changes
+
+- ecc7c96: Bump better-sqlite3 dependency, which drops support for Node v21
+- Updated dependencies [249eecb]
+- Updated dependencies [3121551]
+  - cojson@0.8.39
+  - cojson-storage@0.8.39
+
 ## 0.8.38
 
 ### Patch Changes

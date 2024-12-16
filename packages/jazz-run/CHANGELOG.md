@@ -1,5 +1,25 @@
 # jazz-run
 
+## 0.8.40
+
+### Patch Changes
+
+- cojson-storage-sqlite@0.8.40
+
+## 0.8.39
+
+### Patch Changes
+
+- 96f844a: Make possible to use startSyncServer and createWorkerAccount via code
+- 249eecb: Refactored to use the new waitForAllCoValuesSync API
+- Updated dependencies [249eecb]
+- Updated dependencies [3121551]
+- Updated dependencies [ecc7c96]
+  - jazz-tools@0.8.39
+  - cojson@0.8.39
+  - cojson-storage-sqlite@0.8.39
+  - cojson-transport-ws@0.8.39
+
 ## 0.8.38
 
 ### Patch Changes

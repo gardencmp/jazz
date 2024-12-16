@@ -1,6 +1,6 @@
 {
   "name": "jazz-react-native",
-  "version": "0.8.38",
+  "version": "0.8.39",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -27,11 +27,11 @@
     "react-native": "*"
   },
   "devDependencies": {
-    "@react-native-community/netinfo": "^11.3.1",
-    "expo-linking": "~6.3.1",
-    "expo-secure-store": "~13.0.2",
-    "react-native": "~0.74.5",
-    "typescript": "^5.3.3"
+    "@react-native-community/netinfo": "^11.4.1",
+    "expo-linking": "~7.0.3",
+    "expo-secure-store": "~14.0.0",
+    "react-native": "~0.76.3",
+    "typescript": "~5.6.2"
   },
   "scripts": {
     "dev": "tsc --watch --sourceMap --outDir dist",

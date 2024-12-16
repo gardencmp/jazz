@@ -1,0 +1,96 @@
+import { CodeGroup } from "@/components/forMdx";
+
+# Svelte Installation
+
+Jazz can be used with Svelte or in a SvelteKit app.
+
+To add some Jazz to your Svelte app, you can use the following steps:
+
+1. Install Jazz dependencies
+
+<CodeGroup>
+```sh
+pnpm install jazz-tools jazz-svelte
+```
+</CodeGroup>
+
+2. Write your schema
+
+See the [schema docs](/docs/schemas/covalues) for more information.
+
+<CodeGroup>
+```ts
+// src/lib/schema.ts
+import { Account, Profile, co } from "jazz-tools";
+
+export class MyProfile extends Profile {
+  name = co.string;
+  counter = co.number; // This will be publically visible
+}
+
+export class MyAccount extends Account {
+  profile = co.ref(MyProfile);
+
+  // ...
+}
+```
+</CodeGroup>
+
+3. Create a Jazz interface for your app
+
+<CodeGroup>
+```ts
+// src/lib/jazz.ts
+import { createJazzApp } from "jazz-svelte";
+import { MyAccount } from "./schema";
+
+// Create a Jazz app instance and export its hooks and Provider
+export const { Provider, useCoState, useAccount } = createJazzApp({
+  AccountSchema: MyAccount
+});
+```
+</CodeGroup>
+
+4. Set up the Provider in your root layout
+
+<CodeGroup>
+```svelte
+<!-- src/routes/+layout.svelte -->
+<script lang="ts">
+  import { Provider } from '$lib/jazz';
+
+  // Example configuration for authentication and peer connection
+  let auth = null; // Replace with your auth implementation
+  let peer = "wss://your-peer-endpoint";
+</script>
+
+<Provider {auth} {peer}>
+  <App />
+</Provider>
+```
+</CodeGroup>
+
+5. Use Jazz hooks in your components
+
+<CodeGroup>
+```svelte
+<!-- src/routes/+page.svelte -->
+<script lang="ts">
+  import { useCoState, useAccount } from '$lib/jazz';
+
+  const { me } = useAccount();
+
+  const counter = $derived(useCoState(co.number, me.profile.counter));
+
+  function increment() {
+    me.profile.counter = counter + 1;
+  }
+</script>
+
+<button on:click={increment}>
+  Count: {counter}
+</button>
+```
+</CodeGroup>
+
+For a complete example of Jazz with Svelte, check out our [file sharing example](https://github.com/gardencmp/jazz/tree/main/examples/file-share-svelte) which demonstrates, Passkey authentication, file uploads and access control.

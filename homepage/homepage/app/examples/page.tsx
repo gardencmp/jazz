@@ -6,7 +6,16 @@ import { VueLogo } from "@/components/icons/VueLogo";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
-import { CloudUploadIcon, FingerprintIcon, ImageIcon } from "lucide-react";
+import {
+  CloudUploadIcon,
+  FingerprintIcon,
+  FolderArchiveIcon,
+  Icon,
+  ImageIcon,
+  LockIcon,
+  PencilLineIcon,
+  UserPlusIcon,
+} from "lucide-react";
 
 import {
   Schema_ts as ImageUploadSchema,
@@ -18,6 +27,7 @@ import {
 } from "@/codeSamples/examples/reactions/src";
 import { ExampleCard } from "@/components/examples/ExampleCard";
 import { ExampleDemo } from "@/components/examples/ExampleDemo";
+import { SvelteLogo } from "@/components/icons/SvelteLogo";
 import { Example, features, tech } from "@/lib/example";
 
 const MockButton = ({ children }: { children: React.ReactNode }) => (
@@ -47,6 +57,45 @@ const ChatIllustration = () => (
 const ClerkIllustration = () => (
   <div className="flex items-center justify-center h-full p-8">
     <ClerkFullLogo className="w-36 h-auto" />
+  </div>
+);
+
+const FormIllustration = () => (
+  <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
+    <div className="p-3 flex flex-col rounded-md shadow-xl shadow-stone-400/20 bg-white sm:p-5 dark:shadow-none">
+      <div className="w-16 h-1 rounded-full bg-stone-400 mb-1.5" />
+      <div className="w-40 h-5 rounded border mb-3 dark:border-stone-500" />
+      <div className="w-16 h-1 rounded-full bg-stone-400 mb-1.5 hidden sm:block" />
+      <div className="w-40 h-5 rounded border mb-3 hidden sm:block dark:border-stone-500" />
+
+      <div className="flex items-center gap-2 mb-5">
+        <div className="w-3 h-3 rounded border dark:border-stone-500" />
+        <div className="w-16 h-1 rounded-full bg-stone-400" />
+      </div>
+      <MockButton>Submit</MockButton>
+    </div>
+  </div>
+);
+
+const OnboardingIllustration = () => (
+  <div className="flex h-full flex-col justify-center text-sm dark:bg-transparent">
+    <div className="mx-auto grid gap-3">
+      {[
+        { icon: UserPlusIcon, text: "Add new employee" },
+        {
+          icon: PencilLineIcon,
+          text: "Invite employee to fill in their profile",
+        },
+        { icon: LockIcon, text: "Get confirmation from admin" },
+      ].map(({ text, icon: Icon }, index) => (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-green-800 bg-green-100 leading-none font-medium text-center p-1.5 block rounded-full dark:bg-green-800 dark:text-green-200">
+            <Icon strokeWidth={2} size={15} />
+          </span>
+          {text}
+        </div>
+      ))}
+    </div>
   </div>
 );
 
@@ -191,6 +240,39 @@ const PasswordManagerIllustration = () => (
   </div>
 );
 
+const FileShareIllustration = () => (
+  <div className="flex flex-col items-center justify-center h-full gap-3 p-8">
+    <p>This file was shared with you.</p>
+    <div className="p-3 w-full border rounded-lg flex justify-between gap-5">
+      <div className="flex items-center gap-2">
+        <FolderArchiveIcon
+          size={24}
+          strokeWidth={1.5}
+          className="stroke-blue dark:stroke-blue-500"
+        />
+        <p className="whitespace-nowrap text-stone-900 dark:text-white">
+          top-secret.zip
+        </p>
+      </div>
+
+      <MockButton>Download</MockButton>
+    </div>
+  </div>
+);
+
+const PasskeyIllustration = () => (
+  <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
+    <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
+      <FingerprintIcon
+        size={36}
+        strokeWidth={0.75}
+        className="stroke-red-600"
+      />
+      <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
+    </div>
+  </div>
+);
+
 const reactExamples: Example[] = [
   {
     name: "Chat",
@@ -256,18 +338,24 @@ const reactExamples: Example[] = [
     tech: [tech.react],
     features: [features.passkey],
     demoUrl: "https://passkey-demo.jazz.tools",
-    illustration: (
-      <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
-        <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
-          <FingerprintIcon
-            size={36}
-            strokeWidth={0.75}
-            className="stroke-red-600"
-          />
-          <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
-        </div>
-      </div>
-    ),
+    illustration: <PasskeyIllustration />,
+  },
+  {
+    name: "Form",
+    slug: "form",
+    description: "A form example for creating and editing CoValues",
+    tech: [tech.react],
+    demoUrl: "https://form-demo.jazz.tools",
+    illustration: <FormIllustration />,
+  },
+  {
+    name: "HR Onboarding",
+    slug: "onboarding",
+    description:
+      "See how admin and writer permissions work while onboarding new employees",
+    tech: [tech.react],
+    features: [features.imageUpload, features.inviteLink],
+    illustration: <OnboardingIllustration />,
   },
 ];
 
@@ -368,6 +456,25 @@ const demos = [
   },
 ];
 
+const svelteExamples: Example[] = [
+  {
+    name: "Passkey",
+    slug: "passkey-svelte",
+    description: "A Svelte app that uses Passkey for authentication",
+    tech: [tech.svelte],
+    features: [features.passkey],
+    illustration: <PasskeyIllustration />,
+  },
+  {
+    name: "File share",
+    slug: "file-share-svelte",
+    description: "Upload a file, then share the link for others to download.",
+    tech: [tech.svelte],
+    features: [features.fileUpload, features.passkey, features.inviteLink],
+    illustration: <FileShareIllustration />,
+  },
+];
+
 const categories = [
   {
     name: "React",
@@ -392,6 +499,12 @@ const categories = [
     id: "vue",
     logo: VueLogo,
     examples: vueExamples,
+  },
+  {
+    name: "Svelte",
+    id: "svelte",
+    logo: SvelteLogo,
+    examples: svelteExamples,
   },
 ];
 

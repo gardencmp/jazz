@@ -60,11 +60,6 @@ export class SyncManager {
 
     const firstNewTxIdx = peerKnownState.sessions[sessionRow.sessionID] || 0;
 
-    const signaturesAndIdxs = await this.dbClient.getSignatures(
-      sessionRow.rowID,
-      firstNewTxIdx,
-    );
-
     const newTxsInSession = await this.dbClient.getNewTransactionInSession(
       sessionRow.rowID,
       firstNewTxIdx,
@@ -74,8 +69,6 @@ export class SyncManager {
       newTxsInSession,
       newContentMessages,
       sessionRow,
-      signaturesAndIdxs,
-      peerKnownState,
       firstNewTxIdx,
     });
   }

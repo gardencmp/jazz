@@ -1,5 +1,15 @@
 # jazz-example-inspector
 
+## 0.0.86
+
+### Patch Changes
+
+- e386f2b: Automatically set up the Cmd+J listener if 'allowJazzInspector' is present in the URL. Cmd+J opens inspector.jazz.tools with the current user's account.
+- Updated dependencies [249eecb]
+- Updated dependencies [3121551]
+  - cojson@0.8.39
+  - cojson-transport-ws@0.8.39
+
 ## 0.0.85
 
 ### Patch Changes

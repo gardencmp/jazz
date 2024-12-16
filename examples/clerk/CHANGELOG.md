@@ -1,5 +1,21 @@
 # minimal-auth-clerk
 
+## 0.0.17
+
+### Patch Changes
+
+- jazz-react@0.8.40
+- jazz-react-auth-clerk@0.8.40
+
+## 0.0.16
+
+### Patch Changes
+
+- Updated dependencies [249eecb]
+  - jazz-tools@0.8.39
+  - jazz-react@0.8.39
+  - jazz-react-auth-clerk@0.8.39
+
 ## 0.0.15
 
 ### Patch Changes
