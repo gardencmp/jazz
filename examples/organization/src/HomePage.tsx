@@ -1,6 +1,6 @@
 import { Layout } from "./Layout.tsx";
+import { CreateOrganization } from "./components/CreateOrganization.tsx";
 import { Heading } from "./components/Heading.tsx";
-import { CreateOrganization } from "./components/organization/CreateOrganization.tsx";
 
 export function HomePage() {
   return (

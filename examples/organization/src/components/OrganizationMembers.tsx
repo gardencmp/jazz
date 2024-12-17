@@ -1,6 +1,6 @@
 import { Account, Group, ID } from "jazz-tools";
-import { useCoState } from "../../main.tsx";
-import { Organization } from "../../schema.ts";
+import { useCoState } from "../main.tsx";
+import { Organization } from "../schema.ts";
 
 export function OrganizationMembers({
   organization,

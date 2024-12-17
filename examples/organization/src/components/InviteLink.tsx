@@ -1,7 +1,7 @@
 import { createInviteLink } from "jazz-react";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Organization } from "../../schema.ts";
+import { Organization } from "../schema.ts";
 
 export function InviteLink({ organization }: { organization: Organization }) {
   const [inviteLink, setInviteLink] = useState<string>();

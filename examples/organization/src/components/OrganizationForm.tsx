@@ -1,4 +1,4 @@
-import { DraftOrganization, Organization } from "../../schema.ts";
+import { DraftOrganization, Organization } from "../schema.ts";
 
 export function OrganizationForm({
   organization,

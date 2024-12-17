@@ -1,4 +1,4 @@
-import { OrganizationSelector } from "./organization/OrganizationSelector.tsx";
+import { OrganizationSelector } from "./OrganizationSelector.tsx";
 
 export function Heading({ text }: { text: string }) {
   return (
