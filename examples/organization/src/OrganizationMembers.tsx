@@ -1,5 +1,4 @@
 import { Account, Group, ID } from "jazz-tools";
-import { AddMember } from "./AddMember.tsx";
 import { Member } from "./Member.tsx";
 import { Organization } from "./schema.ts";
 
@@ -17,7 +16,6 @@ export function OrganizationMembers({
           role={member.role}
         />
       ))}
-      <AddMember organization={organization} />
     </div>
   );
 }

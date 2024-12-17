@@ -960,6 +960,9 @@ importers:
       jazz-tools:
         specifier: workspace:*
         version: link:../../packages/jazz-tools
+      lucide-react:
+        specifier: ^0.274.0
+        version: 0.274.0(react@18.3.1)
       react:
         specifier: 18.3.1
         version: 18.3.1

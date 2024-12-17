@@ -1,4 +1,5 @@
 import { RouterProvider, createHashRouter } from "react-router-dom";
+import { AcceptInvite } from "./AcceptInvite.tsx";
 import { HomePage } from "./HomePage.tsx";
 import { OrganizationPage } from "./OrganizationPage.tsx";
 
@@ -11,6 +12,10 @@ function Router() {
     {
       path: "/organizations/:organizationId",
       element: <OrganizationPage />,
+    },
+    {
+      path: "/invite/*",
+      element: <AcceptInvite />,
     },
   ]);
 

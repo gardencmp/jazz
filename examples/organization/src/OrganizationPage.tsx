@@ -1,6 +1,7 @@
 import { ID } from "jazz-tools";
 import { useParams } from "react-router";
 import { CreateProject } from "./CreateProject.tsx";
+import { InviteLink } from "./InviteLink.tsx";
 import { Layout } from "./Layout.tsx";
 import { OrganizationMembers } from "./OrganizationMembers.tsx";
 import { useCoState } from "./main.tsx";
@@ -19,18 +20,25 @@ export function OrganizationPage() {
   return (
     <Layout>
       <div className="grid gap-8">
+        <h1>Welcome to {organization.name}!</h1>
+
         <div>
-          <h1 className="text-2xl font-medium mb-3">
-            <strong>Members</strong>
-          </h1>
+          <div className="flex justify-between items-center gap-3 mb-3">
+            <h2 className="text-xl font-medium">
+              <strong>Members</strong>
+            </h2>
+            {organization._owner.myRole() === "admin" && (
+              <InviteLink organization={organization} />
+            )}
+          </div>
 
           <OrganizationMembers organization={organization} />
         </div>
 
         <div>
-          <h1 className="text-2xl font-medium mb-3">
+          <h2 className="text-xl font-medium mb-3">
             <strong>Projects</strong>
-          </h1>
+          </h2>
 
           <div className="grid gap-3 md:grid-cols-3 md:gap-8">
             {organization.projects.length > 0 ? (

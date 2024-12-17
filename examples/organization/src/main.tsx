@@ -9,7 +9,7 @@ const Jazz = createJazzReactApp({
   AccountSchema: JazzAccount,
 });
 
-export const { useAccount, useCoState } = Jazz;
+export const { useAccount, useCoState, useAcceptInvite } = Jazz;
 
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
   const [auth, authState] = useDemoAuth();
