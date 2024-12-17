@@ -14,10 +14,7 @@ export { Encoders, co } from "./internal.js";
 
 export {
   Inbox,
-  type AdminTicket,
-  type WriteOnlyTicket,
-  isAdminInboxTicket,
-  isWriteOnlyInboxTicket,
+  type InboxInvite,
 } from "./coValues/inbox.js";
 
 export {

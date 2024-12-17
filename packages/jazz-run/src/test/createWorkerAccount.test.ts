@@ -25,12 +25,12 @@ describe("createWorkerAccount - integration tests", () => {
       throw new Error("Server address is not an object");
     }
 
-    const { accountId, agentSecret } = await createWorkerAccount({
+    const { accountID, agentSecret } = await createWorkerAccount({
       name: "test",
       peer: `ws://localhost:${address.port}`,
     });
 
-    expect(accountId).toBeDefined();
+    expect(accountID).toBeDefined();
     expect(agentSecret).toBeDefined();
 
     const peer = createWebSocketPeer({
@@ -46,16 +46,16 @@ describe("createWorkerAccount - integration tests", () => {
       crypto,
     });
 
-    expect(await node.load(accountId as any)).not.toBe("unavailable");
+    expect(await node.load(accountID as any)).not.toBe("unavailable");
   });
 
   it("should create a worker account using the Jazz cloud", async () => {
-    const { accountId, agentSecret } = await createWorkerAccount({
+    const { accountID, agentSecret } = await createWorkerAccount({
       name: "test",
       peer: `wss://cloud.jazz.tools`,
     });
 
-    expect(accountId).toBeDefined();
+    expect(accountID).toBeDefined();
     expect(agentSecret).toBeDefined();
 
     const peer = createWebSocketPeer({
@@ -71,6 +71,6 @@ describe("createWorkerAccount - integration tests", () => {
       crypto,
     });
 
-    expect(await node.load(accountId as any)).not.toBe("unavailable");
+    expect(await node.load(accountID as any)).not.toBe("unavailable");
   });
 });

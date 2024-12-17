@@ -72,7 +72,9 @@ export async function startWorker<Acc extends Account, M extends CoValue>(
   let unsubscribe = () => {};
 
   if (options.onInboxMessage) {
-    const profile = await Profile.load(account._refs.profile?.id, account, {
+    const profile = account.profile!;
+
+    await profile.ensureLoaded({
       inbox: {},
     });
 
@@ -80,7 +82,7 @@ export async function startWorker<Acc extends Account, M extends CoValue>(
       throw new Error("Profile has no inbox");
     }
 
-    const inbox = await Inbox.load<M>(profile.inbox?.id, account);
+    const inbox = await Inbox.load(profile.inbox?.id, account);
 
     unsubscribe = inbox.subscribe(options.onInboxMessage);
   }

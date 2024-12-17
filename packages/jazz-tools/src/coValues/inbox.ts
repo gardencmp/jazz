@@ -6,45 +6,41 @@ import { CoFeed } from "./coFeed.js";
 import { CoMap } from "./coMap.js";
 import { CoValue, ID } from "./interfaces.js";
 
-export type InboxInvite<M extends CoValue> =
-  `writeOnly:${ID<InboxRoot<M>>}/${InviteSecret}`;
+export type InboxInvite = `writeOnly:${ID<InboxRoot>}/${InviteSecret}`;
 
 export type TxKey = `${SessionID}/${number}`;
 
 // TODO: We want probably to scale to millions of entries, so we need to optimize more the consumption of the feed
 // or rotate it when a certain size is reached
-export class InboxRoot<M extends CoValue> extends CoMap {
-  incoming = co.ref(CoFeed<M>);
-  processed = co.ref(CoFeed<TxKey>);
-  failed = co.ref(CoFeed<M>);
+export class InboxRoot extends CoMap {
+  incoming = co.ref(CoFeed.Of(co.string));
+  processed = co.ref(CoFeed.Of(co.string));
+  failed = co.ref(CoFeed.Of(co.string));
 }
 
-type InboxRootWithFeeds<M extends CoValue> = InboxRoot<M> & {
-  incoming: CoFeed<M>;
-  processed: CoFeed<TxKey>;
-  failed: CoFeed<M>;
+type InboxRootWithFeeds = InboxRoot & {
+  incoming: CoFeed<string>;
+  processed: CoFeed<string>;
+  failed: CoFeed<string>;
 };
 
-export class Inbox<M extends CoValue> {
-  root: InboxRootWithFeeds<M>;
+export class Inbox {
+  root: InboxRootWithFeeds;
 
-  private constructor(root: InboxRootWithFeeds<M>) {
+  private constructor(root: InboxRootWithFeeds) {
     this.root = root;
   }
 
-  async createInvite(): Promise<InboxInvite<M>> {
-    const group = this.root._owner;
+  createInvite() {
+    const group = this.root.incoming._owner;
     const writeOnlyInvite = group._raw.createInvite("writeOnly");
 
-    return `writeOnly:${this.root.id}/${writeOnlyInvite}` as const;
+    return `writeOnly:${this.root.incoming.id}/${writeOnlyInvite}` as const;
   }
 
-  static async acceptInvite<M extends CoValue>(
-    account: Account,
-    invite: InboxInvite<M>,
-  ) {
+  static async acceptInvite(invite: string, account: Account) {
     const id = invite.slice("writeOnly:".length, invite.indexOf("/")) as ID<
-      InboxRoot<M>
+      CoFeed<string>
     >;
 
     const inviteSecret = invite.slice(invite.indexOf("/") + 1) as InviteSecret;
@@ -53,20 +49,24 @@ export class Inbox<M extends CoValue> {
       throw new Error("Invalid inbox ticket");
     }
 
-    const result = await account.acceptInvite(id, inviteSecret, InboxRoot);
+    const result = await account.acceptInvite(
+      id,
+      inviteSecret,
+      CoFeed.Of(co.string),
+    );
 
     if (!result) {
       throw new Error("Failed to accept invite");
     }
 
-    return result.id;
+    return result;
   }
 
   getOwnerAccount() {
     return resolveAccount(this.root._owner);
   }
 
-  subscribe(callback: (id: ID<M>) => Promise<void>) {
+  subscribe<V extends CoValue>(callback: (id: ID<V>) => Promise<void>) {
     // TODO: Register the subscription to get a % of the new messages
 
     const processed = new Set<`${SessionID}/${number}`>();
@@ -102,14 +102,15 @@ export class Inbox<M extends CoValue> {
 
             processing.add(txKey);
 
-            callback(item.value as ID<M>)
+            callback(item.value as ID<V>)
               .then(() => {
                 // hack: we add a transaction without triggering an update on processedFeed
                 processedFeed.push(txKey);
                 processing.delete(txKey);
                 processed.add(txKey);
               })
-              .catch(() => {
+              .catch((error) => {
+                console.error("Error processing inbox message", error);
                 processing.delete(txKey);
               });
           }
@@ -118,37 +119,34 @@ export class Inbox<M extends CoValue> {
     });
   }
 
-  static create<M extends CoValue>(as: Account) {
+  static create(as: Account) {
     const group = Group.create({
       owner: as,
     });
 
-    const root = InboxRoot.create<InboxRoot<M>>(
+    const root = InboxRoot.create(
       {
-        incoming: CoFeed.create<CoFeed<M>>([], {
+        incoming: CoFeed.Of(co.string).create([], {
           owner: group,
         }),
-        processed: CoFeed.create<CoFeed<TxKey>>([], {
-          owner: group,
+        processed: CoFeed.Of(co.string).create([], {
+          owner: as,
         }),
-        failed: CoFeed.create<CoFeed<M>>([], {
-          owner: group,
+        failed: CoFeed.Of(co.string).create([], {
+          owner: as,
         }),
       },
       {
-        owner: group,
+        owner: as,
       },
     );
 
-    return new Inbox(root as InboxRootWithFeeds<M>);
+    return new Inbox(root as InboxRootWithFeeds);
   }
 
-  static async load<M extends CoValue>(
-    id: ID<InboxRoot<any>>,
-    account: Account,
-  ) {
+  static async load(id: ID<InboxRoot>, account: Account) {
     const root = await InboxRoot.load<
-      InboxRoot<M>,
+      InboxRoot,
       {
         incoming: [];
         processed: [];

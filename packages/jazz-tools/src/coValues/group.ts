@@ -22,7 +22,7 @@ import {
   subscribeToCoValue,
   subscribeToExistingCoValue,
 } from "../internal.js";
-import { Inbox, InboxRoot } from "./inbox.js";
+import { InboxRoot } from "./inbox.js";
 
 export function resolveAccount(owner: Account | Group): Account {
   if (owner._type === "Account") {
@@ -35,15 +35,7 @@ export function resolveAccount(owner: Account | Group): Account {
 /** @category Identity & Permissions */
 export class Profile extends CoMap {
   name = co.string;
-  inbox = co.ref(InboxRoot<any>);
-
-  migrate() {
-    if (!this._refs.inbox?.id) {
-      const account = resolveAccount(this._owner);
-      const inbox = Inbox.create(account);
-      this.inbox = inbox.root;
-    }
-  }
+  inbox = co.optional.ref(InboxRoot);
 }
 
 /** @category Identity & Permissions */
