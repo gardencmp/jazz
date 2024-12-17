@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 import { Layout } from "./Layout.tsx";
 import { InviteLink } from "./components/organization/InviteLink.tsx";
 import { OrganizationMembers } from "./components/organization/OrganizationMembers.tsx";
+import { OrganizationSelector } from "./components/organization/OrganizationSelector.tsx";
 import { CreateProject } from "./components/project/CreateProject.tsx";
 import { useCoState } from "./main.tsx";
 import { Organization } from "./schema.ts";
@@ -20,16 +21,22 @@ export function OrganizationPage() {
   return (
     <Layout>
       <div className="grid gap-8">
-        <h1 className="text-3xl font-semibold">
-          <strong>Welcome to {organization.name}!</strong>
-        </h1>
+        <div className="flex justify-between">
+          <h1 className="text-3xl font-semibold">
+            <strong>Welcome to {organization.name}!</strong>
+          </h1>
+
+          <OrganizationSelector />
+        </div>
 
         <div className="rounded-lg border shadow-sm bg-white">
           <div className="border-b px-4 py-5 sm:px-6">
             <div className="flex justify-between items-center">
               <h2>Members</h2>
 
-              <InviteLink organization={organization} />
+              {organization._owner?.myRole() === "admin" && (
+                <InviteLink organization={organization} />
+              )}
             </div>
           </div>
           <div className="divide-y">

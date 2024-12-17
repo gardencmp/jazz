@@ -4,7 +4,7 @@ import { CreateOrganization } from "./components/organization/CreateOrganization
 export function HomePage() {
   return (
     <Layout>
-      <h1 className="text-2xl font-medium">
+      <h1 className="text-3xl font-medium">
         <strong>Create an organization</strong>
       </h1>
       <CreateOrganization />

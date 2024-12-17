@@ -1,4 +1,5 @@
 import { ID } from "jazz-tools";
+import { UsersIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useAccount } from "../../main.tsx";
@@ -40,10 +41,11 @@ export function OrganizationSelector({ className }: { className?: string }) {
   };
 
   return (
-    <div className={[className, "flex flex-col gap-2"].join(" ")}>
+    <div className={[className, "flex items-center gap-3"].join(" ")}>
       <label htmlFor="organization" className="md:sr-only">
         Organization
       </label>
+      <UsersIcon size={32} strokeWidth={1.5} />
       <select
         id="organization"
         value={organizationId}
