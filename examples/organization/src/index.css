@@ -12,4 +12,28 @@
   h6 {
     @apply font-semibold text-stone-900 dark:text-white;
   }
+
+  [type="text"],
+  input:where(:not([type])),
+  [type="email"],
+  [type="url"],
+  [type="password"],
+  [type="number"],
+  [type="date"],
+  [type="datetime-local"],
+  [type="month"],
+  [type="search"],
+  [type="tel"],
+  [type="time"],
+  [type="week"],
+  [multiple],
+  textarea,
+  select {
+    border-color: var(--gcmp-border-color);
+    @apply rounded-md shadow-sm;
+
+    @media (prefers-color-scheme: dark) {
+      border-color: var(--gcmp-invert-border-color);
+    }
+  }
 }
