@@ -37,9 +37,6 @@ export function CreateProject({
 
   return (
     <>
-      <h2>
-        <strong>Create a project</strong>
-      </h2>
       {errors && <Errors errors={errors} />}
       <CreateProjectForm id={me?.root?.draftProject?.id} onSave={onSave} />
     </>

@@ -8,25 +8,26 @@ export function ProjectForm({
   onSave?: (e: React.FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <form onSubmit={onSave} className="grid gap-5 max-w-md">
-      <div className="flex flex-col gap-2">
-        <label htmlFor="name">Project name</label>
+    <form onSubmit={onSave} className="flex gap-3 items-center">
+      <label className="flex-1">
+        <span className="sr-only">Project name</span>
         <input
           type="text"
           name="name"
           id="name"
+          placeholder="Enter project name..."
           value={project.name}
-          className="dark:bg-transparent"
+          className="dark:bg-transparent w-full"
           onChange={(e) => (project.name = e.target.value)}
           required
         />
-      </div>
+      </label>
       {onSave && (
         <button
           type="submit"
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
-          Submit
+          Add project
         </button>
       )}
     </form>

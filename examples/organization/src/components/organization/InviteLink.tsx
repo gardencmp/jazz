@@ -32,26 +32,13 @@ export function InviteLink({ organization }: { organization: Organization }) {
   };
 
   return (
-    <div className="flex gap-3 items-center max-w-2xl w-full">
-      <strong>Invite</strong>
-      <div className="border p-2 overflow-hidden leading-none flex gap-2 flex-1">
-        <input
-          className="flex-1 border-0 p-0"
-          type="text"
-          defaultValue={inviteLink}
-          onClick={(e) => e.currentTarget.select()}
-          onBlur={(e) => e.currentTarget.setSelectionRange(0, 0)}
-          readOnly
-        />
-        <button
-          type="button"
-          className="text-blue-500 dark:text-blue-400"
-          onClick={copyUrl}
-        >
-          {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
-          <span className="sr-only">Copy URL</span>
-        </button>
-      </div>
-    </div>
+    <button
+      type="button"
+      className="inline-flex items-center gap-2 text-blue-500 dark:text-blue-400"
+      onClick={copyUrl}
+    >
+      {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+      Copy invite link
+    </button>
   );
 }
