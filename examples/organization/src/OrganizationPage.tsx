@@ -23,7 +23,7 @@ export function OrganizationPage() {
       <div className="grid gap-8">
         <Heading text={`Welcome to ${organization.name}!`} />
 
-        <div className="rounded-lg border shadow-sm bg-white">
+        <div className="rounded-lg border shadow-sm bg-white dark:bg-stone-925">
           <div className="border-b px-4 py-5 sm:px-6">
             <div className="flex justify-between items-center">
               <h2>Members</h2>
@@ -38,7 +38,7 @@ export function OrganizationPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border shadow-sm bg-white">
+        <div className="rounded-lg border shadow-sm bg-white dark:bg-stone-925">
           <div className="border-b px-4 py-5 sm:px-6">
             <h2>Projects</h2>
           </div>

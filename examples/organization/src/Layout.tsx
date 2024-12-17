@@ -14,7 +14,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <header className="bg-white shadow-sm mb-12">
+      <header className="bg-white shadow-sm mb-12 dark:bg-stone-925 dark:border-b">
         <div className="w-full max-w-4xl mx-auto px-4 py-3 flex gap-4  items-center">
           <a href={`/#/organizations/${paramOrganizationId}`}>Home</a>
 
