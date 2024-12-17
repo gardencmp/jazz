@@ -4,55 +4,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { workerCredentials } from "@/credentials";
-import { useAcceptInvite, useAccount, useCoState } from "@/main";
+import {
+  useAcceptInvite,
+  useAccount,
+  useAccountInbox,
+  useCoState,
+} from "@/main";
 import { WaitingRoom } from "@/schema";
+import { StartGameMessage } from "@/types";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { createInviteLink } from "jazz-react";
-import { Account, CoFeed, Group, ID, Inbox } from "jazz-tools";
-import { useCallback, useEffect, useState } from "react";
+import { Group, ID } from "jazz-tools";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
-function useInbox() {
-  const { me } = useAccount();
-  const [inbox, setInbox] = useState<CoFeed<string> | null>(null);
-  const [workerAccount, setWorkerAccount] = useState<Account | null>(null);
-
-  useEffect(() => {
-    async function loadInbox() {
-      if (!me) return;
-
-      const inbox = await Inbox.acceptInvite(workerCredentials.inboxInvite, me);
-      setInbox(inbox);
-      const workerAccount = await Account.load(
-        workerCredentials.accountID,
-        me,
-        {},
-      );
-      setWorkerAccount(workerAccount!);
-    }
-
-    loadInbox();
-  }, [me.id]);
-
-  return useCallback(
-    (waitingRoom: WaitingRoom) => {
-      if (inbox && workerAccount) {
-        const group = waitingRoom._owner.castAs(Group);
-        group.addMember(workerAccount, "writer");
-
-        inbox.push(waitingRoom.id);
-      }
-    },
-    [inbox?.id],
-  );
-}
-
 function HomeComponent() {
   const { me } = useAccount();
-  const inbox = useInbox();
+  const inbox = useAccountInbox<StartGameMessage>(workerCredentials.accountID);
   const navigate = useNavigate({ from: "/" });
   const [waitingRoomId, setWaitingRoomId] = useState<
     ID<WaitingRoom> | undefined
@@ -81,6 +52,14 @@ function HomeComponent() {
     );
     setWaitingRoomId(waitingRoom.id);
     setInviteLink(createInviteLink(waitingRoom, "writer"));
+
+    const unsubscribe = waitingRoom.subscribe({}, (waitingRoom) => {
+      if (waitingRoom._refs.player2Account) {
+        console.log("sendMessage", waitingRoom.id);
+        inbox.sendMessage({ type: "startGame", value: waitingRoom.id });
+        unsubscribe();
+      }
+    });
   };
 
   const isPlayer1 = waitingRoom?.player1Account?.id === me.id;
@@ -91,12 +70,6 @@ function HomeComponent() {
       waitingRoom.player2Account = me;
     }
   }, [waitingRoom?.id, isPlayer1, hasPlayer2]);
-
-  useEffect(() => {
-    if (hasPlayer2 && isPlayer1) {
-      inbox(waitingRoom);
-    }
-  }, [inbox, waitingRoom?.id, hasPlayer2, isPlayer1]);
 
   useEffect(() => {
     if (waitingRoom?.game) {

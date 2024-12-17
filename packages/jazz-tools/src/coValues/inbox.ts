@@ -80,7 +80,8 @@ export class Inbox {
       }
     }
 
-    return this.messages.subscribe((messages) => {
+    return this.messages.core.subscribe((value) => {
+      const messages = value as MessagesStream;
       for (const [sessionID, items] of Object.entries(messages.items) as [
         SessionID,
         CoStreamItem<M>[],

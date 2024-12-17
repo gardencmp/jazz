@@ -5,7 +5,8 @@ import { routeTree } from "./routeTree.gen";
 import "./index.css";
 
 const Jazz = createJazzReactApp();
-export const { useAccount, useCoState, useAcceptInvite } = Jazz;
+export const { useAccount, useCoState, useAcceptInvite, useAccountInbox } =
+  Jazz;
 
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
   const [auth, authState] = useDemoAuth();

@@ -208,6 +208,7 @@ export function subscribeToCoValue<V extends CoValue, Depth>(
         value,
         cls as CoValueClass<V> & CoValueFromRaw<V>,
         (update) => {
+          if (unsubscribed) return;
           if (fulfillsDepth(depth, update)) {
             listener(update as DeeplyLoaded<V, Depth>);
           }

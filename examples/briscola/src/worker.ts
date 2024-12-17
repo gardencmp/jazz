@@ -10,6 +10,7 @@ import {
 import { startWorker } from "jazz-nodejs";
 import { Account, Group, ID } from "jazz-tools";
 import { workerCredentials } from "./credentials";
+import { StartGameMessage } from "./types";
 
 const { worker } = await startWorker({
   accountID: workerCredentials.accountID,
@@ -18,9 +19,9 @@ const { worker } = await startWorker({
   syncServer: "ws://localhost:4200",
 });
 
-console.log("Listening for new games on inbox", workerCredentials.inboxInvite);
+console.log("Listening for new games on inbox", workerCredentials.accountID);
 
-async function onInboxMessage(id: ID<WaitingRoom>) {
+async function onInboxMessage({ value: id }: StartGameMessage) {
   const waitingRoom = await WaitingRoom.load(id, worker, {});
 
   if (!waitingRoom?._refs.player1Account) {
