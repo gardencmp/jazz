@@ -1,4 +1,4 @@
-import { Account, CoList, CoMap, co } from "jazz-tools";
+import { Account, CoList, CoMap, Group, co } from "jazz-tools";
 
 export class Project extends CoMap {
   name = co.string;
@@ -59,31 +59,38 @@ export class JazzAccount extends Account {
     super.migrate(creationProps);
 
     if (!this._refs.root) {
-      const ownership = { owner: this };
+      const group = Group.create({ owner: this });
+      const ownership = { owner: group };
 
-      this.root = JazzAccountRoot.create(
+      const draftProject = DraftProject.create({}, ownership);
+
+      const draftOrganization = DraftOrganization.create(
         {
-          draftProject: DraftProject.create({}, ownership),
-          draftOrganization: DraftOrganization.create(
+          projects: ListOfProjects.create([], ownership),
+        },
+        ownership,
+      );
+
+      const organizations = ListOfOrganizations.create(
+        [
+          Organization.create(
             {
+              name: `Your projects`,
               projects: ListOfProjects.create([], ownership),
             },
             ownership,
           ),
-          organizations: ListOfOrganizations.create(
-            [
-              Organization.create(
-                {
-                  name: `Your projects`,
-                  projects: ListOfProjects.create([], ownership),
-                },
-                ownership,
-              ),
-            ],
-            ownership,
-          ),
-        },
+        ],
         ownership,
+      );
+
+      this.root = JazzAccountRoot.create(
+        {
+          draftProject,
+          draftOrganization,
+          organizations,
+        },
+        { owner: this },
       );
     }
   }
