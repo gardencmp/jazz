@@ -20,6 +20,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <OrganizationSelector className="hidden md:block" />
 
         <span className="ml-auto">{me?.profile?.name}</span>
+
+        <code>{me?.id}</code>
         <button
           className="bg-stone-100 py-1.5 px-3 text-sm rounded-md dark:bg-stone-900 dark:text-white"
           onClick={() => logOut()}

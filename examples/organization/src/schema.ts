@@ -59,29 +59,37 @@ export class JazzAccount extends Account {
     super.migrate(creationProps);
 
     if (!this._refs.root) {
-      const group = Group.create({ owner: this });
-      const ownership = { owner: group };
-
-      const draftProject = DraftProject.create({}, ownership);
-
-      const draftOrganization = DraftOrganization.create(
-        {
-          projects: ListOfProjects.create([], ownership),
-        },
-        ownership,
+      const draftProject = DraftProject.create(
+        {},
+        { owner: Group.create({ owner: this }) },
       );
 
+      const draftOrganizationOwnership = {
+        owner: Group.create({ owner: this }),
+      };
+      const draftOrganization = DraftOrganization.create(
+        {
+          projects: ListOfProjects.create([], draftOrganizationOwnership),
+        },
+        draftOrganizationOwnership,
+      );
+
+      const initialOrganizationOwnership = {
+        owner: Group.create({ owner: this }),
+      };
       const organizations = ListOfOrganizations.create(
         [
           Organization.create(
             {
-              name: `Your projects`,
-              projects: ListOfProjects.create([], ownership),
+              name: this.profile?.name
+                ? `${this.profile.name}'s projects`
+                : "Your projects",
+              projects: ListOfProjects.create([], initialOrganizationOwnership),
             },
-            ownership,
+            initialOrganizationOwnership,
           ),
         ],
-        ownership,
+        { owner: this },
       );
 
       this.root = JazzAccountRoot.create(

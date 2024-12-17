@@ -21,6 +21,14 @@ export function OrganizationPage() {
       <div className="grid gap-8">
         <div>
           <h1 className="text-2xl font-medium mb-3">
+            <strong>Members</strong>
+          </h1>
+
+          <OrganizationMembers organization={organization} />
+        </div>
+
+        <div>
+          <h1 className="text-2xl font-medium mb-3">
             <strong>Projects</strong>
           </h1>
 
@@ -37,13 +45,6 @@ export function OrganizationPage() {
               <p className="col-span-full">You have no projects yet.</p>
             )}
           </div>
-        </div>
-        <div>
-          <h1 className="text-2xl font-medium mb-3">
-            <strong>Members</strong>
-          </h1>
-
-          <OrganizationMembers organization={organization} />
         </div>
 
         <div>
