@@ -1,91 +1,89 @@
-import { InviteSecret, SessionID } from "cojson";
-import { CoStreamItem } from "cojson/src/coValues/coStream.js";
+import { CoID, InviteSecret, RawAccount, RawCoMap, SessionID } from "cojson";
+import { CoStreamItem, RawCoStream } from "cojson/src/coValues/coStream.js";
 import { JsonValue } from "fast-check";
-import { type Account, Group, co, resolveAccount } from "../internal.js";
-import { CoFeed } from "./coFeed.js";
-import { CoMap } from "./coMap.js";
+import { Account, Group, isControlledAccount } from "../internal.js";
 import { CoValue, ID } from "./interfaces.js";
 
-export type InboxInvite = `writeOnly:${ID<InboxRoot>}/${InviteSecret}`;
+type InboxInvite = `${CoID<MessagesStream>}/${InviteSecret}`;
+type TxKey = `${SessionID}/${number}`;
 
-export type TxKey = `${SessionID}/${number}`;
+export type InboxMessage<T extends string, I extends ID<any>> = {
+  type: T;
+  value: I;
+};
+type MessagesStream = RawCoStream<InboxMessage<string, any>>;
+type TxKeyStream = RawCoStream<TxKey>;
+type InboxRoot = RawCoMap<{
+  messages: CoID<MessagesStream>;
+  processed: CoID<TxKeyStream>;
+  failed: CoID<MessagesStream>;
+  inviteLink: InboxInvite;
+}>;
 
-// TODO: We want probably to scale to millions of entries, so we need to optimize more the consumption of the feed
-// or rotate it when a certain size is reached
-export class InboxRoot extends CoMap {
-  incoming = co.ref(CoFeed.Of(co.string));
-  processed = co.ref(CoFeed.Of(co.string));
-  failed = co.ref(CoFeed.Of(co.string));
+function createInboxRoot(account: Account) {
+  if (!isControlledAccount(account)) {
+    throw new Error("Account is not controlled");
+  }
+
+  const rawAccount = account._raw;
+
+  const group = rawAccount.createGroup();
+  const messagesFeed = group.createStream<MessagesStream>();
+
+  const inboxRoot = rawAccount.createMap<InboxRoot>();
+  const processedFeed = rawAccount.createStream<TxKeyStream>();
+  const failedFeed = rawAccount.createStream<MessagesStream>();
+
+  const inviteLink =
+    `${messagesFeed.id}/${group.createInvite("writeOnly")}` as const;
+
+  inboxRoot.set("messages", messagesFeed.id);
+  inboxRoot.set("processed", processedFeed.id);
+  inboxRoot.set("failed", failedFeed.id);
+
+  return {
+    root: inboxRoot,
+    inviteLink,
+  };
 }
 
-type InboxRootWithFeeds = InboxRoot & {
-  incoming: CoFeed<string>;
-  processed: CoFeed<string>;
-  failed: CoFeed<string>;
-};
-
 export class Inbox {
-  root: InboxRootWithFeeds;
+  messages: MessagesStream;
+  processed: TxKeyStream;
+  failed: MessagesStream;
+  root: InboxRoot;
 
-  private constructor(root: InboxRootWithFeeds) {
+  private constructor(
+    root: InboxRoot,
+    messages: MessagesStream,
+    processed: TxKeyStream,
+    failed: MessagesStream,
+  ) {
     this.root = root;
+    this.messages = messages;
+    this.processed = processed;
+    this.failed = failed;
   }
 
-  createInvite() {
-    const group = this.root.incoming._owner;
-    const writeOnlyInvite = group._raw.createInvite("writeOnly");
-
-    return `writeOnly:${this.root.incoming.id}/${writeOnlyInvite}` as const;
-  }
-
-  static async acceptInvite(invite: string, account: Account) {
-    const id = invite.slice("writeOnly:".length, invite.indexOf("/")) as ID<
-      CoFeed<string>
-    >;
-
-    const inviteSecret = invite.slice(invite.indexOf("/") + 1) as InviteSecret;
-
-    if (!id?.startsWith("co_z") || !inviteSecret.startsWith("inviteSecret_")) {
-      throw new Error("Invalid inbox ticket");
-    }
-
-    const result = await account.acceptInvite(
-      id,
-      inviteSecret,
-      CoFeed.Of(co.string),
-    );
-
-    if (!result) {
-      throw new Error("Failed to accept invite");
-    }
-
-    return result;
-  }
-
-  getOwnerAccount() {
-    return resolveAccount(this.root._owner);
-  }
-
-  subscribe<V extends CoValue>(callback: (id: ID<V>) => Promise<void>) {
+  subscribe<M extends InboxMessage<string, any>>(
+    callback: (message: M) => Promise<void>,
+  ) {
     // TODO: Register the subscription to get a % of the new messages
-
     const processed = new Set<`${SessionID}/${number}`>();
     const processing = new Set<`${SessionID}/${number}`>();
     const failed = new Map<`${SessionID}/${number}`, number>();
-    const processedFeed = this.root.processed._raw;
-    const failedFeed = this.root.failed._raw;
 
     // TODO: We don't take into account a possible concurrency between multiple Workers
-    for (const items of Object.values(processedFeed.items)) {
+    for (const items of Object.values(this.processed.items)) {
       for (const item of items) {
         processed.add(item.value as TxKey);
       }
     }
 
-    return this.root.incoming.subscribe([], (incoming) => {
-      for (const [sessionID, items] of Object.entries(incoming._raw.items) as [
+    return this.messages.subscribe((messages) => {
+      for (const [sessionID, items] of Object.entries(messages.items) as [
         SessionID,
-        CoStreamItem<JsonValue>[],
+        CoStreamItem<M>[],
       ][]) {
         for (const item of items) {
           const txKey = `${sessionID}/${item.tx.txIndex}` as const;
@@ -95,17 +93,17 @@ export class Inbox {
 
             if (failures && failures > 3) {
               processed.add(txKey);
-              processedFeed.push(txKey);
-              failedFeed.push(item.value);
+              this.processed.push(txKey);
+              this.failed.push(item.value);
               continue;
             }
 
             processing.add(txKey);
 
-            callback(item.value as ID<V>)
+            callback(item.value)
               .then(() => {
                 // hack: we add a transaction without triggering an update on processedFeed
-                processedFeed.push(txKey);
+                this.processed.push(txKey);
                 processing.delete(txKey);
                 processed.add(txKey);
               })
@@ -119,49 +117,135 @@ export class Inbox {
     });
   }
 
-  static create(as: Account) {
-    const group = Group.create({
-      owner: as,
-    });
+  static createIfMissing(account: Account) {
+    const profile = account.profile;
 
-    const root = InboxRoot.create(
-      {
-        incoming: CoFeed.Of(co.string).create([], {
-          owner: group,
-        }),
-        processed: CoFeed.Of(co.string).create([], {
-          owner: as,
-        }),
-        failed: CoFeed.Of(co.string).create([], {
-          owner: as,
-        }),
-      },
-      {
-        owner: as,
-      },
-    );
-
-    return new Inbox(root as InboxRootWithFeeds);
-  }
-
-  static async load(id: ID<InboxRoot>, account: Account) {
-    const root = await InboxRoot.load<
-      InboxRoot,
-      {
-        incoming: [];
-        processed: [];
-        failed: [];
-      }
-    >(id, account, {
-      incoming: [],
-      processed: [],
-      failed: [],
-    });
-
-    if (!root) {
-      throw new Error("Failed to load the Inbox");
+    if (!profile) {
+      throw new Error("Account profile should already be loaded");
     }
 
-    return new Inbox(root);
+    if (profile.inbox) {
+      return;
+    }
+
+    const { root, inviteLink } = createInboxRoot(account);
+
+    profile.inbox = root.id;
+    profile.inboxInvite = inviteLink;
   }
+
+  static async load(account: Account) {
+    const profile = account.profile;
+
+    if (!profile) {
+      throw new Error("Account profile should already be loaded");
+    }
+
+    if (!profile.inbox) {
+      this.createIfMissing(account);
+    }
+
+    const node = account._raw.core.node;
+
+    const root = await node.load(profile.inbox as CoID<InboxRoot>);
+
+    if (root === "unavailable") {
+      throw new Error("Inbox not found");
+    }
+
+    const [messages, processed, failed] = await Promise.all([
+      node.load(root.get("messages")!),
+      node.load(root.get("processed")!),
+      node.load(root.get("failed")!),
+    ]);
+
+    if (
+      messages === "unavailable" ||
+      processed === "unavailable" ||
+      failed === "unavailable"
+    ) {
+      throw new Error("Inbox not found");
+    }
+
+    return new Inbox(root, messages, processed, failed);
+  }
+}
+
+export class InboxConsumer<M extends InboxMessage<string, any>> {
+  currentAccount: Account;
+  owner: Account;
+  messages: MessagesStream;
+
+  private constructor(
+    currentAccount: Account,
+    owner: Account,
+    messages: MessagesStream,
+  ) {
+    this.currentAccount = currentAccount;
+    this.owner = owner;
+    this.messages = messages;
+  }
+
+  getOwnerAccount() {
+    return this.owner;
+  }
+
+  sendMessage(message: M) {
+    const node = this.currentAccount._raw.core.node;
+
+    const value = node.expectCoValueLoaded(message.value);
+    const content = value.getCurrentContent();
+
+    const group = content.group;
+
+    if (group instanceof RawAccount) {
+      throw new Error("Inbox messages should be owned by a group");
+    }
+
+    if (!group.roleOf(this.owner._raw.id)) {
+      group.addMember(this.owner._raw, "writer");
+    }
+
+    this.messages.push(message);
+  }
+
+  static async load(fromAccountID: ID<Account>, currentAccount: Account) {
+    const fromAccount = await Account.load(fromAccountID, currentAccount, {
+      profile: {},
+    });
+
+    if (!fromAccount?.profile?.inboxInvite) {
+      throw new Error("Inbox invite not found");
+    }
+
+    const invite = fromAccount.profile.inboxInvite;
+    const id = await acceptInvite(invite, currentAccount);
+    const node = currentAccount._raw.core.node;
+
+    const messages = await node.load(id);
+
+    if (messages === "unavailable") {
+      throw new Error("Inbox not found");
+    }
+
+    return new InboxConsumer(currentAccount, fromAccount, messages);
+  }
+}
+
+async function acceptInvite(invite: string, account: Account) {
+  const id = invite.slice(0, invite.indexOf("/")) as CoID<MessagesStream>;
+
+  const inviteSecret = invite.slice(invite.indexOf("/") + 1) as InviteSecret;
+
+  if (!id?.startsWith("co_z") || !inviteSecret.startsWith("inviteSecret_")) {
+    throw new Error("Invalid inbox ticket");
+  }
+
+  if (!isControlledAccount(account)) {
+    throw new Error("Account is not controlled");
+  }
+
+  await account._raw.acceptInvite(id, inviteSecret);
+
+  return id;
 }

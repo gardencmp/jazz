@@ -1,4 +1,11 @@
-import type { Everyone, RawAccountID, RawGroup, Role } from "cojson";
+import type {
+  CoID,
+  Everyone,
+  RawAccountID,
+  RawCoMap,
+  RawGroup,
+  Role,
+} from "cojson";
 import type {
   CoValue,
   CoValueClass,
@@ -22,7 +29,6 @@ import {
   subscribeToCoValue,
   subscribeToExistingCoValue,
 } from "../internal.js";
-import { InboxRoot } from "./inbox.js";
 
 export function resolveAccount(owner: Account | Group): Account {
   if (owner._type === "Account") {
@@ -35,7 +41,8 @@ export function resolveAccount(owner: Account | Group): Account {
 /** @category Identity & Permissions */
 export class Profile extends CoMap {
   name = co.string;
-  inbox = co.optional.ref(InboxRoot);
+  inbox = co.optional.json<CoID<RawCoMap>>();
+  inboxInvite = co.optional.string;
 }
 
 /** @category Identity & Permissions */

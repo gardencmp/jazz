@@ -5,7 +5,7 @@ import {
   consumeInviteLinkFromWindowLocation,
   createJazzBrowserContext,
 } from "jazz-browser";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   Account,
@@ -17,6 +17,9 @@ import {
   DeeplyLoaded,
   DepthsIn,
   ID,
+  Inbox,
+  InboxConsumer,
+  InboxMessage,
   createCoValueObservable,
 } from "jazz-tools";
 
@@ -262,12 +265,77 @@ export function createJazzReactApp<Acc extends Account>({
     }, [onAccept]);
   }
 
+  function useAccountInbox<M extends InboxMessage<string, any>>(
+    inboxOwnerID: ID<Acc>,
+  ) {
+    const me = useAccount().me;
+    const [inbox, setInbox] = useState<InboxConsumer<M> | undefined>();
+    const [messages, setMessages] = useState<M[]>([]);
+
+    useEffect(() => {
+      async function load() {
+        const inbox = await InboxConsumer.load(inboxOwnerID, me);
+        setInbox(inbox);
+
+        for await (const message of messages) {
+          inbox.sendMessage(message);
+        }
+      }
+      load();
+    }, [inboxOwnerID]);
+
+    const sendMessage = useCallback(
+      (message: M) => {
+        if (!inbox) {
+          setMessages((messages) => [...messages, message]);
+        } else {
+          inbox.sendMessage(message);
+        }
+      },
+      [inbox],
+    );
+
+    return { sendMessage };
+  }
+
+  function useInboxMessagesListener<M extends InboxMessage<string, any>>(
+    onMessage: (message: M) => Promise<void>,
+  ) {
+    const me = useAccount().me;
+    const onMessageRef = useRef(onMessage);
+    onMessageRef.current = onMessage;
+
+    useEffect(() => {
+      let unsubscribe = () => {};
+      let unsubscribed = false;
+
+      async function load() {
+        const inbox = await Inbox.load(me);
+
+        if (unsubscribed) return;
+
+        unsubscribe = inbox.subscribe((message: M) => {
+          return onMessageRef.current(message);
+        });
+      }
+
+      load();
+
+      return () => {
+        unsubscribed = true;
+        unsubscribe();
+      };
+    }, []);
+  }
+
   return {
     Provider,
     useAccount,
     useAccountOrGuest,
     useCoState,
     useAcceptInvite,
+    useAccountInbox,
+    useInboxMessagesListener,
   };
 }
 
@@ -321,6 +389,16 @@ export interface JazzReactApp<Acc extends Account> {
     onAccept: (projectID: ID<V>) => void;
     forValueHint?: string;
   }): void;
+
+  useAccountInbox<M extends InboxMessage<string, any>>(
+    inboxOwnerID: ID<Acc>,
+  ): {
+    sendMessage: (message: M) => void;
+  };
+
+  useInboxMessagesListener<M extends InboxMessage<string, any>>(
+    onMessage: (message: M) => Promise<void>,
+  ): void;
 }
 
 export { createInviteLink, parseInviteLink } from "jazz-browser";

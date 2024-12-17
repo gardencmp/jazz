@@ -27,21 +27,13 @@ export const createWorkerAccount = async ({
     throw new Error("account is not a controlled account");
   }
 
-  if (!account.profile?.inbox?.id) {
-    const inbox = Inbox.create(account);
-    account.profile!.inbox = inbox.root;
-  } else {
-    await account.profile.ensureLoaded({ inbox: {} });
-  }
-
-  const inbox = await Inbox.load(account.profile!.inbox!.id, account);
-  const inboxInvite = inbox.createInvite();
+  // Create the inbox for the worker account
+  Inbox.createIfMissing(account);
 
   await account.waitForAllCoValuesSync({ timeout: 4_000 });
 
   return {
     accountID: account.id,
     agentSecret: account._raw.agentSecret,
-    inboxInvite,
   };
 };

@@ -5,6 +5,7 @@ import {
   CoValue,
   ID,
   Inbox,
+  InboxMessage,
   Profile,
   createJazzContext,
   fixedCredentialsAuth,
@@ -12,16 +13,19 @@ import {
 } from "jazz-tools";
 import { webSocketWithReconnection } from "./webSocketWithReconnection.js";
 
-type WorkerOptions<Acc extends Account, M extends CoValue> = {
+type WorkerOptions<Acc extends Account, M extends InboxMessage<string, any>> = {
   accountID?: string;
   accountSecret?: string;
   syncServer?: string;
   AccountSchema?: AccountClass<Acc>;
-  onInboxMessage?: (message: ID<M>) => Promise<void>;
+  onInboxMessage?: (message: M) => Promise<void>;
 };
 
 /** @category Context Creation */
-export async function startWorker<Acc extends Account, M extends CoValue>(
+export async function startWorker<
+  Acc extends Account,
+  M extends InboxMessage<string, any>,
+>(
   options: WorkerOptions<Acc, M>,
 ): Promise<{ worker: Acc; done: () => Promise<void> }> {
   const {
@@ -72,17 +76,7 @@ export async function startWorker<Acc extends Account, M extends CoValue>(
   let unsubscribe = () => {};
 
   if (options.onInboxMessage) {
-    const profile = account.profile!;
-
-    await profile.ensureLoaded({
-      inbox: {},
-    });
-
-    if (!profile?.inbox?.id) {
-      throw new Error("Profile has no inbox");
-    }
-
-    const inbox = await Inbox.load(profile.inbox?.id, account);
+    const inbox = await Inbox.load(account);
 
     unsubscribe = inbox.subscribe(options.onInboxMessage);
   }
@@ -90,6 +84,7 @@ export async function startWorker<Acc extends Account, M extends CoValue>(
   async function done() {
     await context.account.waitForAllCoValuesSync();
 
+    unsubscribe();
     wsPeer.done();
     context.done();
   }

@@ -14,7 +14,8 @@ export { Encoders, co } from "./internal.js";
 
 export {
   Inbox,
-  type InboxInvite,
+  InboxConsumer,
+  type InboxMessage,
 } from "./coValues/inbox.js";
 
 export {
