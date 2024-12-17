@@ -251,7 +251,7 @@ export class RawGroup<
     /**
      * WriteOnly members can only see their own changes.
      *
-     * We don't want to reveal the readKey to them so we create a new one and reveal it
+     * We don't want to reveal the readKey to them so we create a new one specifically for them and also reveal it to everyone else with a reader or higher-capability role (but crucially not to other writer-only members)
      * to everyone else.
      *
      * To never reveal the readKey to writeOnly members we also create a dedicated writeKey for the
