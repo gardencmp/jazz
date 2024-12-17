@@ -1,0 +1,8 @@
+{
+  "build": {
+    "env": {
+      "APP_NAME": "jazz-homepage"
+    }
+  },
+  "ignoreCommand": "node ../../ignore-vercel-build.js"
+}

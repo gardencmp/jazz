@@ -1,0 +1,8 @@
+{
+  "build": {
+    "env": {
+      "APP_NAME": "clerk-demo"
+    }
+  },
+  "ignoreCommand": "node ../../ignore-vercel-build.js"
+}
