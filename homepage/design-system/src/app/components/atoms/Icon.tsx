@@ -24,17 +24,20 @@ import {
   MonitorSmartphoneIcon,
   MoonIcon,
   MousePointerSquareDashedIcon,
+  PencilLineIcon,
   ScanFace,
   SunIcon,
   TrashIcon,
   UploadCloudIcon,
   UserIcon,
+  UserPlusIcon,
   UsersIcon,
   WifiOffIcon,
   XIcon,
 } from "lucide-react";
 
 const icons = {
+  addUser: UserPlusIcon,
   arrowDown: ArrowDownIcon,
   arrowRight: ArrowRightIcon,
   auth: UserIcon,
@@ -66,6 +69,7 @@ const icons = {
   spatialPresence: MousePointerSquareDashedIcon,
   touchId: FingerprintIcon,
   upload: UploadCloudIcon,
+  write: PencilLineIcon,
   zip: FolderArchiveIcon,
 };
 

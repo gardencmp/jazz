@@ -6,11 +6,6 @@ import { VueLogo } from "@/components/icons/VueLogo";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
-import {
-  LockIcon,
-  PencilLineIcon,
-  UserPlusIcon,
-} from "lucide-react";
 
 import {
   Schema_ts as ImageUploadSchema,
@@ -77,16 +72,16 @@ const OnboardingIllustration = () => (
   <div className="flex h-full flex-col justify-center text-sm dark:bg-transparent">
     <div className="mx-auto grid gap-3">
       {[
-        { icon: UserPlusIcon, text: "Add new employee" },
+        { icon: "addUser", text: "Add new employee" },
         {
-          icon: PencilLineIcon,
+          icon: "write",
           text: "Invite employee to fill in their profile",
         },
-        { icon: LockIcon, text: "Get confirmation from admin" },
-      ].map(({ text, icon: Icon }, index) => (
+        { icon: "permissions", text: "Get confirmation from admin" },
+      ].map(({ text, icon }, index) => (
         <div className="flex items-center gap-2">
           <span className="text-xs text-green-800 bg-green-100 leading-none font-medium text-center p-1.5 block rounded-full dark:bg-green-800 dark:text-green-200">
-            <Icon strokeWidth={2} size={15} />
+            <Icon name={icon} size="xs" />
           </span>
           {text}
         </div>
