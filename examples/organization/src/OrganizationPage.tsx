@@ -1,9 +1,9 @@
 import { ID } from "jazz-tools";
 import { useParams } from "react-router";
 import { Layout } from "./Layout.tsx";
+import { Heading } from "./components/Heading.tsx";
 import { InviteLink } from "./components/organization/InviteLink.tsx";
 import { OrganizationMembers } from "./components/organization/OrganizationMembers.tsx";
-import { OrganizationSelector } from "./components/organization/OrganizationSelector.tsx";
 import { CreateProject } from "./components/project/CreateProject.tsx";
 import { useCoState } from "./main.tsx";
 import { Organization } from "./schema.ts";
@@ -21,13 +21,7 @@ export function OrganizationPage() {
   return (
     <Layout>
       <div className="grid gap-8">
-        <div className="flex justify-between">
-          <h1 className="text-3xl font-semibold">
-            <strong>Welcome to {organization.name}!</strong>
-          </h1>
-
-          <OrganizationSelector />
-        </div>
+        <Heading text={`Welcome to ${organization.name}!`} />
 
         <div className="rounded-lg border shadow-sm bg-white">
           <div className="border-b px-4 py-5 sm:px-6">
