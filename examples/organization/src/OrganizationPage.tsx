@@ -21,7 +21,7 @@ export function OrganizationPage() {
   return (
     <Layout>
       <div className="grid gap-8">
-        <Heading text={`Welcome to ${organization.name}!`} />
+        <Heading text={`Welcome to ${organization.name} organization!`} />
 
         <div className="rounded-lg border shadow-sm bg-white dark:bg-stone-925">
           <div className="border-b px-4 py-5 sm:px-6">

@@ -23,12 +23,6 @@ export function OrganizationSelector({ className }: { className?: string }) {
     }
   }, [paramOrganizationId]);
 
-  useEffect(() => {
-    if (organizationId) {
-      navigate(`/organizations/${organizationId}`);
-    }
-  }, [organizationId]);
-
   const onSelectOrganization = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { value } = e.target;
 
@@ -37,7 +31,8 @@ export function OrganizationSelector({ className }: { className?: string }) {
       return;
     }
 
-    setOrganizationId(e.target.value);
+    setOrganizationId(value);
+    navigate(`/organizations/${value}`);
   };
 
   return (
