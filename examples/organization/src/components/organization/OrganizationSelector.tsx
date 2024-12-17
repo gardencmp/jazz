@@ -1,8 +1,8 @@
 import { ID } from "jazz-tools";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useAccount } from "./main.tsx";
-import { Organization } from "./schema.ts";
+import { useAccount } from "../../main.tsx";
+import { Organization } from "../../schema.ts";
 
 export function OrganizationSelector({ className }: { className?: string }) {
   const { me } = useAccount({

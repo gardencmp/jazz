@@ -1,5 +1,5 @@
 import { Account, ID } from "jazz-tools";
-import { useCoState } from "./main.tsx";
+import { useCoState } from "../../main.tsx";
 
 export function Member({
   accountId,

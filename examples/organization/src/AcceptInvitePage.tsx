@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { useAcceptInvite, useAccount } from "./main.tsx";
 import { Organization } from "./schema.ts";
 
-export function AcceptInvite() {
+export function AcceptInvitePage() {
   const navigate = useNavigate();
   const { me } = useAccount({ root: { organizations: [] } });
 

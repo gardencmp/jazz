@@ -1,6 +1,6 @@
 import { ID } from "jazz-tools";
 import { useParams } from "react-router";
-import { OrganizationSelector } from "./OrganizationSelector.tsx";
+import { OrganizationSelector } from "./components/organization/OrganizationSelector.tsx";
 import { useAccount } from "./main.tsx";
 import { Organization } from "./schema.ts";
 

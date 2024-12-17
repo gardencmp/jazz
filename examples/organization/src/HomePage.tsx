@@ -1,5 +1,5 @@
-import { CreateOrganization } from "./CreateOrganization.tsx";
 import { Layout } from "./Layout.tsx";
+import { CreateOrganization } from "./components/organization/CreateOrganization.tsx";
 
 export function HomePage() {
   return (

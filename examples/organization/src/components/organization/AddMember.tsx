@@ -1,6 +1,6 @@
 import { Account, Group, ID } from "jazz-tools";
-import { useAccount } from "./main.tsx";
-import { Organization } from "./schema.ts";
+import { useAccount } from "../../main.tsx";
+import { Organization } from "../../schema.ts";
 
 const addMember = async (
   organization: Organization,

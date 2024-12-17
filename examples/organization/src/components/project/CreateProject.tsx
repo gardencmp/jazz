@@ -1,9 +1,9 @@
 import { ID } from "jazz-tools";
 import { useState } from "react";
-import { Errors } from "./Errors.tsx";
+import { useAccount, useCoState } from "../../main.tsx";
+import { DraftProject, Organization, Project } from "../../schema.ts";
+import { Errors } from "../Errors.tsx";
 import { ProjectForm } from "./ProjectForm.tsx";
-import { useAccount, useCoState } from "./main.tsx";
-import { DraftProject, Organization, Project } from "./schema.ts";
 
 export function CreateProject({
   organizationId,

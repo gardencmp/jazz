@@ -1,9 +1,9 @@
 import { ID } from "jazz-tools";
 import { useParams } from "react-router";
-import { CreateProject } from "./CreateProject.tsx";
-import { InviteLink } from "./InviteLink.tsx";
 import { Layout } from "./Layout.tsx";
-import { OrganizationMembers } from "./OrganizationMembers.tsx";
+import { InviteLink } from "./components/organization/InviteLink.tsx";
+import { OrganizationMembers } from "./components/organization/OrganizationMembers.tsx";
+import { CreateProject } from "./components/project/CreateProject.tsx";
 import { useCoState } from "./main.tsx";
 import { Organization } from "./schema.ts";
 
