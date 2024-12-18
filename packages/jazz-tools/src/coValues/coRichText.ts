@@ -257,9 +257,6 @@ export class CoRichText extends CoMap {
     }
 
     const textLength = this.length;
-    if (!textLength) {
-      throw new Error("Cannot insert a range into an empty CoRichText");
-    }
 
     // Clamp positions to text bounds
     start = Math.max(start, 0);
@@ -292,7 +289,12 @@ export class CoRichText extends CoMap {
       new (...args: any[]): Mark;
       create(init: any, options: { owner: Account | Group }): Mark;
     },
-  >(start: number, end: number, RangeClass: MarkClass) {
+  >(
+    start: number,
+    end: number,
+    RangeClass: MarkClass,
+    options: { tag: string },
+  ) {
     if (!this.marks) {
       throw new Error("Cannot remove marks without loaded marks");
     }
@@ -303,6 +305,11 @@ export class CoRichText extends CoMap {
     for (const mark of resolvedMarks) {
       // If mark is outside the range, we'll skip it
       if (mark.endBefore < start || mark.startAfter > end) {
+        continue;
+      }
+
+      // If mark is wrong type, we'll skip it
+      if (options.tag && mark.sourceMark.tag !== options.tag) {
         continue;
       }
 
@@ -318,21 +325,14 @@ export class CoRichText extends CoMap {
         continue;
       }
 
-      // If mark starts before the end of the range, we'll shorten it
-      if (mark.startBefore < end) {
-        const startAfterPos = this.posAfter(end + 2); // TODO: why +2? Looks like an off-by-one error twice
-        const startBeforePos = this.posBefore(end + 2);
-        if (startAfterPos && startBeforePos) {
-          mark.sourceMark.startAfter = startAfterPos;
-          mark.sourceMark.startBefore = startBeforePos;
-        }
-        continue;
-      }
-
-      // If mark ends after the start of the range, we'll shorten it
-      if (mark.endAfter > start) {
-        const endAfterPos = this.posAfter(start - 1);
-        const endBeforePos = this.posBefore(start - 1);
+      // If mark starts before and extends after the removal range, update end positions to start of removal
+      if (
+        mark.startBefore < start &&
+        mark.endAfter >= start &&
+        mark.endAfter <= end
+      ) {
+        const endAfterPos = this.posAfter(start);
+        const endBeforePos = this.posBefore(start);
         if (endAfterPos && endBeforePos) {
           mark.sourceMark.endAfter = endAfterPos;
           mark.sourceMark.endBefore = endBeforePos;
@@ -340,21 +340,33 @@ export class CoRichText extends CoMap {
         continue;
       }
 
-      // If range is inside the mark, we'll split the mark
-      if (start >= mark.startBefore && end <= mark.endAfter) {
-        // Split the mark by removing the part that overlaps with the range and adding two new marks
-        this.insertMark(
-          mark.startBefore,
-          start,
-          RangeClass,
-          {},
-          {
-            markOwner: mark.sourceMark._owner || this._owner,
-          },
-        );
+      // If mark starts in removal range and extends beyond it, update start positions to end of removal
+      if (
+        mark.startBefore >= start &&
+        mark.endAfter > end &&
+        mark.endAfter <= end
+      ) {
+        const startAfterPos = this.posAfter(end);
+        const startBeforePos = this.posBefore(end);
+        if (startAfterPos && startBeforePos) {
+          mark.sourceMark.startAfter = startAfterPos;
+          mark.sourceMark.startBefore = startBeforePos;
+        }
+        continue;
+      }
+
+      // If removal is inside the mark, we'll split the mark
+      if (mark.startBefore <= start && mark.endAfter >= end) {
+        // Split the mark by shortening it at the start and adding a new mark at the end
+        const endAfterPos = this.posAfter(start);
+        const endBeforePos = this.posBefore(start);
+        if (endAfterPos && endBeforePos) {
+          mark.sourceMark.endAfter = endAfterPos;
+          mark.sourceMark.endBefore = endBeforePos;
+        }
         this.insertMark(
           end,
-          mark.endAfter,
+          mark.endBefore,
           RangeClass,
           {},
           {

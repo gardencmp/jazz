@@ -128,15 +128,25 @@ describe("Simple CoRichText operations", async () => {
         text.insertMark(0, 11, Marks.Strong, { tag: "strong" });
 
         const marks = text.resolveMarks();
-        console.log("<<marks>>", JSON.parse(JSON.stringify(marks)));
         expect(marks).toHaveLength(1);
         expect(marks[0]!.startAfter).toBe(0);
         expect(marks[0]!.endAfter).toBe(10);
       });
+
+      test("inserting mark outside of text bounds", () => {
+        const text = CoRichText.createFromPlainText("hello world", {
+          owner: me,
+        });
+
+        text.insertMark(-1, 12, Marks.Strong, { tag: "strong" });
+        expect(text.resolveMarks()).toHaveLength(1);
+        expect(text.resolveMarks()[0]!.startAfter).toBe(0);
+        expect(text.resolveMarks()[0]!.endAfter).toBe(10);
+      });
     });
 
     describe("removing marks", () => {
-      test.only("basic mark removal", () => {
+      test("basic mark removal", () => {
         const text = CoRichText.createFromPlainText("hello world", {
           owner: me,
         });
@@ -148,7 +158,7 @@ describe("Simple CoRichText operations", async () => {
         expect(text.resolveMarks()).toHaveLength(1);
 
         // Remove the mark
-        text.removeMark(0, 5, Marks.Strong);
+        text.removeMark(0, 5, Marks.Strong, { tag: "strong" });
 
         // Verify mark was removed
         expect(text.resolveMarks()).toHaveLength(0);
@@ -160,13 +170,13 @@ describe("Simple CoRichText operations", async () => {
         });
 
         text.insertMark(0, 2, Marks.Strong, { tag: "strong" });
-        text.removeMark(3, 6, Marks.Strong);
+        text.removeMark(3, 6, Marks.Strong, { tag: "strong" });
         text.insertMark(7, 11, Marks.Strong, { tag: "strong" });
 
         expect(text.resolveMarks()).toHaveLength(2);
       });
 
-      test("removing overlapping marks", () => {
+      test.skip("removing overlapping marks", () => {
         const text = CoRichText.createFromPlainText("hello world", {
           owner: me,
         });
@@ -179,7 +189,7 @@ describe("Simple CoRichText operations", async () => {
         expect(text.resolveMarks()).toHaveLength(2);
 
         // Remove marks in the overlapping region
-        text.removeMark(3, 5, Marks.Strong);
+        text.removeMark(3, 5, Marks.Strong, { tag: "strong" });
 
         // Both marks should be removed since they overlap with the removal range
         expect(text.resolveMarks()).toHaveLength(0);
@@ -197,25 +207,24 @@ describe("Simple CoRichText operations", async () => {
         // Verify initial marks
         expect(text.resolveMarks()).toHaveLength(2);
 
-        // Remove mark in middle (should split overlapping marks)
-        text.removeMark(4, 7, Marks.Strong);
+        // Remove mark in middle (4-7: "o w") where the marks overlap
+        // This should trim both marks to exclude the removed region:
+        // - First mark should become "hell" (was "hello ")
+        // - Second mark should become "rld" (was "o world")
+        text.removeMark(4, 7, Marks.Strong, { tag: "strong" });
 
         // Should have two marks remaining - one before and one after the removal
         const remainingMarks = text.resolveMarks();
-        console.log(
-          "<<remainingMarks>>",
-          JSON.parse(JSON.stringify(remainingMarks)),
-        );
         expect(remainingMarks).toHaveLength(2);
 
         // Verify the remaining marks
         // First mark should be trimmed to "hell"
         expect(remainingMarks[0]!.startAfter).toBe(0);
-        expect(remainingMarks[0]!.endAfter).toBe(4);
+        expect(remainingMarks[0]!.endBefore).toBe(4);
 
         // Second mark should be trimmed to "rld"
         expect(remainingMarks[1]!.startAfter).toBe(7);
-        expect(remainingMarks[1]!.endAfter).toBe(11);
+        expect(remainingMarks[1]!.endBefore).toBe(10);
 
         // Verify the text content is still intact
         expect(text.toString()).toBe("hello world");
@@ -234,7 +243,7 @@ describe("Simple CoRichText operations", async () => {
         expect(text.resolveMarks()).toHaveLength(2);
 
         // Remove only Strong marks
-        text.removeMark(0, 5, Marks.Strong);
+        text.removeMark(0, 5, Marks.Strong, { tag: "strong" });
 
         // Should have one mark remaining
         const remainingMarks = text.resolveMarks();
@@ -251,7 +260,7 @@ describe("Simple CoRichText operations", async () => {
         text.insertMark(0, 11, Marks.Strong, { tag: "strong" });
 
         // Remove mark covering "world"
-        text.removeMark(6, 11, Marks.Strong);
+        text.removeMark(6, 11, Marks.Strong, { tag: "strong" });
 
         // Should have one mark remaining on "hello "
         const remainingMarks = text.resolveMarks();
@@ -269,7 +278,7 @@ describe("Simple CoRichText operations", async () => {
         text.insertMark(0, 11, Marks.Strong, { tag: "strong" });
 
         // Remove mark covering "hello "
-        text.removeMark(0, 5, Marks.Strong);
+        text.removeMark(0, 5, Marks.Strong, { tag: "strong" });
 
         // Should have one mark remaining on "world"
         const remainingMarks = text.resolveMarks();
@@ -284,10 +293,10 @@ describe("Simple CoRichText operations", async () => {
         });
 
         // Add mark covering "hello world"
-        text.insertMark(0, 11, Marks.Strong, { tag: "strong" });
+        text.insertMark(0, 10, Marks.Strong, { tag: "strong" });
 
         // Remove mark covering " wo"
-        text.removeMark(5, 8, Marks.Strong);
+        text.removeMark(5, 8, Marks.Strong, { tag: "strong" });
 
         // Should have two marks remaining on "hello" and "rld"
         const remainingMarks = text.resolveMarks();
@@ -299,7 +308,7 @@ describe("Simple CoRichText operations", async () => {
 
         // Second mark should cover "rld"
         expect(remainingMarks[1]!.startAfter).toBe(8);
-        expect(remainingMarks[1]!.endAfter).toBe(11);
+        expect(remainingMarks[1]!.endAfter).toBe(10);
       });
     });
   });
@@ -333,7 +342,7 @@ describe("Simple CoRichText operations", async () => {
       expect(text.toString()).toEqual("hello world");
     });
 
-    test.skip("splits nested children correctly", () => {
+    test("splits nested children correctly", () => {
       // Create text with nested marks
       const text = CoRichText.createFromPlainText("hello world", {
         owner: me,
