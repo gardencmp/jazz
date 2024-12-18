@@ -98,7 +98,7 @@ export const docNavigationItems = [
       {
         name: "Groups as permission scopes",
         href: "/docs/groups/intro",
-        done: 0,
+        done: 10,
       },
       {
         name: "Public sharing & Invites",

@@ -1,0 +1,57 @@
+import { CodeGroup } from "@/components/forMdx";
+
+...more docs coming soon
+
+## Adding Group Members by ID
+
+You can add group members by ID by using `Account.load` and `Group.addMember`.
+
+<CodeGroup>
+```tsx
+import { Group, Account } from "jazz-tools";
+
+const group = Group.create({ owner: me });
+
+const bob = await Account.load(bobsID, me, []);
+group.addMember(bob, "writer");
+```
+</CodeGroup>
+
+Note: if the account ID is of type `string`, because it comes from a URL parameter or something similar, you need to cast it to `ID<Account>` first:
+
+<CodeGroup>
+```tsx
+import { Group, Account, ID } from "jazz-tools";
+
+const bob = await Account.load(bobsID as ID<Account>, me, []);
+group.addMember(bob, "writer");
+```
+</CodeGroup>
+...more docs coming soon
+
+## Getting the Group of an existing CoValue
+
+You can get the group of an existing CoValue by using `coValue._owner`.
+
+<CodeGroup>
+```tsx
+const group = existingCoValue._owner;
+const newValue = MyCoMap.create(
+  { color: "red"},
+  { owner: group }
+);
+```
+</CodeGroup>
+
+Because `._owner` can be an `Account` or a `Group`, in cases where you specifically need to use `Group` methods (such as for adding members or getting your own role), you can cast it to assert it to be a Group:
+
+<CodeGroup>
+```tsx
+import { Group } from "jazz-tools";
+
+const group = existingCoValue._owner.castAs(Group);
+group.addMember(bob, "writer");
+group.myRole();
+```
+</CodeGroup>
+...more docs coming soon
