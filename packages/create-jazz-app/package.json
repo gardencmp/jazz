@@ -1,0 +1,33 @@
+{
+  "name": "create-jazz-app",
+  "module": "dist/index.js",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "type": "module",
+  "license": "MIT",
+  "version": "0.1.0",
+  "bin": {
+    "create-jazz-app": "./dist/index.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.0.0",
+    "degit": "^2.8.4",
+    "gradient-string": "^2.0.2",
+    "inquirer": "^9.2.10",
+    "ora": "^7.0.1"
+  },
+  "devDependencies": {
+    "@types/degit": "^2.8.3",
+    "@types/gradient-string": "^1.1.2",
+    "@types/inquirer": "^9.0.3",
+    "typescript": "^5.1.6"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "build": "rm -rf ./dist && tsc --sourceMap --outDir dist",
+    "prepublishOnly": "npm run build"
+  }
+}
