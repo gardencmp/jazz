@@ -165,8 +165,6 @@ describe("Simple CoRichText operations", async () => {
         // Remove the mark
         text.removeMark(0, 5, Marks.Strong);
 
-        logProxy("text", text);
-
         // Verify mark was removed
         expect(text.resolveMarks()).toHaveLength(0);
       });

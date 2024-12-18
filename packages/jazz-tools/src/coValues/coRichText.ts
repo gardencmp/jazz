@@ -47,38 +47,30 @@ export class Mark extends CoMap {
     textLength: number,
     idxAfter: (pos: TextPos) => number | undefined,
     idxBefore: (pos: TextPos) => number | undefined,
-  ): {
-    startAfter: number;
-    startBefore: number;
-    endAfter: number;
-    endBefore: number;
-  } | null {
-    if (textLength === 0) {
+  ) {
+    if (!textLength) {
       console.error("Cannot validate positions for empty text");
       return null;
     }
 
-    const sa = this.startAfter ? idxBefore(this.startAfter) || 0 : 0;
-    const sb = this.startBefore ? idxAfter(this.startBefore) || sa : sa;
-    const ea = this.endAfter
-      ? idxBefore(this.endAfter) || textLength
-      : textLength;
-    const eb = this.endBefore
-      ? idxAfter(this.endBefore) || textLength
-      : textLength;
+    // Get positions with fallbacks
+    const positions = {
+      startAfter: this.startAfter ? (idxBefore(this.startAfter) ?? 0) : 0,
+      startBefore: this.startBefore ? (idxAfter(this.startBefore) ?? 0) : 0,
+      endAfter: this.endAfter
+        ? (idxBefore(this.endAfter) ?? textLength)
+        : textLength,
+      endBefore: this.endBefore
+        ? (idxAfter(this.endBefore) ?? textLength)
+        : textLength,
+    };
 
-    // First clamp to text boundaries
-    const clampedStartAfter = Math.max(0, sa);
-    const clampedStartBefore = Math.max(clampedStartAfter + 1, sb);
-    const clampedEndAfter = Math.min(textLength - 1, ea);
-    const clampedEndBefore = Math.min(textLength, eb);
-
-    // Then ensure proper ordering: startAfter ≤ startBefore ≤ endAfter ≤ endBefore
+    // Clamp and ensure proper ordering in one step
     return {
-      startAfter: clampedStartAfter,
-      startBefore: clampedStartBefore,
-      endAfter: clampedEndAfter,
-      endBefore: clampedEndBefore,
+      startAfter: Math.max(0, positions.startAfter),
+      startBefore: Math.max(positions.startAfter + 1, positions.startBefore),
+      endAfter: Math.min(textLength - 1, positions.endAfter),
+      endBefore: Math.min(textLength, positions.endBefore),
     };
   }
 }
