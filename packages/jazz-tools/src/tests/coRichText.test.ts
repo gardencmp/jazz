@@ -135,8 +135,8 @@ describe("Simple CoRichText operations", async () => {
       });
     });
 
-    describe.skip("removing marks", () => {
-      test("basic mark removal", () => {
+    describe("removing marks", () => {
+      test.only("basic mark removal", () => {
         const text = CoRichText.createFromPlainText("hello world", {
           owner: me,
         });
@@ -152,6 +152,18 @@ describe("Simple CoRichText operations", async () => {
 
         // Verify mark was removed
         expect(text.resolveMarks()).toHaveLength(0);
+      });
+
+      test("skips marks that aren't in the range", () => {
+        const text = CoRichText.createFromPlainText("hello world", {
+          owner: me,
+        });
+
+        text.insertMark(0, 2, Marks.Strong, { tag: "strong" });
+        text.removeMark(3, 6, Marks.Strong);
+        text.insertMark(7, 11, Marks.Strong, { tag: "strong" });
+
+        expect(text.resolveMarks()).toHaveLength(2);
       });
 
       test("removing overlapping marks", () => {

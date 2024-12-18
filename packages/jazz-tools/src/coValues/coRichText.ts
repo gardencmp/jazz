@@ -302,7 +302,7 @@ export class CoRichText extends CoMap {
 
     for (const mark of resolvedMarks) {
       // If mark is outside the range, we'll skip it
-      if (mark.endAfter < start || mark.startBefore > end) {
+      if (mark.endBefore < start || mark.startAfter > end) {
         continue;
       }
 
@@ -312,7 +312,7 @@ export class CoRichText extends CoMap {
       }
 
       // If mark is completely inside the range, we'll remove it
-      if (mark.startBefore < start && mark.endAfter > end) {
+      if (mark.startBefore >= start && mark.endAfter <= end) {
         // Remove the mark
         this.marks.splice(markIndex, 1);
         continue;
