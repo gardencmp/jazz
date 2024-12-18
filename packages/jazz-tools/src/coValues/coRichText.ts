@@ -369,7 +369,7 @@ export class CoRichText extends CoMap {
       throw new Error("Cannot resolve ranges without loaded text and ranges");
     }
 
-    const textLength = this.text.toString().length;
+    const textLength = this.length;
 
     return this.marks.flatMap((mark) => {
       if (!mark) return [];
@@ -504,6 +504,10 @@ export class CoRichText extends CoMap {
       end: text.length,
       children: currentNodes,
     };
+  }
+
+  get length() {
+    return this.text?.toString().length || 0;
   }
 
   /**

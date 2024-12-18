@@ -64,6 +64,10 @@ export class CoPlainText extends String implements CoValue {
     return new this({ text, owner: options.owner });
   }
 
+  get length() {
+    return this._raw.toString().length;
+  }
+
   toString() {
     return this._raw.toString();
   }
