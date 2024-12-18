@@ -1,10 +1,10 @@
 "use client";
 
-import { CheckIcon, MailIcon } from "lucide-react";
 import { useState } from "react";
 import { ErrorResponse } from "resend";
 import { subscribe } from "../../../actions/resend";
 import { Button } from "../atoms/Button";
+import { Icon } from "../atoms/Icon";
 import { Input } from "../molecules/Input";
 
 export function NewsletterForm() {
@@ -34,7 +34,7 @@ export function NewsletterForm() {
   if (state === "success") {
     return (
       <div className="flex gap-3 items-center">
-        <CheckIcon className="text-green-500" size={16} />
+        <Icon name="check" className="text-green-500" />
         <p>Thanks for subscribing!</p>
       </div>
     );
@@ -63,7 +63,7 @@ export function NewsletterForm() {
         variant="secondary"
         loadingText="Subscribing..."
         loading={state === "loading"}
-        icon={MailIcon}
+        icon="newsletter"
       >
         Subscribe
       </Button>

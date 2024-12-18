@@ -1,8 +1,8 @@
 "use client";
 
 import { clsx } from "clsx";
-import { ChevronDownIcon } from "lucide-react";
 import { useId } from "react";
+import { Icon } from "../atoms/Icon";
 
 export function Select(
   props: React.SelectHTMLAttributes<HTMLSelectElement> & { label: string },
@@ -32,9 +32,10 @@ export function Select(
           {props.children}
         </select>
 
-        <ChevronDownIcon
+        <Icon
+          name="chevronDown"
           className="absolute right-[0.5em] text-stone-400 dark:text-stone-600"
-          size={16}
+          size="xs"
         />
       </div>
     </div>

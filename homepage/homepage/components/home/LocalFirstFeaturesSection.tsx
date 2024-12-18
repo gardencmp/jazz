@@ -1,18 +1,12 @@
 import { FeatureCard } from "gcmp-design-system/src/app/components/molecules/FeatureCard";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
-import {
-  GaugeIcon,
-  MonitorSmartphoneIcon,
-  MousePointerSquareDashedIcon,
-  WifiOffIcon,
-} from "lucide-react";
 
 export function LocalFirstFeaturesSection() {
   const features = [
     {
       title: "Offline-first",
-      icon: WifiOffIcon,
+      icon: "offline",
       description: (
         <>
           Your app works seamlessly offline or on sketchy connections. When
@@ -22,7 +16,7 @@ export function LocalFirstFeaturesSection() {
     },
     {
       title: "Instant updates",
-      icon: GaugeIcon,
+      icon: "instant",
       description: (
         <>
           Since you&apos;re working with local state, your UI updates instantly.
@@ -32,7 +26,7 @@ export function LocalFirstFeaturesSection() {
     },
     {
       title: "Real-time sync",
-      icon: MonitorSmartphoneIcon,
+      icon: "devices",
       description: (
         <>
           Every device with the same account will always have everything in
@@ -42,7 +36,7 @@ export function LocalFirstFeaturesSection() {
     },
     {
       title: "Multiplayer",
-      icon: MousePointerSquareDashedIcon,
+      icon: "spatialPresence",
       description: (
         <>
           Adding multiplayer is as easy as sharing synced data with other users.
@@ -66,10 +60,10 @@ export function LocalFirstFeaturesSection() {
         }
       />
       <GappedGrid cols={4}>
-        {features.map(({ title, icon: Icon, description }) => (
+        {features.map(({ title, icon, description }) => (
           <FeatureCard
             label={title}
-            icon={Icon}
+            icon={icon}
             explanation={description}
             key={title}
           ></FeatureCard>

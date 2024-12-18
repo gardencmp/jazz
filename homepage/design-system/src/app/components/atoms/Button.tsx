@@ -1,7 +1,7 @@
 import { clsx } from "clsx";
-import { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { forwardRef } from "react";
+import { Icon } from "../atoms/Icon";
 import { Spinner } from "./Spinner";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -9,7 +9,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: "sm" | "md" | "lg";
   href?: string;
   newTab?: boolean;
-  icon?: LucideIcon;
+  icon?: string;
   loading?: boolean;
   loadingText?: string;
   children?: React.ReactNode;
@@ -17,14 +17,16 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   disabled?: boolean;
 }
 
-function ButtonIcon({ icon: Icon, loading }: ButtonProps) {
+function ButtonIcon({ icon, loading }: ButtonProps) {
   if (!Icon) return null;
 
   const className = "size-5";
 
   if (loading) return <Spinner className={className} />;
 
-  return <Icon strokeWidth={1.5} className={className} />;
+  if (icon) {
+    return <Icon name={icon} className={className} />;
+  }
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(

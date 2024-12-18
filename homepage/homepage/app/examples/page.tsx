@@ -6,16 +6,6 @@ import { VueLogo } from "@/components/icons/VueLogo";
 import { H2 } from "gcmp-design-system/src/app/components/atoms/Headings";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { HeroHeader } from "gcmp-design-system/src/app/components/molecules/HeroHeader";
-import {
-  CloudUploadIcon,
-  FingerprintIcon,
-  FolderArchiveIcon,
-  Icon,
-  ImageIcon,
-  LockIcon,
-  PencilLineIcon,
-  UserPlusIcon,
-} from "lucide-react";
 
 import {
   Schema_ts as ImageUploadSchema,
@@ -29,6 +19,7 @@ import { ExampleCard } from "@/components/examples/ExampleCard";
 import { ExampleDemo } from "@/components/examples/ExampleDemo";
 import { SvelteLogo } from "@/components/icons/SvelteLogo";
 import { Example, features, tech } from "@/lib/example";
+import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 
 const MockButton = ({ children }: { children: React.ReactNode }) => (
   <p className="bg-blue-100 text-blue-800 py-1 p-2 rounded-full font-medium text-center text-xs">
@@ -81,16 +72,16 @@ const OnboardingIllustration = () => (
   <div className="flex h-full flex-col justify-center text-sm dark:bg-transparent">
     <div className="mx-auto grid gap-3">
       {[
-        { icon: UserPlusIcon, text: "Add new employee" },
+        { icon: "addUser", text: "Add new employee" },
         {
-          icon: PencilLineIcon,
+          icon: "write",
           text: "Invite employee to fill in their profile",
         },
-        { icon: LockIcon, text: "Get confirmation from admin" },
-      ].map(({ text, icon: Icon }, index) => (
+        { icon: "permissions", text: "Get confirmation from admin" },
+      ].map(({ text, icon }, index) => (
         <div className="flex items-center gap-2">
           <span className="text-xs text-green-800 bg-green-100 leading-none font-medium text-center p-1.5 block rounded-full dark:bg-green-800 dark:text-green-200">
-            <Icon strokeWidth={2} size={15} />
+            <Icon name={icon} size="xs" />
           </span>
           {text}
         </div>
@@ -102,9 +93,9 @@ const OnboardingIllustration = () => (
 const MusicIllustration = () => (
   <div className="flex flex-col items-center justify-center h-full p-8">
     <div className="p-3 w-[12rem] h-[8rem] border border-dashed border-blue dark:border-blue-500 rounded-lg flex gap-2 flex-col items-center justify-center">
-      <CloudUploadIcon
-        size={40}
-        strokeWidth={1.5}
+      <Icon
+        name="upload"
+        size="4xl"
         className="stroke-blue mx-auto dark:stroke-blue-500"
       />
       <p className="whitespace-nowrap text-stone-900 dark:text-white">
@@ -117,9 +108,9 @@ const MusicIllustration = () => (
 const ImageUploadIllustration = () => (
   <div className="flex flex-col items-center justify-center h-full p-8">
     <div className="p-3 w-[12rem] h-[8rem] border border-dashed border-blue dark:border-blue-500 rounded-lg flex gap-2 flex-col items-center justify-center">
-      <ImageIcon
-        size={40}
-        strokeWidth={1.5}
+      <Icon
+        name="upload"
+        size="4xl"
         className="stroke-blue mx-auto dark:stroke-blue-500"
       />
       <p className="whitespace-nowrap text-stone-900 dark:text-white">
@@ -245,9 +236,9 @@ const FileShareIllustration = () => (
     <p>This file was shared with you.</p>
     <div className="p-3 w-full border rounded-lg flex justify-between gap-5">
       <div className="flex items-center gap-2">
-        <FolderArchiveIcon
-          size={24}
-          strokeWidth={1.5}
+        <Icon
+          name="zip"
+          size="xl"
           className="stroke-blue dark:stroke-blue-500"
         />
         <p className="whitespace-nowrap text-stone-900 dark:text-white">
@@ -263,11 +254,7 @@ const FileShareIllustration = () => (
 const PasskeyIllustration = () => (
   <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
     <div className="p-4 flex flex-col items-center gap-3 rounded-md shadow-xl shadow-stone-400/20 bg-white dark:shadow-none">
-      <FingerprintIcon
-        size={36}
-        strokeWidth={0.75}
-        className="stroke-red-600"
-      />
+      <Icon name="touchId" size="3xl" className="stroke-red-600" />
       <p className="text-xs dark:text-stone-900">Continue with Touch ID</p>
     </div>
   </div>

@@ -2,9 +2,9 @@
 
 import { Card } from "gcmp-design-system/src/app/components/atoms/Card";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
+import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import { GappedGrid } from "gcmp-design-system/src/app/components/molecules/GappedGrid";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
-import { CheckIcon, CopyIcon } from "lucide-react";
 import Link from "next/link";
 import QRCode from "qrcode";
 import {
@@ -179,7 +179,11 @@ export function ChatDemoSection() {
                     className="text-blue dark:text-blue-400"
                     onClick={copyUrl}
                   >
-                    {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+                    {copied ? (
+                      <Icon name="check" size="xs" />
+                    ) : (
+                      <Icon name="copy" size="xs" />
+                    )}
                     <span className="sr-only">Copy URL</span>
                   </button>
                 </div>
