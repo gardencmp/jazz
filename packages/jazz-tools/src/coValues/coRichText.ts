@@ -256,9 +256,14 @@ export class CoRichText extends CoMap {
       throw new Error("Cannot insert a range without loaded ranges");
     }
 
+    const textLength = this.length;
+    if (!textLength) {
+      throw new Error("Cannot insert a range into an empty CoRichText");
+    }
+
     // Clamp positions to text bounds
-    start = Math.max(0, Math.min(start, this.text.length));
-    end = Math.max(start, Math.min(end, this.text.length));
+    start = Math.max(start, 0);
+    end = Math.min(end, textLength);
 
     const owner = options?.markOwner || this._owner;
     if (!owner) {
@@ -270,8 +275,8 @@ export class CoRichText extends CoMap {
         ...extraArgs,
         startAfter: this.posAfter(start),
         startBefore: this.posBefore(start),
-        endAfter: this.posAfter(end - 1),
-        endBefore: this.posBefore(end - 1),
+        endAfter: this.posAfter(end),
+        endBefore: this.posBefore(end + 1),
       },
       { owner },
     );
