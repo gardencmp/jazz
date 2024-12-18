@@ -655,9 +655,6 @@ importers:
       react-dom:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
-      react-hook-form:
-        specifier: ^7.41.5
-        version: 7.53.0(react@18.3.1)
     devDependencies:
       '@biomejs/biome':
         specifier: 1.9.4
@@ -951,9 +948,6 @@ importers:
 
   examples/organization:
     dependencies:
-      hash-slash:
-        specifier: workspace:*
-        version: link:../../packages/hash-slash
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react

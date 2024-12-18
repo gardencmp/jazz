@@ -1,6 +1,9 @@
 # Organization example with Jazz and React
 
-Live version: [https://form-demo.jazz.tools](https://form-demo.jazz.tools)
+This is an example of how to share a set of data between users through a CoMap called Organization. 
+Different apps have different names for this concept, such as "teams" or "workspaces".
+
+Refer to the [documentation](https://jazz.tools/docs/react/design-patterns/organization)  for more information.
 
 ## Installing & running the example locally
 
@@ -11,9 +14,9 @@ Start by downloading the [jazz repository](https://github.com/garden-co/jazz):
 npx degit gardencmp/jazz jazz
 ```
 
-Go to the form example directory:
+Go to the organization example directory:
 ```bash
-cd jazz/examples/form
+cd jazz/examples/organization
 ```
 
 Install and build dependencies:

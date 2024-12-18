@@ -16,7 +16,7 @@ export function CreateOrganization() {
   if (!me?.root?.organizations) return;
 
   const onSave = (draft: DraftOrganization) => {
-    // validate if the draft is a valid order
+    // validate if the draft is a valid organization
     const validation = draft.validate();
     setErrors(validation.errors);
     if (validation.errors.length > 0) {
