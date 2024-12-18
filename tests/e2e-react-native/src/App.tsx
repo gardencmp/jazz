@@ -5,7 +5,7 @@ import {
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { StrictMode, useEffect, useRef } from "react";
 
-import { DemoAuthBasicUI, useDemoAuth } from "jazz-react-native";
+import { useDemoAuth } from "jazz-react-native";
 import { Jazz } from "./jazz";
 import { SimpleSharing } from "./screens/SimpleSharing";
 
