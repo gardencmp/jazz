@@ -1,0 +1,112 @@
+import { CodeGroup } from "@/components/forMdx";
+
+# Sharing data through Organizations
+
+Organizations are a way to share a set of data between users.
+In Vercel, they're called teams. When you add users to your team, they'll see all the projects within that team. In Notion, they're called workspaces.
+
+For this documentation, we'll use the term Organization.
+
+## Defining the schema for an Organization
+
+Create a CoMap shared by the users of the same organization to hold the "main database" of the shared data within an organization.
+
+For this example, users within an `Organization` will be sharing `Project`s.
+
+<CodeGroup>
+```ts
+// schema.ts
+export class Project extends CoMap {
+  name = co.string;
+}
+
+export class ListOfProjects extends CoList.Of(co.ref(Project)) {}
+
+export class Organization extends CoMap {
+  name = co.string;
+
+  // shared data between users of each organization
+  projects = co.ref(ListOfProjects);
+}
+
+export class ListOfOrganizations extends CoList.Of(co.ref(Organization)) {}
+```
+</CodeGroup>
+
+Learn more about [defining schemas](/docs/schemas/covalues).
+
+## Adding a list of Organizations to the user's Account
+
+Let's add the list of `Organization`s to the user's Account `root` so they can access them.
+
+<CodeGroup>
+```ts
+// schema.ts
+export class JazzAccountRoot extends CoMap {
+  organizations = co.ref(ListOfOrganizations);
+}
+
+export class JazzAccount extends Account {
+  root = co.ref(JazzAccountRoot);
+
+  async migrate(creationProps?: { name: string }) {
+    super.migrate(creationProps);
+
+    if (!this._refs.root) {
+      // Using a Group as an owner allows you to give access to other users
+      const initialOrganizationOwnership = {
+        owner: Group.create({ owner: this }),
+      };
+
+      const organizations = ListOfOrganizations.create(
+        [
+          // Create the first Organization so users can start right away
+          Organization.create(
+            {
+              name: "My organization",
+              projects: ListOfProjects.create([], initialOrganizationOwnership),
+            },
+            initialOrganizationOwnership,
+          ),
+        ],
+        { owner: this },
+      );
+
+      this.root = JazzAccountRoot.create(
+        { organizations },
+        { owner: this },
+      );
+    }
+  }
+}
+```
+</CodeGroup>
+
+This schema now allows users to create `Organization`s and add `Project`s to them.
+
+## Adding other users to an Organization
+
+To give users access to an `Organization`, you can either send them an invite link, or
+add their `Account` manually.
+
+### Adding users through invite links
+
+Here's how you can generate an [invite link](/docs/groups/sharing#invite-links).
+
+When the user accepts the invite, add the `Organization` to the user's `organizations` list.
+
+<CodeGroup>
+```ts
+const organization = await Organization.load(organizationId, me, []);
+me.root.organizations.push(organization);
+```
+</CodeGroup>
+
+### Adding users through their Account ID
+
+You can grant permission to a user by adding their `Account` as a member of the `Organization`'s `Group`.
+[Here's how you can do that](/docs/groups/intro#adding-group-members-by-id).
+
+After that, the `Organization` needs be to be added to their `organizations` list in the Account root.
+
+...more on this coming soon
