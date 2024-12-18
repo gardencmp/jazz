@@ -3,13 +3,13 @@ import { CodeGroup } from "@/components/forMdx";
 # Sharing data through Organizations
 
 Organizations are a way to share a set of data between users.
-In Vercel, they're called teams. When you add users to your team, they'll see all the projects within that team. In Notion, they're called workspaces.
+Different apps have different names for this concept, such as "teams" or "workspaces".
 
-For this documentation, we'll use the term Organization.
+We'll use the term Organization.
 
 ## Defining the schema for an Organization
 
-Create a CoMap shared by the users of the same organization to hold the "main database" of the shared data within an organization.
+Create a CoMap shared by the users of the same organization to act as a root (or "main database") for the shared data within an organization.
 
 For this example, users within an `Organization` will be sharing `Project`s.
 
@@ -97,16 +97,31 @@ When the user accepts the invite, add the `Organization` to the user's `organiza
 
 <CodeGroup>
 ```ts
-const organization = await Organization.load(organizationId, me, []);
-me.root.organizations.push(organization);
+const onAccept = (organizationId: ID<Organization>) => {
+  if (me?.root?.organizations) {
+    Organization.load(organizationId, me, []).then((organization) => {
+      if (organization) {
+        // Avoid duplicates
+        const ids = me.root.organizations.map(
+          (organization) => organization?.id,
+        );
+
+        if (ids.includes(organizationId)) return;
+
+        me.root.organizations.push(organization);
+        navigate("/organizations/" + organizationId);
+      }
+    });
+  }
+};
+
+useAcceptInvite({
+  invitedObjectSchema: Organization,
+  onAccept,
+});
 ```
 </CodeGroup>
 
 ### Adding users through their Account ID
-
-You can grant permission to a user by adding their `Account` as a member of the `Organization`'s `Group`.
-[Here's how you can do that](/docs/groups/intro#adding-group-members-by-id).
-
-After that, the `Organization` needs be to be added to their `organizations` list in the Account root.
 
 ...more on this coming soon
