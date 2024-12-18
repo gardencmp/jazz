@@ -1,4 +1,11 @@
-import type { Everyone, RawAccountID, RawGroup, Role } from "cojson";
+import type {
+  CoID,
+  Everyone,
+  RawAccountID,
+  RawCoMap,
+  RawGroup,
+  Role,
+} from "cojson";
 import type {
   CoValue,
   CoValueClass,
