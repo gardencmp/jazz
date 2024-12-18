@@ -10,9 +10,9 @@ import {
   AuthMethod,
   CoValue,
   CoValueClass,
-  DeeplyLoaded,
-  DepthsIn,
   ID,
+  RefsToResolve,
+  Resolved,
   subscribeToCoValue,
 } from "jazz-tools";
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -41,26 +41,24 @@ export const logoutHandler = ref<() => void>();
 export interface JazzVueApp<Acc extends Account> {
   JazzProvider: Component;
 
-  useAccount(): { me: ComputedRef<Acc>; logOut: () => void };
-  useAccount<D extends DepthsIn<Acc>>(
-    depth: D,
+  useAccount<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O,
   ): {
-    me: ComputedRef<DeeplyLoaded<Acc, D> | undefined>;
+    me: ComputedRef<Resolved<Acc, O> | undefined>;
     logOut: () => void;
   };
 
-  useAccountOrGuest(): { me: ComputedRef<Acc | AnonymousJazzAgent> };
-  useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth: D,
+  useAccountOrGuest<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O,
   ): {
-    me: ComputedRef<DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent>;
+    me: ComputedRef<Resolved<Acc, O> | undefined | AnonymousJazzAgent>;
   };
 
-  useCoState<V extends CoValue, D>(
+  useCoState<V extends CoValue, const O extends { resolve?: RefsToResolve<V> }>(
     Schema: CoValueClass<V>,
     id: MaybeRef<ID<V> | undefined>,
-    depth?: D & DepthsIn<V>,
-  ): Ref<DeeplyLoaded<V, D> | undefined>;
+    options?: O,
+  ): Ref<Resolved<V, O> | undefined>;
 
   useAcceptInvite<V extends CoValue>(args: {
     invitedObjectSchema: CoValueClass<V>;
@@ -158,17 +156,20 @@ export function createJazzVueApp<Acc extends Account>({
     return context;
   }
 
-  function useAccount(): { me: ComputedRef<Acc>; logOut: () => void };
-  function useAccount<D extends DepthsIn<Acc>>(
-    depth: D,
-  ): {
-    me: ComputedRef<DeeplyLoaded<Acc, D> | undefined>;
+  function useAccount(): {
+    me: ComputedRef<Acc>;
     logOut: () => void;
   };
-  function useAccount<D extends DepthsIn<Acc>>(
-    depth?: D,
+  function useAccount<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O,
   ): {
-    me: ComputedRef<Acc | DeeplyLoaded<Acc, D> | undefined>;
+    me: ComputedRef<Resolved<Acc, O> | undefined>;
+    logOut: () => void;
+  };
+  function useAccount<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O,
+  ): {
+    me: ComputedRef<Acc | Resolved<Acc, O> | undefined>;
     logOut: () => void;
   } {
     const context = useJazzContext();
@@ -187,17 +188,21 @@ export function createJazzVueApp<Acc extends Account>({
       "me" in context.value ? context.value.me : undefined,
     );
 
-    const me = useCoState<Acc, D>(
+    const me = useCoState<Acc, O>(
       contextMe.value?.constructor as CoValueClass<Acc>,
       contextMe.value?.id,
-      depth,
+      options,
     );
 
     return {
       me: computed(() => {
         const value =
-          depth === undefined
-            ? me.value || toRaw((context.value as BrowserContext<Acc>).me)
+          options?.resolve === undefined
+            ? me.value ||
+              (toRaw((context.value as BrowserContext<Acc>).me) as Resolved<
+                Acc,
+                O
+              >)
             : me.value;
 
         return value ? toRaw(value) : value;
@@ -206,18 +211,18 @@ export function createJazzVueApp<Acc extends Account>({
     };
   }
 
-  function useAccountOrGuest(): { me: ComputedRef<Acc | AnonymousJazzAgent> };
-  function useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth: D,
-  ): {
-    me: ComputedRef<DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent>;
+  function useAccountOrGuest(): {
+    me: ComputedRef<Acc | AnonymousJazzAgent>;
   };
-  function useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth?: D,
+  function useAccountOrGuest<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O,
   ): {
-    me: ComputedRef<
-      Acc | DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent
-    >;
+    me: ComputedRef<Resolved<Acc, O> | undefined | AnonymousJazzAgent>;
+  };
+  function useAccountOrGuest<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O,
+  ): {
+    me: ComputedRef<Acc | Resolved<Acc, O> | undefined | AnonymousJazzAgent>;
   } {
     const context = useJazzContext();
 
@@ -229,17 +234,21 @@ export function createJazzVueApp<Acc extends Account>({
       "me" in context.value ? context.value.me : undefined,
     );
 
-    const me = useCoState<Acc, D>(
+    const me = useCoState<Acc, O>(
       contextMe.value?.constructor as CoValueClass<Acc>,
       contextMe.value?.id,
-      depth,
+      options,
     );
 
     if ("me" in context.value) {
       return {
         me: computed(() =>
-          depth === undefined
-            ? me.value || toRaw((context.value as BrowserContext<Acc>).me)
+          options?.resolve === undefined
+            ? me.value ||
+              (toRaw((context.value as BrowserContext<Acc>).me) as Resolved<
+                Acc,
+                O
+              >)
             : me.value,
         ),
       };
@@ -250,13 +259,15 @@ export function createJazzVueApp<Acc extends Account>({
     }
   }
 
-  function useCoState<V extends CoValue, D>(
+  function useCoState<
+    V extends CoValue,
+    const O extends { resolve?: RefsToResolve<V> },
+  >(
     Schema: CoValueClass<V>,
     id: MaybeRef<ID<V> | undefined>,
-    depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
-  ): Ref<DeeplyLoaded<V, D> | undefined> {
-    const state: ShallowRef<DeeplyLoaded<V, D> | undefined> =
-      shallowRef(undefined);
+    options?: O,
+  ): Ref<Resolved<V, O> | undefined> {
+    const state: ShallowRef<Resolved<V, O> | undefined> = shallowRef(undefined);
     const context = useJazzContext();
 
     if (!context.value) {
@@ -266,7 +277,7 @@ export function createJazzVueApp<Acc extends Account>({
     let unsubscribe: (() => void) | undefined;
 
     watch(
-      [() => unref(id), () => context, () => Schema, () => depth],
+      [() => unref(id), () => context, () => Schema, () => options],
       () => {
         if (unsubscribe) unsubscribe();
 
@@ -279,7 +290,7 @@ export function createJazzVueApp<Acc extends Account>({
           "me" in context.value
             ? toRaw(context.value.me)
             : toRaw(context.value.guest),
-          depth,
+          options,
           (value) => {
             state.value = value;
           },

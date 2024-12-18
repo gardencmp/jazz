@@ -28,7 +28,7 @@ vi.mock('jazz-browser', () => ({
 
 // Mocks for coValue observables
 const mockUnsubscribe = vi.fn();
-const mockSubscribe = vi.fn((Schema, id, me, depth, callback) => {
+const mockSubscribe = vi.fn((id, me, callback) => {
   callback();
   return {
     unsubscribe: mockUnsubscribe
@@ -186,10 +186,8 @@ describe('jazz.svelte', () => {
         // Verify initial subscription
         expect(mockSubscribe).toHaveBeenCalledTimes(1);
         expect(mockSubscribe).toHaveBeenCalledWith(
-          Account,
           'co_test-id',
           mockAccount,
-          {},
           expect.any(Function)
         );
 
@@ -206,10 +204,8 @@ describe('jazz.svelte', () => {
         // Should have subscribed again with new ID
         expect(mockSubscribe).toHaveBeenCalledTimes(1);
         expect(mockSubscribe).toHaveBeenCalledWith(
-          Account,
           'new_id',
           mockAccount,
-          {},
           expect.any(Function)
         );
       });
@@ -249,7 +245,7 @@ describe('jazz.svelte', () => {
         });
 
         // Get callback function that was passed to subscribe
-        const [[, , , , callback]] = mockSubscribe.mock.calls;
+        const [[, , callback]] = mockSubscribe.mock.calls;
 
         // Initial value
         let value = await screen.findByTestId('current-value');
@@ -286,10 +282,8 @@ describe('jazz.svelte', () => {
 
         // Verify subscribe was called with correct parameters
         expect(mockSubscribe).toHaveBeenCalledWith(
-          Account,
           'co_test-id',
           mockAccount,
-          {},
           expect.any(Function)
         );
 

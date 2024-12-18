@@ -14,11 +14,11 @@ import type {
   AnonymousJazzAgent,
   CoValue,
   CoValueClass,
-  DeeplyLoaded,
-  DepthsIn,
   Group,
   ID,
   IfCo,
+  RefsToResolve,
+  Resolved,
   Schema,
   SchemaFor,
   UnCo,
@@ -320,27 +320,30 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
    * Load a `CoFeed`
    * @category Subscription & Loading
    */
-  static load<S extends CoFeed, Depth>(
+  static load<S extends CoFeed, const O extends { resolve?: RefsToResolve<S> }>(
     this: CoValueClass<S>,
     id: ID<S>,
     as: Account,
-    depth: Depth & DepthsIn<S>,
-  ): Promise<DeeplyLoaded<S, Depth> | undefined> {
-    return loadCoValue(this, id, as, depth);
+    options?: O,
+  ): Promise<Resolved<S, O> | undefined> {
+    return loadCoValue(this, id, as, options);
   }
 
   /**
    * Subscribe to a `CoFeed`, when you have an ID but don't have a `CoFeed` instance yet
    * @category Subscription & Loading
    */
-  static subscribe<S extends CoFeed, Depth>(
+  static subscribe<
+    S extends CoFeed,
+    const O extends { resolve?: RefsToResolve<S> },
+  >(
     this: CoValueClass<S>,
     id: ID<S>,
     as: Account,
-    depth: Depth & DepthsIn<S>,
-    listener: (value: DeeplyLoaded<S, Depth>) => void,
+    options: O,
+    listener: (value: Resolved<S, O>) => void,
   ): () => void {
-    return subscribeToCoValue<S, Depth>(this, id, as, depth, listener);
+    return subscribeToCoValue<S, O>(this, id, as, options, listener);
   }
 
   /**
@@ -350,11 +353,11 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
    * or undefined if it cannot be loaded that deeply
    * @category Subscription & Loading
    */
-  ensureLoaded<S extends CoFeed, Depth>(
-    this: S,
-    depth: Depth & DepthsIn<S>,
-  ): Promise<DeeplyLoaded<S, Depth> | undefined> {
-    return ensureCoValueLoaded(this, depth);
+  ensureLoaded<
+    S extends CoFeed,
+    const O extends { resolve?: RefsToResolve<S> },
+  >(this: S, options?: O): Promise<Resolved<S, O> | undefined> {
+    return ensureCoValueLoaded(this, options);
   }
 
   /**
@@ -363,12 +366,12 @@ export class CoFeed<Item = any> extends CoValueBase implements CoValue {
    * No need to provide an ID or Account since they're already part of the instance.
    * @category Subscription & Loading
    */
-  subscribe<S extends CoFeed, Depth>(
+  subscribe<S extends CoFeed, const O extends { resolve?: RefsToResolve<S> }>(
     this: S,
-    depth: Depth & DepthsIn<S>,
-    listener: (value: DeeplyLoaded<S, Depth>) => void,
+    options: O,
+    listener: (value: Resolved<S, O>) => void,
   ): () => void {
-    return subscribeToExistingCoValue(this, depth, listener);
+    return subscribeToExistingCoValue(this, options, listener);
   }
 
   /**
@@ -726,7 +729,7 @@ export class FileStream extends CoValueBase implements CoValue {
       allowUnfinished?: boolean;
     },
   ): Promise<Blob | undefined> {
-    let stream = await this.load(id, as, []);
+    let stream = await this.load(id, as);
 
     /**
      * If the user hasn't requested an incomplete blob and the
@@ -734,12 +737,18 @@ export class FileStream extends CoValueBase implements CoValue {
      */
     if (!options?.allowUnfinished && !stream?.isBinaryStreamEnded()) {
       stream = await new Promise<FileStream>((resolve) => {
-        const unsubscribe = subscribeToCoValue(this, id, as, [], (value) => {
-          if (value.isBinaryStreamEnded()) {
-            unsubscribe();
-            resolve(value);
-          }
-        });
+        const unsubscribe = subscribeToCoValue(
+          this,
+          id,
+          as,
+          { resolve: true },
+          (value) => {
+            if (value.isBinaryStreamEnded()) {
+              unsubscribe();
+              resolve(value);
+            }
+          },
+        );
       });
     }
 
@@ -833,46 +842,55 @@ export class FileStream extends CoValueBase implements CoValue {
    * Load a `FileStream`
    * @category Subscription & Loading
    */
-  static load<B extends FileStream, Depth>(
+  static load<
+    B extends FileStream,
+    const O extends { resolve?: RefsToResolve<B> },
+  >(
     this: CoValueClass<B>,
     id: ID<B>,
     as: Account,
-    depth: Depth & DepthsIn<B>,
-  ): Promise<DeeplyLoaded<B, Depth> | undefined> {
-    return loadCoValue(this, id, as, depth);
+    options?: O,
+  ): Promise<Resolved<B, O> | undefined> {
+    return loadCoValue(this, id, as, options);
   }
 
   /**
    * Subscribe to a `FileStream`, when you have an ID but don't have a `FileStream` instance yet
    * @category Subscription & Loading
    */
-  static subscribe<B extends FileStream, Depth>(
+  static subscribe<
+    B extends FileStream,
+    const O extends { resolve?: RefsToResolve<B> },
+  >(
     this: CoValueClass<B>,
     id: ID<B>,
     as: Account,
-    depth: Depth & DepthsIn<B>,
-    listener: (value: DeeplyLoaded<B, Depth>) => void,
+    options: O,
+    listener: (value: Resolved<B, O>) => void,
   ): () => void {
-    return subscribeToCoValue<B, Depth>(this, id, as, depth, listener);
+    return subscribeToCoValue<B, O>(this, id, as, options, listener);
   }
 
-  ensureLoaded<B extends FileStream, Depth>(
-    this: B,
-    depth: Depth & DepthsIn<B>,
-  ): Promise<DeeplyLoaded<B, Depth> | undefined> {
-    return ensureCoValueLoaded(this, depth);
+  ensureLoaded<
+    B extends FileStream,
+    const O extends { resolve?: RefsToResolve<B> },
+  >(this: B, options?: O): Promise<Resolved<B, O> | undefined> {
+    return ensureCoValueLoaded(this, options);
   }
 
   /**
    * An instance method to subscribe to an existing `FileStream`
    * @category Subscription & Loading
    */
-  subscribe<B extends FileStream, Depth>(
+  subscribe<
+    B extends FileStream,
+    const O extends { resolve?: RefsToResolve<B> },
+  >(
     this: B,
-    depth: Depth & DepthsIn<B>,
-    listener: (value: DeeplyLoaded<B, Depth>) => void,
+    options: O,
+    listener: (value: Resolved<B, O>) => void,
   ): () => void {
-    return subscribeToExistingCoValue(this, depth, listener);
+    return subscribeToExistingCoValue(this, options, listener);
   }
 
   /**

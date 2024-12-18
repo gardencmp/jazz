@@ -2,17 +2,20 @@ import {
   Account,
   CoValue,
   CoValueClass,
-  DepthsIn,
   ID,
+  RefsToResolve,
   subscribeToCoValue,
 } from "jazz-tools";
 
-export function waitForCoValue<T extends CoValue>(
+export function waitForCoValue<
+  T extends CoValue,
+  const O extends { resolve?: RefsToResolve<T> },
+>(
   coMap: CoValueClass<T>,
   valueId: ID<T>,
   account: Account,
   predicate: (value: T) => boolean,
-  depth: DepthsIn<T>,
+  options?: O,
 ) {
   return new Promise<T>((resolve) => {
     function subscribe() {
@@ -20,7 +23,7 @@ export function waitForCoValue<T extends CoValue>(
         coMap,
         valueId,
         account,
-        depth,
+        options,
         (value) => {
           if (predicate(value)) {
             resolve(value);

@@ -5,9 +5,7 @@ export function SidePanel() {
   const { playlistId } = useParams();
   const navigate = useNavigate();
   const { me } = useAccount({
-    root: {
-      playlists: [{}],
-    },
+    resolve: { root: { playlists: { $each: true } } },
   });
 
   function handleAllTracksClick(evt: React.MouseEvent<HTMLAnchorElement>) {

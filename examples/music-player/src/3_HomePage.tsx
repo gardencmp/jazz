@@ -20,10 +20,7 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
    *  access rights to CoValues. We get it from the top-level provider `<WithJazz/>`.
    */
   const { me } = useAccount({
-    root: {
-      rootPlaylist: {},
-      playlists: [],
-    },
+    resolve: { root: { rootPlaylist: true, playlists: true } },
   });
 
   const navigate = useNavigate();
@@ -51,8 +48,9 @@ export function HomePage({ mediaPlayer }: { mediaPlayer: MediaPlayer }) {
 
   const params = useParams<{ playlistId: ID<Playlist> }>();
   const playlistId = params.playlistId ?? me?.root._refs.rootPlaylist.id;
+
   const playlist = useCoState(Playlist, playlistId, {
-    tracks: [],
+    resolve: { tracks: true },
   });
 
   const isRootPlaylist = !params.playlistId;

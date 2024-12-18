@@ -22,7 +22,9 @@ export function NewEmployee({
   const navigate = useNavigate();
   const { me } = useAccount();
 
-  const employees = useCoState(EmployeeCoList, employeeListCoId, [{}]);
+  const employees = useCoState(EmployeeCoList, employeeListCoId, {
+    resolve: { $each: true },
+  });
 
   const [employeeName, setEmployeeName] = useState<string>("");
 

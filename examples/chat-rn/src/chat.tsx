@@ -21,7 +21,7 @@ export default function ChatScreen({ navigation }: { navigation: any }) {
   const { me, logOut } = useAccount();
   const [chat, setChat] = useState<Chat>();
   const [message, setMessage] = useState("");
-  const loadedChat = useCoState(Chat, chat?.id, [{}]);
+  const loadedChat = useCoState(Chat, chat?.id, { resolve: { $each: true } });
 
   useEffect(() => {
     navigation.setOptions({
@@ -52,7 +52,7 @@ export default function ChatScreen({ navigation }: { navigation: any }) {
 
   const loadChat = async (chatId: ID<Chat>) => {
     try {
-      const chat = await Chat.load(chatId, me, []);
+      const chat = await Chat.load(chatId, me);
       setChat(chat);
     } catch (error) {
       console.log("Error loading chat", error);

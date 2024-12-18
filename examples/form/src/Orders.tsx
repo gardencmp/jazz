@@ -4,7 +4,7 @@ import { useAccount } from "./main.tsx";
 
 export function Orders() {
   const { me } = useAccount({
-    profile: { orders: [] },
+    resolve: { profile: { orders: true } },
   });
 
   return (
@@ -22,8 +22,8 @@ export function Orders() {
           <h1 className="text-lg pb-2 border-b mb-3">
             <strong>Your orders 🧋</strong>
           </h1>
-          {me?.profile?.orders?.length ? (
-            me?.profile?.orders.map((order) =>
+          {me?.profile.orders.length ? (
+            me?.profile.orders.map((order) =>
               order ? <OrderThumbnail key={order.id} order={order} /> : null,
             )
           ) : (

@@ -13,7 +13,9 @@ export default function UserProfile({ id }: { id: ID<JazzAccount> }) {
   const bookReviews = useCoState(
     ListOfBookReviews,
     user?.profile?._refs.bookReviews?.id,
-    [{}],
+    {
+      resolve: { $each: true },
+    },
   );
 
   return (

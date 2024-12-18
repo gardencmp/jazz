@@ -1,9 +1,9 @@
 import { describe, expect, it, onTestFinished, vi } from "vitest";
 import { Account, CoFeed, CoList, CoMap, co } from "../index.web.js";
 import {
-  type DepthsIn,
   FileStream,
   Group,
+  type RefsToResolve,
   createCoValueObservable,
   subscribeToCoValue,
 } from "../internal.js";
@@ -107,7 +107,9 @@ describe("subscribeToCoValue", () => {
       chatRoom.id,
       meOnSecondPeer,
       {
-        messages: [],
+        resolve: {
+          messages: true,
+        },
       },
       updateFn,
     );
@@ -145,7 +147,11 @@ describe("subscribeToCoValue", () => {
       chatRoom.id,
       meOnSecondPeer,
       {
-        messages: [{}],
+        resolve: {
+          messages: {
+            $each: true,
+          },
+        },
       },
       updateFn,
     );
@@ -190,11 +196,13 @@ describe("subscribeToCoValue", () => {
       chatRoom.id,
       meOnSecondPeer,
       {
-        messages: [
-          {
-            reactions: [],
+        resolve: {
+          messages: {
+            $each: {
+              reactions: true,
+            },
           },
-        ],
+        },
       },
       updateFn,
     );
@@ -256,11 +264,13 @@ describe("subscribeToCoValue", () => {
       chatRoom.id,
       meOnSecondPeer,
       {
-        messages: [
-          {
-            reactions: [],
+        resolve: {
+          messages: {
+            $each: {
+              reactions: true,
+            },
           },
-        ],
+        },
       },
       updateFn,
     );
@@ -303,7 +313,7 @@ describe("createCoValueObservable", () => {
   }
 
   it("should return undefined when there are no subscribers", async () => {
-    const observable = createCoValueObservable();
+    const observable = createCoValueObservable(TestMap);
 
     expect(observable.getCurrentValue()).toBeUndefined();
   });
@@ -311,18 +321,12 @@ describe("createCoValueObservable", () => {
   it("should update currentValue when subscribed", async () => {
     const { me, meOnSecondPeer } = await setupAccount();
     const testMap = createTestMap(me);
-    const observable = createCoValueObservable<TestMap, DepthsIn<TestMap>>();
+    const observable = createCoValueObservable(TestMap);
     const mockListener = vi.fn();
 
-    const unsubscribe = observable.subscribe(
-      TestMap,
-      testMap.id,
-      meOnSecondPeer,
-      {},
-      () => {
-        mockListener();
-      },
-    );
+    const unsubscribe = observable.subscribe(testMap.id, meOnSecondPeer, () => {
+      mockListener();
+    });
 
     testMap.color = "blue";
 
@@ -339,18 +343,12 @@ describe("createCoValueObservable", () => {
   it("should reset to undefined after unsubscribe", async () => {
     const { me, meOnSecondPeer } = await setupAccount();
     const testMap = createTestMap(me);
-    const observable = createCoValueObservable<TestMap, DepthsIn<TestMap>>();
+    const observable = createCoValueObservable(TestMap);
     const mockListener = vi.fn();
 
-    const unsubscribe = observable.subscribe(
-      TestMap,
-      testMap.id,
-      meOnSecondPeer,
-      {},
-      () => {
-        mockListener();
-      },
-    );
+    const unsubscribe = observable.subscribe(testMap.id, meOnSecondPeer, () => {
+      mockListener();
+    });
 
     await waitFor(() => mockListener.mock.calls.length > 0);
     expect(observable.getCurrentValue()).toBeDefined();

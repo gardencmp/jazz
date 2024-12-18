@@ -23,7 +23,7 @@ export default function Conversation() {
   const { me } = useAccount();
   const [chat, setChat] = useState<Chat>();
   const [message, setMessage] = useState("");
-  const loadedChat = useCoState(Chat, chat?.id, [{}]);
+  const loadedChat = useCoState(Chat, chat?.id, { resolve: { $each: true } });
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function Conversation() {
 
   const loadChat = async (chatId: ID<Chat>) => {
     try {
-      const chat = await Chat.load(chatId, me, []);
+      const chat = await Chat.load(chatId, me);
       setChat(chat);
     } catch (error) {
       console.log("Error loading chat", error);

@@ -4,15 +4,15 @@
       <div class="section-header">
         <h2>Folders</h2>
         <div class="new-folder">
-          <input 
-            v-model="newFolderName" 
-            placeholder="New folder name" 
+          <input
+            v-model="newFolderName"
+            placeholder="New folder name"
             class="input"
           />
           <button class="btn btn-primary" @click="createFolder">Create</button>
         </div>
       </div>
-      
+
       <div class="folder-list">
         <div
           v-for="folder in folders"
@@ -32,9 +32,9 @@
       <div class="section-header">
         <h2>{{ selectedFolder?.name }}</h2>
         <div class="new-todo">
-          <input 
-            v-model="newTodoTitle" 
-            placeholder="Add a new task" 
+          <input
+            v-model="newTodoTitle"
+            placeholder="Add a new task"
             class="input"
           />
           <button class="btn btn-primary" @click="createTodo">Add</button>
@@ -72,7 +72,9 @@ import { Folder, FolderList, ToDoItem, ToDoList } from "../schema";
 const { me } = useAccount();
 
 const computedFoldersId = computed(() => me.value?.root?.folders?.id);
-const folders = useCoState(FolderList, computedFoldersId, [{ items: [{}] }]);
+const folders = useCoState(FolderList, computedFoldersId, {
+  resolve: { $each: { items: true } },
+});
 
 const selectedFolder = ref<Folder>();
 const newFolderName = ref("");

@@ -49,7 +49,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const chat = useCoState(Chat, props.chatId, [{}]);
+    const chat = useCoState(Chat, props.chatId, { resolve: { $each: true } });
     const showNLastMessages = ref(30);
 
     const displayedMessages = computed(() => {

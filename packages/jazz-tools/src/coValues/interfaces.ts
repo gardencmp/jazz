@@ -1,6 +1,5 @@
 import type { CojsonInternalTypes, RawCoValue } from "cojson";
 import { RawAccount } from "cojson";
-import type { DeeplyLoaded, DepthsIn } from "../internal.js";
 import {
   Account,
   AnonymousJazzAgent,
@@ -11,7 +10,7 @@ import {
   subscriptionsScopes,
 } from "../internal.js";
 import { coValuesCache } from "../lib/cache.js";
-import { fulfillsDepth } from "./deepLoading.js";
+import { RefsToResolve, Resolved, fulfillsDepth } from "./deepLoading.js";
 
 /** @category Abstract interfaces */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -147,18 +146,21 @@ export class CoValueBase implements CoValue {
   }
 }
 
-export function loadCoValue<V extends CoValue, Depth>(
+export function loadCoValue<
+  V extends CoValue,
+  const O extends { resolve?: RefsToResolve<V> },
+>(
   cls: CoValueClass<V>,
   id: ID<V>,
   as: Account | AnonymousJazzAgent,
-  depth: Depth & DepthsIn<V>,
-): Promise<DeeplyLoaded<V, Depth> | undefined> {
+  options?: O | undefined,
+): Promise<Resolved<V, O> | undefined> {
   return new Promise((resolve) => {
     const unsubscribe = subscribeToCoValue(
       cls,
       id,
       as,
-      depth,
+      options,
       (value) => {
         resolve(value);
         unsubscribe();
@@ -171,24 +173,27 @@ export function loadCoValue<V extends CoValue, Depth>(
   });
 }
 
-export function ensureCoValueLoaded<V extends CoValue, Depth>(
-  existing: V,
-  depth: Depth & DepthsIn<V>,
-): Promise<DeeplyLoaded<V, Depth> | undefined> {
+export function ensureCoValueLoaded<
+  V extends CoValue,
+  const O extends { resolve?: RefsToResolve<V> },
+>(existing: V, options?: O | undefined): Promise<Resolved<V, O> | undefined> {
   return loadCoValue(
     existing.constructor as CoValueClass<V>,
     existing.id,
     existing._loadedAs,
-    depth,
+    options,
   );
 }
 
-export function subscribeToCoValue<V extends CoValue, Depth>(
+export function subscribeToCoValue<
+  V extends CoValue,
+  const O extends { resolve?: RefsToResolve<V> },
+>(
   cls: CoValueClass<V>,
   id: ID<V>,
   as: Account | AnonymousJazzAgent,
-  depth: Depth & DepthsIn<V>,
-  listener: (value: DeeplyLoaded<V, Depth>) => void,
+  options: O | undefined,
+  listener: (value: Resolved<V, O>) => void,
   onUnavailable?: () => void,
 ): () => void {
   const ref = new Ref(id, as, { ref: cls, optional: false });
@@ -208,8 +213,8 @@ export function subscribeToCoValue<V extends CoValue, Depth>(
         value,
         cls as CoValueClass<V> & CoValueFromRaw<V>,
         (update) => {
-          if (fulfillsDepth(depth, update)) {
-            listener(update as DeeplyLoaded<V, Depth>);
+          if (fulfillsDepth(options?.resolve, update)) {
+            listener(update as Resolved<V, O>);
           }
         },
       );
@@ -226,15 +231,16 @@ export function subscribeToCoValue<V extends CoValue, Depth>(
   };
 }
 
-export function createCoValueObservable<V extends CoValue, Depth>() {
-  let currentValue: DeeplyLoaded<V, Depth> | undefined = undefined;
+export function createCoValueObservable<
+  V extends CoValue,
+  const O extends { resolve?: RefsToResolve<V> },
+>(cls: CoValueClass<V>, options?: O) {
+  let currentValue: Resolved<V, O> | undefined = undefined;
   let subscriberCount = 0;
 
   function subscribe(
-    cls: CoValueClass<V>,
     id: ID<V>,
     as: Account | AnonymousJazzAgent,
-    depth: Depth & DepthsIn<V>,
     listener: () => void,
     onUnavailable?: () => void,
   ) {
@@ -244,7 +250,7 @@ export function createCoValueObservable<V extends CoValue, Depth>() {
       cls,
       id,
       as,
-      depth,
+      options,
       (value) => {
         currentValue = value;
         listener();
@@ -269,16 +275,19 @@ export function createCoValueObservable<V extends CoValue, Depth>() {
   return observable;
 }
 
-export function subscribeToExistingCoValue<V extends CoValue, Depth>(
+export function subscribeToExistingCoValue<
+  V extends CoValue,
+  const O extends { resolve?: RefsToResolve<V> },
+>(
   existing: V,
-  depth: Depth & DepthsIn<V>,
-  listener: (value: DeeplyLoaded<V, Depth>) => void,
+  options: O | undefined,
+  listener: (value: Resolved<V, O>) => void,
 ): () => void {
   return subscribeToCoValue(
     existing.constructor as CoValueClass<V>,
     existing.id,
     existing._loadedAs,
-    depth,
+    options,
     listener,
   );
 }

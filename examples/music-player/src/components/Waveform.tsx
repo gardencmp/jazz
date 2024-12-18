@@ -8,7 +8,6 @@ export function Waveform(props: { track: MusicTrack; height: number }) {
   const waveformData = useCoState(
     MusicTrackWaveform,
     track._refs.waveform.id,
-    {},
   )?.data;
   const duration = track.duration;
 

@@ -14,7 +14,7 @@ const reactionEmojiMap: {
 };
 
 export function ReactionsScreen(props: { id: ID<Reactions> }) {
-  const reactions = useCoState(Reactions, props.id, []);
+  const reactions = useCoState(Reactions, props.id);
 
   if (!reactions) return;
 

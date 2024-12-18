@@ -43,9 +43,11 @@ const VaultPage: React.FC = () => {
         (item): item is Exclude<typeof item, null> => !!item,
       ) || [],
   );
-  const folders = useCoState(FolderList, me.root?._refs.folders?.id, [
-    { items: [{}] },
-  ]);
+  const folders = useCoState(FolderList, me.root?._refs.folders?.id, {
+    resolve: {
+      $each: { items: { $each: true } },
+    },
+  });
 
   const [selectedFolder, setSelectedFolder] = useState<Folder | undefined>();
   const [isNewItemModalOpen, setIsNewItemModalOpen] = useState(false);

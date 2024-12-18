@@ -8,9 +8,9 @@ import type {
   AnonymousJazzAgent,
   CoValue,
   CoValueClass,
-  DeeplyLoaded,
-  DepthsIn,
-  ID
+  ID,
+  RefsToResolve,
+  Resolved
 } from 'jazz-tools';
 import { Account, createCoValueObservable } from 'jazz-tools';
 import { getContext, untrack, type Component } from 'svelte';
@@ -56,18 +56,17 @@ export function createJazzApp<Acc extends Account = Account>({
     });
   };
 
-  function useAccount(): { me: Acc | undefined; logOut: () => void };
-  function useAccount<D extends DepthsIn<Acc>>(
-    depth: D
-  ): { me: DeeplyLoaded<Acc, D> | undefined; logOut: () => void };
+  function useAccount<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O
+  ): { me: Resolved<Acc, O> | undefined; logOut: () => void };
   /**
    * Use the current account with a optional depth.
    * @param depth - The depth.
    * @returns The current account.
    */
-  function useAccount<D extends DepthsIn<Acc>>(
-    depth?: D
-  ): { me: Acc | DeeplyLoaded<Acc, D> | undefined; logOut: () => void } {
+  function useAccount<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O
+  ): { me: Resolved<Acc, O> | undefined; logOut: () => void } {
     const ctx = getJazzContext<Acc>();
     if (!ctx?.current) {
       throw new Error('useAccount must be used within a JazzProvider');
@@ -79,10 +78,10 @@ export function createJazzApp<Acc extends Account = Account>({
     }
 
     // If no depth is specified, return the context's me directly
-    if (depth === undefined) {
+    if (options?.resolve === undefined) {
       return {
         get me() {
-          return (ctx.current as BrowserContext<Acc>).me;
+          return (ctx.current as BrowserContext<Acc>).me as Resolved<Acc, O>;
         },
         logOut() {
           return ctx.current?.logOut();
@@ -91,10 +90,10 @@ export function createJazzApp<Acc extends Account = Account>({
     }
 
     // If depth is specified, use useCoState to get the deeply loaded version
-    const me = useCoState<Acc, D>(
+    const me = useCoState<Acc, O>(
       ctx.current.me.constructor as CoValueClass<Acc>,
       (ctx.current as BrowserContext<Acc>).me.id,
-      depth
+      options
     );
 
     return {
@@ -107,18 +106,19 @@ export function createJazzApp<Acc extends Account = Account>({
     };
   }
 
-  function useAccountOrGuest(): { me: Acc | AnonymousJazzAgent };
-  function useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth: D
-  ): { me: DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent };
+  function useAccountOrGuest(
+  ): { me: Acc | AnonymousJazzAgent };
+  function useAccountOrGuest<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O
+  ): { me: Resolved<Acc, O> | undefined | AnonymousJazzAgent };
   /**
    * Use the current account or guest with a optional depth.
    * @param depth - The depth.
    * @returns The current account or guest.
    */
-  function useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth?: D
-  ): { me: Acc | DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent } {
+  function useAccountOrGuest<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O
+  ): { me: Acc | Resolved<Acc, O> | undefined | AnonymousJazzAgent } {
     const ctx = getJazzContext<Acc>();
 
     if (!ctx?.current) {
@@ -127,18 +127,18 @@ export function createJazzApp<Acc extends Account = Account>({
 
     const contextMe = 'me' in ctx.current ? ctx.current.me : undefined;
 
-    const me = useCoState<Acc, D>(
+    const me = useCoState<Acc, O>(
       contextMe?.constructor as CoValueClass<Acc>,
       contextMe?.id,
-      depth
+      options
     );
 
     // If the context has a me, return the account.
     if ('me' in ctx.current) {
       return {
         get me() {
-          return depth === undefined
-            ? me.current || (ctx.current as BrowserContext<Acc>)?.me
+          return options?.resolve === undefined
+            ? me.current || (ctx.current as BrowserContext<Acc>)?.me as Resolved<Acc, O>
             : me.current;
         }
       };
@@ -160,18 +160,18 @@ export function createJazzApp<Acc extends Account = Account>({
    * @param depth - The depth.
    * @returns The CoValue.
    */
-  function useCoState<V extends CoValue, D extends DepthsIn<V> = []>(
+  function useCoState<V extends CoValue, const O extends { resolve?: RefsToResolve<V> }>(
     Schema: CoValueClass<V>,
     id: ID<V> | undefined,
-    depth: D = [] as D
+    options?: O
   ): {
-    current?: DeeplyLoaded<V, D>;
+    current?: Resolved<V, O>;
   } {
     const ctx = getJazzContext<Acc>();
 
     // Create state and a stable observable
-    let state = $state.raw<DeeplyLoaded<V, D> | undefined>(undefined);
-    const observable = $state.raw(createCoValueObservable());
+    let state = $state.raw<Resolved<V, O> | undefined>(undefined);
+    const observable = $state.raw(createCoValueObservable(Schema, options));
 
     // Effect to handle subscription
     // TODO: Possibly memoise this, to avoid re-subscribing
@@ -184,10 +184,8 @@ export function createJazzApp<Acc extends Account = Account>({
 
       // Setup subscription with current values
       return observable.subscribe(
-        Schema,
         id,
         'me' in ctx.current ? ctx.current.me : ctx.current.guest,
-        depth,
         () => {
           // Get current value from our stable observable
           state = observable.getCurrentValue();

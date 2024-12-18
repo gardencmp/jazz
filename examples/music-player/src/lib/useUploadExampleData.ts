@@ -7,7 +7,7 @@ import { uploadMusicTracks } from "../4_actions";
 
 export function useUploadExampleData() {
   const { me } = useAccount({
-    root: {},
+    resolve: { root: true },
   });
 
   const shouldUploadOnboardingData = me?.root?.exampleDataLoaded === false;

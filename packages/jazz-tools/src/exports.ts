@@ -30,7 +30,7 @@ export {
   type CoMapInit,
   type CoValueClass,
 } from "./internal.js";
-export type { DeeplyLoaded, DepthsIn } from "./internal.js";
+export type { Resolved, RefsToResolve } from "./internal.js";
 
 export {
   createCoValueObservable,

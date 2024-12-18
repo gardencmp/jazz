@@ -7,9 +7,9 @@ import {
   AuthMethod,
   CoValue,
   CoValueClass,
-  DeeplyLoaded,
-  DepthsIn,
   ID,
+  RefsToResolve,
+  Resolved,
   subscribeToCoValue,
 } from "jazz-tools";
 import { Linking } from "react-native";
@@ -95,12 +95,12 @@ export function createJazzRNApp<Acc extends Account>({
   }
 
   function useAccount(): { me: Acc; logOut: () => void };
-  function useAccount<D extends DepthsIn<Acc>>(
-    depth: D,
-  ): { me: DeeplyLoaded<Acc, D> | undefined; logOut: () => void };
-  function useAccount<D extends DepthsIn<Acc>>(
-    depth?: D,
-  ): { me: Acc | DeeplyLoaded<Acc, D> | undefined; logOut: () => void } {
+  function useAccount<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options: O,
+  ): { me: Resolved<Acc, O> | undefined; logOut: () => void };
+  function useAccount<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O,
+  ): { me: Acc | Resolved<Acc, O> | undefined; logOut: () => void } {
     const context = React.useContext(JazzContext);
 
     if (!context) {
@@ -113,25 +113,28 @@ export function createJazzRNApp<Acc extends Account>({
       );
     }
 
-    const me = useCoState<Acc, D>(
+    const me = useCoState<Acc, O>(
       context?.me.constructor as CoValueClass<Acc>,
       context?.me.id,
-      depth,
+      options,
     );
 
     return {
-      me: depth === undefined ? me || context.me : me,
+      me:
+        options?.resolve === undefined
+          ? me || (context.me as Resolved<Acc, O>)
+          : me,
       logOut: context.logOut,
     };
   }
 
   function useAccountOrGuest(): { me: Acc | AnonymousJazzAgent };
-  function useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth: D,
-  ): { me: DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent };
-  function useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth?: D,
-  ): { me: Acc | DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent } {
+  function useAccountOrGuest<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options: O,
+  ): { me: Resolved<Acc, O> | undefined | AnonymousJazzAgent };
+  function useAccountOrGuest<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O,
+  ): { me: Acc | Resolved<Acc, O> | undefined | AnonymousJazzAgent } {
     const context = React.useContext(JazzContext);
 
     if (!context) {
@@ -140,29 +143,35 @@ export function createJazzRNApp<Acc extends Account>({
 
     const contextMe = "me" in context ? context.me : undefined;
 
-    const me = useCoState<Acc, D>(
+    const me = useCoState<Acc, O>(
       contextMe?.constructor as CoValueClass<Acc>,
       contextMe?.id,
-      depth,
+      options,
     );
 
     if ("me" in context) {
       return {
-        me: depth === undefined ? me || context.me : me,
+        me:
+          options?.resolve === undefined
+            ? me || (context.me as Resolved<Acc, O>)
+            : me,
       };
     } else {
       return { me: context.guest };
     }
   }
 
-  function useCoState<V extends CoValue, D>(
+  function useCoState<
+    V extends CoValue,
+    const O extends { resolve?: RefsToResolve<V> },
+  >(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Schema: CoValueClass<V>,
     id: ID<V> | undefined,
-    depth: D & DepthsIn<V> = [] as D & DepthsIn<V>,
-  ): DeeplyLoaded<V, D> | undefined {
+    options?: O,
+  ): Resolved<V, O> | undefined {
     const [state, setState] = useState<{
-      value: DeeplyLoaded<V, D> | undefined;
+      value: Resolved<V, O> | undefined;
     }>({ value: undefined });
     const context = React.useContext(JazzContext);
 
@@ -177,7 +186,7 @@ export function createJazzRNApp<Acc extends Account>({
         Schema,
         id,
         "me" in context ? context.me : context.guest,
-        depth,
+        options,
         (value) => {
           setState({ value });
         },
@@ -265,10 +274,10 @@ export interface JazzReactApp<Acc extends Account> {
     logOut: () => void;
   };
   /** @category Hooks */
-  useAccount<D extends DepthsIn<Acc>>(
-    depth: D,
+  useAccount<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O,
   ): {
-    me: DeeplyLoaded<Acc, D> | undefined;
+    me: Resolved<Acc, O> | undefined;
     logOut: () => void;
   };
 
@@ -276,18 +285,18 @@ export interface JazzReactApp<Acc extends Account> {
   useAccountOrGuest(): {
     me: Acc | AnonymousJazzAgent;
   };
-  useAccountOrGuest<D extends DepthsIn<Acc>>(
-    depth: D,
+  useAccountOrGuest<const O extends { resolve?: RefsToResolve<Acc> }>(
+    options?: O,
   ): {
-    me: DeeplyLoaded<Acc, D> | undefined | AnonymousJazzAgent;
+    me: Resolved<Acc, O> | undefined | AnonymousJazzAgent;
   };
   /** @category Hooks */
-  useCoState<V extends CoValue, D>(
+  useCoState<V extends CoValue, const O extends { resolve?: RefsToResolve<V> }>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Schema: { new (...args: any[]): V } & CoValueClass,
     id: ID<V> | undefined,
-    depth?: D & DepthsIn<V>,
-  ): DeeplyLoaded<V, D> | undefined;
+    options?: O,
+  ): Resolved<V, O> | undefined;
 
   /** @category Hooks */
   useAcceptInvite<V extends CoValue>({
