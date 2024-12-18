@@ -3,6 +3,7 @@ import { CoID, RawCoValue } from "../coValue.js";
 import { CoValueCore } from "../coValueCore.js";
 import { AgentID, SessionID, TransactionID } from "../ids.js";
 import { JsonObject, JsonValue } from "../jsonValue.js";
+import { CoValueKnownState } from "../sync.js";
 import { accountOrAgentIDfromSessionID } from "../typeUtils/accountOrAgentIDfromSessionID.js";
 import { isAccountID } from "../typeUtils/isAccountID.js";
 import { isCoValue } from "../typeUtils/isCoValue.js";
@@ -52,13 +53,16 @@ export class RawCoStreamView<
   items: {
     [key: SessionID]: CoStreamItem<Item>[];
   };
+  /** @internal */
+  knownTransactions: CoValueKnownState["sessions"];
   readonly _item!: Item;
 
   constructor(core: CoValueCore) {
     this.id = core.id as CoID<this>;
     this.core = core;
     this.items = {};
-    this.fillFromCoValue();
+    this.knownTransactions = {};
+    this.processNewTransactions();
   }
 
   get headerMeta(): Meta {
@@ -75,14 +79,13 @@ export class RawCoStreamView<
   }
 
   /** @internal */
-  protected fillFromCoValue() {
-    this.items = {};
+  protected processNewTransactions() {
+    const changeEntries = new Set<CoStreamItem<Item>[]>();
 
-    for (const {
-      txID,
-      madeAt,
-      changes,
-    } of this.core.getValidSortedTransactions()) {
+    for (const { txID, madeAt, changes } of this.core.getValidTransactions({
+      ignorePrivateTransactions: false,
+      knownTransactions: this.knownTransactions,
+    })) {
       for (const changeUntyped of changes) {
         const change = changeUntyped as Item;
         let entries = this.items[txID.sessionID];
@@ -91,7 +94,21 @@ export class RawCoStreamView<
           this.items[txID.sessionID] = entries;
         }
         entries.push({ value: change, madeAt, tx: txID });
+        changeEntries.add(entries);
       }
+      this.knownTransactions[txID.sessionID] = Math.max(
+        this.knownTransactions[txID.sessionID] ?? 0,
+        txID.txIndex,
+      );
+    }
+
+    for (const entries of changeEntries) {
+      entries.sort(
+        (a, b) =>
+          a.madeAt - b.madeAt ||
+          (a.tx.sessionID < b.tx.sessionID ? -1 : 1) ||
+          a.tx.txIndex - b.tx.txIndex,
+      );
     }
   }
 
@@ -255,7 +272,7 @@ export class RawCoStream<
 {
   push(item: Item, privacy: "private" | "trusting" = "private"): void {
     this.core.makeTransaction([isCoValue(item) ? item.id : item], privacy);
-    this.fillFromCoValue();
+    this.processNewTransactions();
   }
 }
 
@@ -343,7 +360,7 @@ export class RawBinaryCoStream<
   ): void {
     this.core.makeTransaction([item], privacy);
     if (updateView) {
-      this.fillFromCoValue();
+      this.processNewTransactions();
     }
   }
 
