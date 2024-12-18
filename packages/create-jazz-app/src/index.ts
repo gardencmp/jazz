@@ -33,6 +33,8 @@ async function scaffoldProject({
     throw new Error(`Invalid starter: ${starter}`);
   }
 
+  const devCommand = starter === "react-native-expo-clerk-auth" ? "ios" : "dev";
+
   if (!starterConfig.repo) {
     throw new Error(
       `Starter template ${starterConfig.name} is not yet implemented`,
@@ -124,7 +126,9 @@ async function scaffoldProject({
   console.log("\n" + chalk.green.bold("✨ Project setup completed! ✨\n"));
   console.log(chalk.cyan("To get started:"));
   console.log(chalk.white(`  cd ${chalk.bold(projectName)}`));
-  console.log(chalk.white(`  ${chalk.bold(`${packageManager} run dev`)}\n`));
+  console.log(
+    chalk.white(`  ${chalk.bold(`${packageManager} run ${devCommand}`)}\n`),
+  );
 }
 
 async function promptUser(): Promise<ScaffoldOptions> {
