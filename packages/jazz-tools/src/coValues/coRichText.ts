@@ -4,6 +4,29 @@ import { CoList, CoMap, CoPlainText, co } from "../internal.js";
 /**
  * Base class for text annotations and formatting marks.
  * Represents a mark with start and end positions in text.
+ *
+ * Example text: "Hello world! How are you?"
+ * If we want to mark "world" with bold:
+ *
+ * ```
+ *            uncertainty region
+ *                   ↓
+ * Hello [····]world[····]! How are you?
+ *       ↑    ↑     ↑    ↑
+ *       |    |     |    |
+ * startAfter |     |  endBefore
+ *         startBefore endAfter
+ * ```
+ *
+ * - startAfter: Position after "Hello " (exclusive boundary)
+ * - startBefore: Position before "world" (inclusive boundary)
+ * - endAfter: Position after "world" (inclusive boundary)
+ * - endBefore: Position before "!" (exclusive boundary)
+ *
+ * The regions marked with [····] are "uncertainty regions" where:
+ * - Text inserted in the left uncertainty region may or may not be part of the mark
+ * - Text inserted in the right uncertainty region may or may not be part of the mark
+ * - Text inserted between startBefore and endAfter is definitely part of the mark
  */
 export class Mark extends CoMap {
   startAfter = co.json<TextPos | null>();
@@ -215,12 +238,19 @@ export class CoRichText extends CoMap {
     }
     const ranges = this.marks.flatMap((mark) => {
       if (!mark) return [];
-      if (!mark.startBefore || !mark.endAfter) return [];
-      const startBefore = this.idxAfter(mark.startBefore);
-      const endAfter = this.idxAfter(mark.endAfter);
+
+      // Convert mark positions to indices
+      const startBefore = mark.startBefore
+        ? this.idxAfter(mark.startBefore)
+        : 0;
+      const endAfter = mark.endAfter
+        ? this.idxAfter(mark.endAfter)
+        : this.text?.length;
       if (startBefore === undefined || endAfter === undefined) {
         return [];
       }
+
+      // Handle optional startAfter/endBefore positions
       const startAfter = mark.startAfter
         ? this.idxAfter(mark.startAfter)
         : startBefore - 1;
@@ -230,6 +260,7 @@ export class CoRichText extends CoMap {
       if (startAfter === undefined || endBefore === undefined) {
         return [];
       }
+
       return [
         {
           sourceMark: mark,
@@ -238,7 +269,6 @@ export class CoRichText extends CoMap {
           endAfter,
           endBefore,
           tag: mark.tag,
-          from: mark,
         },
       ];
     });
