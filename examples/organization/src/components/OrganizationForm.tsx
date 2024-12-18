@@ -17,7 +17,7 @@ export function OrganizationForm({
           id="name"
           value={organization.name}
           placeholder="Enter organization name..."
-          className="dark:bg-transparent w-full"
+          className="rounded-md shadow-sm dark:bg-transparent w-full"
           onChange={(e) => (organization.name = e.target.value)}
           required
         />

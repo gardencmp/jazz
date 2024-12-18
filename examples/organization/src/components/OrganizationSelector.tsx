@@ -45,7 +45,7 @@ export function OrganizationSelector({ className }: { className?: string }) {
         id="organization"
         value={organizationId}
         onChange={onSelectOrganization}
-        className="dark:bg-transparent w-full"
+        className="rounded-md shadow-sm dark:bg-transparent w-full"
       >
         {me?.root.organizations.map((organization) => {
           return (

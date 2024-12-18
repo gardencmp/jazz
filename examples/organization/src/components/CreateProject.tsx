@@ -30,7 +30,7 @@ export function CreateProject({
           id="name"
           placeholder="Enter project name..."
           value={name}
-          className="dark:bg-transparent w-full"
+          className="rounded-md shadow-sm dark:bg-transparent w-full"
           onChange={(e) => setName(e.target.value)}
           required
         />

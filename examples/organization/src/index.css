@@ -13,7 +13,6 @@
   [type="text"],
   select {
     border-color: var(--gcmp-border-color);
-    @apply rounded-md shadow-sm;
 
     @media (prefers-color-scheme: dark) {
       border-color: var(--gcmp-invert-border-color);
