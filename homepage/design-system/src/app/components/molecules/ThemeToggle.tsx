@@ -1,10 +1,9 @@
 "use client";
 
 import clsx from "clsx";
-import { MoonIcon, SunIcon } from "lucide-react";
-import { useTheme } from "next-themes";
 import { UseThemeProps } from "next-themes/dist/types";
 import { useEffect, useState } from "react";
+import { Icon } from "../atoms/Icon";
 
 export function ThemeToggle({
   className,
@@ -31,14 +30,14 @@ export function ThemeToggle({
       aria-label={mounted ? `Switch to ${otherTheme} theme` : "Toggle theme"}
       onClick={() => setTheme(otherTheme)}
     >
-      <MoonIcon
-        size={24}
-        strokeWidth={2}
+      <Icon
+        name="darkTheme"
+        size="lg"
         className="size-5 stroke-stone-900 dark:hidden"
       />
-      <SunIcon
-        size={24}
-        strokeWidth={2}
+      <Icon
+        name="lightTheme"
+        size="lg"
         className="size-5 hidden stroke-white dark:block"
       />
     </button>

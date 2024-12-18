@@ -8,7 +8,6 @@ import {
   PopoverPanel,
 } from "@headlessui/react";
 import clsx from "clsx";
-import { ChevronDownIcon, MenuIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -19,12 +18,13 @@ import {
   useRef,
   useState,
 } from "react";
+import { Icon } from "../atoms/Icon";
 import { BreadCrumb } from "../molecules/Breadcrumb";
 import { SocialLinks, SocialLinksProps } from "./SocialLinks";
 
 type NavItemProps = {
   href: string;
-  icon?: ReactNode;
+  icon?: string;
   title: string;
   firstOnRight?: boolean;
   newTab?: boolean;
@@ -56,7 +56,7 @@ function NavItem({
     if (item.icon) {
       return (
         <NavLinkLogo className="px-3" {...item}>
-          {icon}
+          <Icon name={item.icon} />
           <span className="sr-only">{title}</span>
         </NavLinkLogo>
       );
@@ -86,7 +86,7 @@ function NavItem({
         )}
       >
         <span>{title}</span>
-        <ChevronDownIcon aria-hidden="true" className="size-4" />
+        <Icon name="chevronDown" size="xs" />
       </PopoverButton>
 
       <PopoverPanel
@@ -103,7 +103,13 @@ function NavItem({
                 as={Link}
                 key={href}
               >
-                {icon}
+                {icon && (
+                  <Icon
+                    className="stroke-blue dark:stroke-blue-500 shrink-0"
+                    size="sm"
+                    name={icon}
+                  />
+                )}
                 <div className="grid gap-1.5 mt-px">
                   <p className="text-sm font-medium text-stone-900 dark:text-white">
                     {title}
@@ -155,7 +161,7 @@ export function MobileNav({
           }}
           aria-label="Open menu"
         >
-          <MenuIcon />
+          <Icon name="menu" />
           <BreadCrumb items={items} />
         </button>
       </div>
@@ -223,10 +229,10 @@ export function MobileNav({
             aria-label="Close menu"
           >
             {menuOpen || searchOpen ? (
-              <XIcon />
+              <Icon name="close" />
             ) : (
               <>
-                <MenuIcon />
+                <Icon name="menu" />
                 <BreadCrumb items={items} />
               </>
             )}

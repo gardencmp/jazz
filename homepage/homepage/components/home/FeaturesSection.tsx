@@ -3,24 +3,14 @@ import { ClerkLogo } from "@/components/icons/ClerkLogo";
 import { Button } from "gcmp-design-system/src/app/components/atoms/Button";
 import { Card } from "gcmp-design-system/src/app/components/atoms/Card";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
+import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 import { SectionHeader } from "gcmp-design-system/src/app/components/molecules/SectionHeader";
-import {
-  CheckIcon,
-  FileTextIcon,
-  FingerprintIcon,
-  ImageIcon,
-  ScanFace,
-  TrashIcon,
-  UploadCloudIcon,
-  UserIcon,
-} from "lucide-react";
 import Link from "next/link";
 
 const features = [
   {
     title: "File uploads",
-    icon: UploadCloudIcon,
     description: (
       <>
         Just use <code>{`<input type="file"/>`}</code>, and easily convert from
@@ -37,22 +27,21 @@ const features = [
         </pre>
 
         <div className="w-full bg-white rounded-md py-3 px-3 flex gap-4 items-center border rounded-xl shadow-lg shadow-stone-500/10 dark:bg-stone-925">
-          <FileTextIcon
-            size={32}
-            strokeWidth={1}
+          <Icon
+            size="2xl"
+            name="file"
             className="text-blue dark:text-blue-500"
           />
           <div className="text-2xl flex-1 text-blue dark:text-blue-500">
             file.pdf
           </div>
-          <TrashIcon size={32} strokeWidth={1} className="text-stone-500" />
+          <Icon size="2xl" name="delete" className="text-stone-500" />
         </div>
       </div>
     ),
   },
   {
     title: "Progressive image loading",
-    icon: ImageIcon,
     description: (
       <>
         Using Jazz&apos;s <code>ImageDefinition</code> component, you get
@@ -80,7 +69,6 @@ const features = [
   },
   {
     title: "Server workers",
-    icon: ImageIcon,
     description: (
       <>
         Expose an HTTP API that mutates Jazz state. Or subscribe to Jazz state
@@ -91,7 +79,6 @@ const features = [
   },
   {
     title: "Authentication",
-    icon: UserIcon,
     description: (
       <>
         Plug and play different kinds of auth like Passkeys (Touch ID, Face ID),
@@ -100,9 +87,9 @@ const features = [
     ),
     illustration: (
       <div className="flex gap-4 justify-center text-black dark:text-white">
-        <ScanFace className="h-16 w-auto" strokeWidth={1} />
+        <Icon size="5xl" name="faceId" className="h-16 w-auto" />
         <ClerkLogo className="h-16 py-0.5 w-auto" />
-        <FingerprintIcon className="h-16 w-auto" strokeWidth={1} />
+        <Icon size="5xl" name="touchId" className="h-16 w-auto" />
       </div>
     ),
   },
@@ -124,7 +111,7 @@ export function FeaturesSection() {
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4 lg:gap-8">
-        {features.map(({ title, icon: Icon, description, illustration }) => (
+        {features.map(({ title, description, illustration }) => (
           <Card key={title} className="col-span-2 overflow-hidden">
             <div className="h-48 flex w-full items-center justify-center">
               {illustration}
@@ -183,7 +170,7 @@ export function FeaturesSection() {
                   className="flex items-center gap-1.5 whitespace-nowrap"
                 >
                   <span className="text-blue p-1 rounded-full bg-blue-50 dark:text-blue-500 dark:bg-white/10">
-                    <CheckIcon size={12} strokeWidth={3} />
+                    <Icon name="check" size="xs" />
                   </span>
                   {feature}
                 </li>

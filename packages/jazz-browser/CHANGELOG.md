@@ -1,5 +1,18 @@
 # jazz-browser
 
+## 0.8.41
+
+### Patch Changes
+
+- ac216b9: Add a new writeOnly role, to limit access only to their own changes. Useful to push objects into lists of moderated content.
+- Updated dependencies [3252502]
+- Updated dependencies [6370348]
+- Updated dependencies [ac216b9]
+  - cojson@0.8.41
+  - cojson-storage-indexeddb@0.8.41
+  - cojson-transport-ws@0.8.41
+  - jazz-tools@0.8.41
+
 ## 0.8.40
 
 ### Patch Changes

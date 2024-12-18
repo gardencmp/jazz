@@ -22,14 +22,15 @@ export type PermissionsDef =
   | { type: "ownedByGroup"; group: RawCoID }
   | { type: "unsafeAllowAll" };
 
+export type AccountRole = "reader" | "writer" | "admin" | "writeOnly";
+
 export type Role =
-  | "reader"
-  | "writer"
-  | "admin"
+  | AccountRole
   | "revoked"
   | "adminInvite"
   | "writerInvite"
-  | "readerInvite";
+  | "readerInvite"
+  | "writeOnlyInvite";
 
 type ValidTransactionsResult = { txID: TransactionID; tx: Transaction };
 type MemberState = { [agent: RawAccountID | AgentID]: Role; [EVERYONE]?: Role };
@@ -81,7 +82,8 @@ export function determineValidTransactions(
 
         if (
           transactorRoleAtTxTime !== "admin" &&
-          transactorRoleAtTxTime !== "writer"
+          transactorRoleAtTxTime !== "writer" &&
+          transactorRoleAtTxTime !== "writeOnly"
         ) {
           return;
         }
@@ -177,6 +179,9 @@ function determineValidTransactionsForGroup(
   const memberState: MemberState = {};
   const validTransactions: ValidTransactionsResult[] = [];
 
+  const keyRevelations = new Set<string>();
+  const writeKeys = new Set<string>();
+
   for (const { sessionID, txIndex, tx } of allTransactionsSorted) {
     // console.log("before", { memberState, validTransactions });
     const transactor = accountOrAgentIDfromSessionID(sessionID);
@@ -254,14 +259,31 @@ function determineValidTransactionsForGroup(
         memberState[transactor] !== "admin" &&
         memberState[transactor] !== "adminInvite" &&
         memberState[transactor] !== "writerInvite" &&
-        memberState[transactor] !== "readerInvite"
+        memberState[transactor] !== "readerInvite" &&
+        memberState[transactor] !== "writeOnlyInvite"
       ) {
         console.warn("Only admins can reveal keys");
         continue;
       }
 
-      // TODO: check validity of agents who the key is revealed to?
+      /**
+       * We don't want to give the ability to invite members to override
+       * key revelations, otherwise they could hide a key revelation to any user
+       * blocking them from accessing the group.
+       */
+      if (
+        keyRevelations.has(change.key) &&
+        memberState[transactor] !== "admin"
+      ) {
+        console.warn(
+          "Key revelation already exists and can't be overridden by invite",
+        );
+        continue;
+      }
 
+      keyRevelations.add(change.key);
+
+      // TODO: check validity of agents who the key is revealed to?
       validTransactions.push({ txID: { sessionID, txIndex }, tx });
       continue;
     } else if (isParentExtension(change.key)) {
@@ -279,6 +301,34 @@ function determineValidTransactionsForGroup(
       }
       validTransactions.push({ txID: { sessionID, txIndex }, tx });
       continue;
+    } else if (isWriteKeyForMember(change.key)) {
+      if (
+        memberState[transactor] !== "admin" &&
+        memberState[transactor] !== "writeOnlyInvite"
+      ) {
+        console.warn("Only admins can set writeKeys");
+        continue;
+      }
+
+      /**
+       * writeOnlyInvite need to be able to set writeKeys because every new writeOnly
+       * member comes with their own write key.
+       *
+       * We don't want to give the ability to invite members to override
+       * write keys, otherwise they could hide a write key to other writeOnly users
+       * blocking them from accessing the group.ß
+       */
+      if (writeKeys.has(change.key) && memberState[transactor] !== "admin") {
+        console.warn(
+          "Write key already exists and can't be overridden by invite",
+        );
+        continue;
+      }
+
+      writeKeys.add(change.key);
+
+      validTransactions.push({ txID: { sessionID, txIndex }, tx });
+      continue;
     }
 
     const affectedMember = change.key;
@@ -288,10 +338,12 @@ function determineValidTransactionsForGroup(
       change.value !== "admin" &&
       change.value !== "writer" &&
       change.value !== "reader" &&
+      change.value !== "writeOnly" &&
       change.value !== "revoked" &&
       change.value !== "adminInvite" &&
       change.value !== "writerInvite" &&
-      change.value !== "readerInvite"
+      change.value !== "readerInvite" &&
+      change.value !== "writeOnlyInvite"
     ) {
       console.warn("Group transaction must set a valid role");
       continue;
@@ -341,6 +393,11 @@ function determineValidTransactionsForGroup(
           console.warn("ReaderInvites can only create reader.");
           continue;
         }
+      } else if (memberState[transactor] === "writeOnlyInvite") {
+        if (change.value !== "writeOnly") {
+          console.warn("WriteOnlyInvites can only create writeOnly.");
+          continue;
+        }
       } else {
         console.warn(
           "Group transaction must be made by current admin or invite",
@@ -375,6 +432,12 @@ function agentInAccountOrMemberInGroup(
     );
   }
   return transactor;
+}
+
+export function isWriteKeyForMember(
+  co: string,
+): co is `writeKeyFor_${RawAccountID | AgentID}` {
+  return co.startsWith("writeKeyFor_");
 }
 
 export function isKeyForKeyField(co: string): co is `${KeyID}_for_${KeyID}` {

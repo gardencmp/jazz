@@ -1,48 +1,39 @@
+import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
-import {
-  FileLock2Icon,
-  GaugeIcon,
-  LockKeyholeIcon,
-  MonitorSmartphoneIcon,
-  MousePointerSquareDashedIcon,
-  UploadCloudIcon,
-  UserIcon,
-  UsersIcon,
-} from "lucide-react";
 import Link from "next/link";
 
 const features = [
   {
     title: "Instant updates",
-    icon: GaugeIcon,
+    icon: "instant",
   },
   {
     title: "Real-time sync",
-    icon: MonitorSmartphoneIcon,
+    icon: "devices",
   },
   {
     title: "Multiplayer",
-    icon: MousePointerSquareDashedIcon,
+    icon: "spatialPresence",
   },
   {
     title: "File uploads",
-    icon: UploadCloudIcon,
+    icon: "upload",
   },
   {
     title: "Social features",
-    icon: UsersIcon,
+    icon: "social",
   },
   {
     title: "Permissions",
-    icon: FileLock2Icon,
+    icon: "permissions",
   },
   {
     title: "E2E encryption",
-    icon: LockKeyholeIcon,
+    icon: "encryption",
   },
   {
     title: "Authentication",
-    icon: UserIcon,
+    icon: "auth",
   },
 ];
 
@@ -74,13 +65,13 @@ export function HeroSection() {
         </Prose>
 
         <div className="grid grid-cols-2 gap-2 max-w-3xl sm:grid-cols-4 sm:gap-4">
-          {features.map(({ title, icon: Icon }) => (
+          {features.map(({ title, icon }) => (
             <div
               key={title}
               className="flex text-xs sm:text-sm gap-2 items-center"
             >
               <span className="text-blue p-1.5 rounded-lg bg-blue-50 dark:text-blue-500 dark:bg-stone-900">
-                <Icon size={16} />
+                <Icon size="xs" name={icon} />
               </span>
               <p>{title}</p>
             </div>

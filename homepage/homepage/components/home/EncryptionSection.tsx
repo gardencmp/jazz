@@ -1,7 +1,7 @@
 import { Card } from "gcmp-design-system/src/app/components/atoms/Card";
 import { H3 } from "gcmp-design-system/src/app/components/atoms/Headings";
+import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
-import { LockKeyholeIcon } from "lucide-react";
 
 const randomChars = [
   "SFPOHVKNPDKETOMQLMJKX#QDI=TFFFMRJDSJ",
@@ -48,12 +48,18 @@ function Illustration() {
         )}
       </div>
 
-      <LockKeyholeIcon
-        strokeWidth={1.5}
-        strokeLinecap="butt"
-        size={80}
-        className="z-30 size-8 text-blue p-1.5 rounded-lg bg-blue-50 dark:text-blue-500 dark:bg-stone-900 md:size-10"
+      <Icon
+        name="encryption"
+        size="3xl"
+        className="z-30 text-blue p-1.5 rounded-lg bg-blue-50 dark:text-blue-500 dark:bg-stone-900"
       />
+
+      {/*<LockKeyholeIcon*/}
+      {/*  strokeWidth={1.5}*/}
+      {/*  strokeLinecap="butt"*/}
+      {/*  size={80}*/}
+      {/*  className="z-30 size-8 text-blue p-1.5 rounded-lg bg-blue-50 dark:text-blue-500 dark:bg-stone-900 md:size-10"*/}
+      {/*/>*/}
 
       <div className="w-20 h-full bg-gradient-to-r from-white to-transparent absolute top-0 left-0 z-10 dark:from-stone-925"></div>
       <div className="hidden md:block h-20 w-full bg-gradient-to-b from-white to-transparent absolute top-0 left-0 z-10 dark:from-stone-925"></div>
