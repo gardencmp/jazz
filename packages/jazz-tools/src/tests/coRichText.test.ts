@@ -220,11 +220,15 @@ describe("Simple CoRichText operations", async () => {
         // Verify the remaining marks
         // First mark should be trimmed to "hell"
         expect(remainingMarks[0]!.startAfter).toBe(0);
+        expect(remainingMarks[0]!.startBefore).toBe(1);
+        expect(remainingMarks[0]!.endAfter).toBe(3);
         expect(remainingMarks[0]!.endBefore).toBe(4);
 
         // Second mark should be trimmed to "rld"
         expect(remainingMarks[1]!.startAfter).toBe(7);
-        expect(remainingMarks[1]!.endBefore).toBe(10);
+        expect(remainingMarks[1]!.startBefore).toBe(8);
+        expect(remainingMarks[1]!.endAfter).toBe(10);
+        expect(remainingMarks[1]!.endBefore).toBe(11);
 
         // Verify the text content is still intact
         expect(text.toString()).toBe("hello world");
@@ -266,7 +270,7 @@ describe("Simple CoRichText operations", async () => {
         const remainingMarks = text.resolveMarks();
         expect(remainingMarks).toHaveLength(1);
         expect(remainingMarks[0]!.startAfter).toBe(0);
-        expect(remainingMarks[0]!.endAfter).toBe(6);
+        expect(remainingMarks[0]!.endAfter).toBe(5);
       });
 
       test("removing mark that overlaps start of existing mark", () => {
@@ -283,8 +287,10 @@ describe("Simple CoRichText operations", async () => {
         // Should have one mark remaining on "world"
         const remainingMarks = text.resolveMarks();
         expect(remainingMarks).toHaveLength(1);
-        expect(remainingMarks[0]!.startAfter).toBe(6);
-        expect(remainingMarks[0]!.endAfter).toBe(11);
+        expect(remainingMarks[0]!.startAfter).toBe(5);
+        expect(remainingMarks[0]!.startBefore).toBe(6);
+        expect(remainingMarks[0]!.endAfter).toBe(10);
+        expect(remainingMarks[0]!.endBefore).toBe(11);
       });
 
       test("removing mark from middle of existing mark", () => {
@@ -304,10 +310,12 @@ describe("Simple CoRichText operations", async () => {
 
         // First mark should cover "hello"
         expect(remainingMarks[0]!.startAfter).toBe(0);
-        expect(remainingMarks[0]!.endAfter).toBe(5);
+        expect(remainingMarks[0]!.startBefore).toBe(1);
+        expect(remainingMarks[0]!.endAfter).toBe(4);
+        expect(remainingMarks[0]!.endBefore).toBe(5);
 
         // Second mark should cover "rld"
-        expect(remainingMarks[1]!.startAfter).toBe(8);
+        expect(remainingMarks[1]!.startAfter).toBe(9);
         expect(remainingMarks[1]!.endAfter).toBe(10);
       });
     });
