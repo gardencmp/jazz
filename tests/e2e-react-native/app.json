@@ -15,14 +15,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.jazz.rn-e2e"
+      "bundleIdentifier": "com.jazz.rne2e"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.jazz.rn-e2e"
+      "package": "com.jazz.rne2e"
     },
     "plugins": [
       [
