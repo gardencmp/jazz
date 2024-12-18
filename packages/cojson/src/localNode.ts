@@ -387,7 +387,8 @@ export class LocalNode {
       existingRole === "admin" ||
       (existingRole === "writer" && inviteRole === "writerInvite") ||
       (existingRole === "writer" && inviteRole === "reader") ||
-      (existingRole === "reader" && inviteRole === "readerInvite")
+      (existingRole === "reader" && inviteRole === "readerInvite") ||
+      (existingRole && inviteRole === "writeOnlyInvite")
     ) {
       console.debug(
         "Not accepting invite that would replace or downgrade role",
@@ -410,7 +411,9 @@ export class LocalNode {
         ? "admin"
         : inviteRole === "writerInvite"
           ? "writer"
-          : "reader",
+          : inviteRole === "writeOnlyInvite"
+            ? "writeOnly"
+            : "reader",
     );
 
     group.core._sessionLogs = groupAsInvite.core.sessionLogs;
