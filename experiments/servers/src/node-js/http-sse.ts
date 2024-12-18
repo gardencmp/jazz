@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import https from "https";
 import http from "http";
 import spdy from "spdy";
@@ -13,6 +13,8 @@ import {
     updateCoValue,
     updateCoValueBinary,
     PORT,
+    PerformanceStore,
+    PerformanceEntry,
 } from "../util";
 import logger from "../util/logger";
 import { tlsCert } from "../util/tls";
@@ -33,6 +35,34 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+const performanceStore = new PerformanceStore();
+app.use((req: Request, res: Response, next: NextFunction): void => {
+    if ((req.method === 'GET' && req.path.startsWith("/covalue/")) || req.method === 'POST' || req.method === 'PATCH') {
+        const start = performance.now();
+        const timestamp = new Date().toISOString();
+        const requestId = `${performanceStore.getRequestCounter()}`;
+
+        res.on('finish', () => {
+            const duration = performance.now() - start;
+            const performanceEntry: PerformanceEntry = {
+                requestId: requestId,
+                method: req.method,
+                path: req.path,
+                statusCode: res.statusCode,
+                timestamp: timestamp,
+                duration: duration,
+                durationInMillis: duration.toFixed(2)
+            };
+
+            performanceStore.addEntry(performanceEntry);
+            logger.debug(`Performance entry: ${JSON.stringify(performanceEntry)}`);
+        });
+    }
+
+    next();
+});
+
 app.use(
     "/faker",
     express.static(
@@ -172,6 +202,25 @@ app.get("/covalue/:uuid/subscribe/:ua", (req: Request, res: Response) => {
         clients = clients.filter((client) => client.userAgentId !== ua);
         res.end();
     });
+});
+
+app.post("/stop", async (req: Request, res: Response) => {
+    performanceStore.writeToCSVFile();
+    res.status(200).send({ m: `Performance data written to CSV. Server shutting down.` });
+
+    if (PORT === "3001") {
+        // also shutdown Caddy on TLS port 3000 via the `/stop` endpoint of the admin URL
+        const caddyAdminUrl = "http://localhost:2019/stop";
+        try {
+            await fetch(`${caddyAdminUrl}`, { method: 'POST' });
+            logger.debug("Caddy server shutdown successfully.");
+        } catch (error) {
+            logger.error("Error shutting down Caddy server:", error);
+        }
+    }
+
+    logger.debug("Server shutdown");
+    process.exit(0);
 });
 
 export function createWebServer(isHttp2: boolean, useTLS: boolean = true) {

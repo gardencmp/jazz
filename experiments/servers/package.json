@@ -22,7 +22,8 @@
     "dev:caddy-http3": "CERT_PATH=./cert/localhost+1.pem KEY_PATH=./cert/localhost+1-key.pem caddy start --config ./src/caddy/Caddyfile && pnpm run dev:caddy-http1",
     "test": "playwright test",
     "test-text": "playwright test tests/covalue-text.spec.ts",
-    "test-binary": "playwright test tests/covalue-binary.spec.ts"
+    "test-binary": "playwright test tests/covalue-binary.spec.ts",
+    "test-halt": "playwright test tests/server-shutdown.spec.ts"
   },
   "keywords": [],
   "author": "",

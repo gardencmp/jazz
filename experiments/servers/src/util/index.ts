@@ -1,8 +1,11 @@
 import { faker } from "@faker-js/faker";
 import { v4 as uuidv4 } from "uuid";
+import path from "path";
+import fs from "fs";
 import WebSocket from "ws";
 import * as uWS from "uWebSockets.js";
 import logger from "./logger";
+import os from "os";
 
 export const PORT = process.env.PORT || 3000;
 export const CHUNK_SIZE = 100 * 1024; // 100KB chunk
@@ -306,5 +309,48 @@ export class uWebSocketResponse extends WebSocketResponseBase<uWS.WebSocket<{}>>
             }),
             false
         );
+    }
+}
+
+export interface PerformanceEntry {
+    requestId?: string;
+    method: string;
+    path: string;
+    statusCode: number;
+    timestamp: string;
+    duration: number;
+    durationInMillis: string;
+}
+
+export class PerformanceStore {
+    private entries: PerformanceEntry[] = [];
+    private requestCounter: number = 0;
+
+    addEntry(entry: PerformanceEntry): void {
+        this.entries.push(entry);
+    }
+
+    writeToCSVFile(filename: string = 'time.csv'): void {
+        const outputPath = `public/${filename}`;
+        const outDir = path.dirname(outputPath);
+        if (!fs.existsSync(outDir)) {
+            fs.mkdirSync(outDir, { recursive: true });
+        }
+
+        // Write performance data to CSV
+        const csvHeaders = 'RequestID,Method,Path,StatusCode,Timestamp,Duration,Duration (milliseconds)';
+        const csvContent = this.entries
+        .map(entry => `${entry.requestId},${entry.method},${entry.path},${entry.statusCode},${entry.timestamp},${entry.duration},${entry.durationInMillis}`)
+        .join(os.EOL);
+
+        fs.writeFileSync(outputPath, csvHeaders + os.EOL + csvContent);
+        logger.debug(`Performance data written to CSV: ${outputPath}`);
+
+        // Clear the store after writing to disk
+        this.entries = [];
+    }
+
+    getRequestCounter(): number {
+        return ++this.requestCounter;
     }
 }
