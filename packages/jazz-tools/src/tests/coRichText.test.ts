@@ -176,25 +176,6 @@ describe("Simple CoRichText operations", async () => {
         expect(text.resolveMarks()).toHaveLength(2);
       });
 
-      test.skip("removing overlapping marks", () => {
-        const text = CoRichText.createFromPlainText("hello world", {
-          owner: me,
-        });
-
-        // Add two overlapping marks
-        text.insertMark(0, 5, Marks.Strong, { tag: "strong" });
-        text.insertMark(3, 8, Marks.Strong, { tag: "strong" });
-
-        // Verify both marks were added
-        expect(text.resolveMarks()).toHaveLength(2);
-
-        // Remove marks in the overlapping region
-        text.removeMark(3, 5, Marks.Strong, { tag: "strong" });
-
-        // Both marks should be removed since they overlap with the removal range
-        expect(text.resolveMarks()).toHaveLength(0);
-      });
-
       test("removing marks with partial overlap", () => {
         const text = CoRichText.createFromPlainText("hello world", {
           owner: me,
