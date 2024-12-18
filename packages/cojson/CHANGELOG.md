@@ -1,5 +1,13 @@
 # cojson
 
+## 0.8.41
+
+### Patch Changes
+
+- 3252502: Optimize the transactions processing on CoMap and CoStream
+- 6370348: Remove @opentelemetry/api as a peer dependency and add it as a dependency
+- ac216b9: Add a new writeOnly role, to limit access only to their own changes. Useful to push objects into lists of moderated content.
+
 ## 0.8.39
 
 ### Patch Changes

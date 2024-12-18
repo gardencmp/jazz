@@ -1,5 +1,14 @@
 # chat-vue
 
+## 0.0.24
+
+### Patch Changes
+
+- Updated dependencies [ac216b9]
+  - jazz-browser@0.8.41
+  - jazz-tools@0.8.41
+  - jazz-vue@0.8.41
+
 ## 0.0.23
 
 ### Patch Changes
