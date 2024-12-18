@@ -45,10 +45,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Setup .env
-        run: echo "VITE_WS_PEER=ws://localhost:4200/" >> .env
-        working-directory: ./${{ matrix.project }}
-
       - name: Pnpm Build
         run: pnpm turbo build
         working-directory: ./${{ matrix.project }}
