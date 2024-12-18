@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: "Run tmate session for debugging"
+        required: false
+        default: false
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -49,3 +56,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Enable tmate debugging only if the workflow is manually triggered, debug_enabled is true, and the workflow failed
+      - name: Setup tmate session for debugging
+        if: ${{ failure() && github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
+        with:
+          timeout-minutes: 15
