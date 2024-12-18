@@ -1,5 +1,13 @@
 # chat-rn-clerk
 
+## 1.0.33
+
+### Patch Changes
+
+- cdc7f9f: Fixing react-native examples
+- Updated dependencies [cdc7f9f]
+  - jazz-react-native-auth-clerk@0.8.43
+
 ## 1.0.32
 
 ### Patch Changes

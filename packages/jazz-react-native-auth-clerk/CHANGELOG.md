@@ -1,5 +1,11 @@
 # jazz-react-native-auth-clerk
 
+## 0.8.43
+
+### Patch Changes
+
+- cdc7f9f: Fixing react-native examples
+
 ## 0.8.41
 
 ### Patch Changes
