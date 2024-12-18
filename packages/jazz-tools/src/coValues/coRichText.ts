@@ -15,7 +15,7 @@ import { CoList, CoMap, CoPlainText, co } from "../internal.js";
  *       ↑    ↑     ↑    ↑
  *       |    |     |    |
  * startAfter |     |  endBefore
- *         startBefore endAfter
+ *  startBefore     endAfter
  * ```
  *
  * - startAfter: Position after "Hello " (exclusive boundary)
@@ -27,6 +27,10 @@ import { CoList, CoMap, CoPlainText, co } from "../internal.js";
  * - Text inserted in the left uncertainty region may or may not be part of the mark
  * - Text inserted in the right uncertainty region may or may not be part of the mark
  * - Text inserted between startBefore and endAfter is definitely part of the mark
+ *
+ * Positions must satisfy:
+ * 0 ≤ startAfter ≤ startBefore < endAfter ≤ endBefore ≤ textLength
+ * A mark cannot be zero-length, so endAfter must be greater than startBefore.
  */
 export class Mark extends CoMap {
   startAfter = co.json<TextPos | null>();
@@ -34,6 +38,49 @@ export class Mark extends CoMap {
   endAfter = co.json<TextPos>();
   endBefore = co.json<TextPos | null>();
   tag = co.string;
+
+  /**
+   * Validates and clamps mark positions to ensure they are in the correct order
+   * @returns Normalized positions or null if invalid
+   */
+  validatePositions(
+    textLength: number,
+    idxAfter: (pos: TextPos) => number | undefined,
+    idxBefore: (pos: TextPos) => number | undefined,
+  ): {
+    startAfter: number;
+    startBefore: number;
+    endAfter: number;
+    endBefore: number;
+  } | null {
+    if (textLength === 0) {
+      console.error("Cannot validate positions for empty text");
+      return null;
+    }
+
+    const sa = this.startAfter ? idxBefore(this.startAfter) || 0 : 0;
+    const sb = this.startBefore ? idxAfter(this.startBefore) || sa : sa;
+    const ea = this.endAfter
+      ? idxBefore(this.endAfter) || textLength
+      : textLength;
+    const eb = this.endBefore
+      ? idxAfter(this.endBefore) || textLength
+      : textLength;
+
+    // First clamp to text boundaries
+    const clampedStartAfter = Math.max(0, sa);
+    const clampedStartBefore = Math.max(clampedStartAfter + 1, sb);
+    const clampedEndAfter = Math.min(textLength - 1, ea);
+    const clampedEndBefore = Math.min(textLength, eb);
+
+    // Then ensure proper ordering: startAfter ≤ startBefore ≤ endAfter ≤ endBefore
+    return {
+      startAfter: clampedStartAfter,
+      startBefore: clampedStartBefore,
+      endAfter: clampedEndAfter,
+      endBefore: clampedEndBefore,
+    };
+  }
 }
 
 /**
@@ -213,20 +260,113 @@ export class CoRichText extends CoMap {
     >,
     options?: { markOwner?: Account | Group },
   ) {
-    if (!this.marks) {
+    if (!this.text || !this.marks) {
       throw new Error("Cannot insert a range without loaded ranges");
     }
+
+    // Clamp positions to text bounds
+    start = Math.max(0, Math.min(start, this.text.length));
+    end = Math.max(start, Math.min(end, this.text.length));
+
+    const owner = options?.markOwner || this._owner;
+    if (!owner) {
+      throw new Error("No owner specified for mark");
+    }
+
     const range = RangeClass.create(
       {
         ...extraArgs,
-        startAfter: this.posBefore(start),
-        startBefore: this.posAfter(start),
-        endAfter: this.posBefore(end),
-        endBefore: this.posAfter(end),
+        startAfter: this.posAfter(start),
+        startBefore: this.posBefore(start),
+        endAfter: this.posAfter(end - 1),
+        endBefore: this.posBefore(end - 1),
       },
-      { owner: options?.markOwner || this._owner },
+      { owner },
     );
+
     this.marks.push(range);
+  }
+
+  /**
+   * Remove a mark at a specific range.
+   */
+  removeMark<
+    MarkClass extends {
+      new (...args: any[]): Mark;
+      create(init: any, options: { owner: Account | Group }): Mark;
+    },
+  >(start: number, end: number, RangeClass: MarkClass) {
+    if (!this.marks) {
+      throw new Error("Cannot remove marks without loaded marks");
+    }
+
+    // Find marks of the given class that overlap with the range
+    const resolvedMarks = this.resolveMarks();
+
+    for (const mark of resolvedMarks) {
+      // If mark is outside the range, we'll skip it
+      if (mark.endAfter < start || mark.startBefore > end) {
+        continue;
+      }
+
+      const markIndex = this.marks.findIndex((m) => m === mark.sourceMark);
+      if (markIndex === -1) {
+        continue;
+      }
+
+      // If mark is completely inside the range, we'll remove it
+      if (mark.startBefore < start && mark.endAfter > end) {
+        // Remove the mark
+        this.marks.splice(markIndex, 1);
+        continue;
+      }
+
+      // If mark starts before the end of the range, we'll shorten it
+      if (mark.startBefore < end) {
+        const startAfterPos = this.posAfter(end + 2); // TODO: why +2? Looks like an off-by-one error twice
+        const startBeforePos = this.posBefore(end + 2);
+        if (startAfterPos && startBeforePos) {
+          mark.sourceMark.startAfter = startAfterPos;
+          mark.sourceMark.startBefore = startBeforePos;
+        }
+        continue;
+      }
+
+      // If mark ends after the start of the range, we'll shorten it
+      if (mark.endAfter > start) {
+        const endAfterPos = this.posAfter(start - 1);
+        const endBeforePos = this.posBefore(start - 1);
+        if (endAfterPos && endBeforePos) {
+          mark.sourceMark.endAfter = endAfterPos;
+          mark.sourceMark.endBefore = endBeforePos;
+        }
+        continue;
+      }
+
+      // If range is inside the mark, we'll split the mark
+      if (start >= mark.startBefore && end <= mark.endAfter) {
+        // Split the mark by removing the part that overlaps with the range and adding two new marks
+        this.insertMark(
+          mark.startBefore,
+          start,
+          RangeClass,
+          {},
+          {
+            markOwner: mark.sourceMark._owner || this._owner,
+          },
+        );
+        this.insertMark(
+          end,
+          mark.endAfter,
+          RangeClass,
+          {},
+          {
+            markOwner: mark.sourceMark._owner || this._owner,
+          },
+        );
+        continue;
+      }
+    }
   }
 
   /**
@@ -236,43 +376,27 @@ export class CoRichText extends CoMap {
     if (!this.text || !this.marks) {
       throw new Error("Cannot resolve ranges without loaded text and ranges");
     }
-    const ranges = this.marks.flatMap((mark) => {
+
+    const textLength = this.text.toString().length;
+
+    return this.marks.flatMap((mark) => {
       if (!mark) return [];
 
-      // Convert mark positions to indices
-      const startBefore = mark.startBefore
-        ? this.idxAfter(mark.startBefore)
-        : 0;
-      const endAfter = mark.endAfter
-        ? this.idxAfter(mark.endAfter)
-        : this.text?.length;
-      if (startBefore === undefined || endAfter === undefined) {
-        return [];
-      }
-
-      // Handle optional startAfter/endBefore positions
-      const startAfter = mark.startAfter
-        ? this.idxAfter(mark.startAfter)
-        : startBefore - 1;
-      const endBefore = mark.endBefore
-        ? this.idxAfter(mark.endBefore)
-        : endAfter + 1;
-      if (startAfter === undefined || endBefore === undefined) {
-        return [];
-      }
+      const positions = mark.validatePositions(
+        textLength,
+        (pos) => this.idxAfter(pos),
+        (pos) => this.idxBefore(pos),
+      );
+      if (!positions) return [];
 
       return [
         {
           sourceMark: mark,
-          startAfter,
-          startBefore,
-          endAfter,
-          endBefore,
+          ...positions,
           tag: mark.tag,
         },
       ];
     });
-    return ranges;
   }
 
   /**
