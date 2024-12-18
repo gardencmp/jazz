@@ -1,3 +1,4 @@
+import "../global.css";
 import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
 import { useFonts } from "expo-font";
 import { Slot } from "expo-router";
