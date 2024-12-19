@@ -192,15 +192,6 @@ describe("CoFeed resolution", async () => {
     const queue = new cojsonInternals.Channel();
 
     TestStream.subscribe(stream.id, meOnSecondPeer, [], (subscribedStream) => {
-      console.log("subscribedStream[me.id]", subscribedStream[me.id]);
-      console.log(
-        "subscribedStream[me.id]?.value?.[me.id]?.value",
-        subscribedStream[me.id]?.value?.[me.id]?.value,
-      );
-      console.log(
-        "subscribedStream[me.id]?.value?.[me.id]?.value?.[me.id]?.value",
-        subscribedStream[me.id]?.value?.[me.id]?.value?.[me.id]?.value,
-      );
       void queue.push(subscribedStream);
     });
 
