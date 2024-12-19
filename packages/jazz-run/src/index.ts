@@ -19,15 +19,15 @@ const createAccountCommand = Command.make(
   { name: nameOption, peer: peerOption, json: jsonOption },
   ({ name, peer, json }) => {
     return Effect.gen(function* () {
-      const { accountId, agentSecret } = yield* Effect.promise(() =>
+      const { accountID, agentSecret } = yield* Effect.promise(() =>
         createWorkerAccount({ name, peer }),
       );
 
       if (json) {
-        Console.log(JSON.stringify({ accountId, agentSecret }));
+        yield* Console.log(JSON.stringify({ accountID, agentSecret }));
       } else {
         yield* Console.log(`# Credentials for Jazz account "${name}":
-JAZZ_WORKER_ACCOUNT=${accountId}
+JAZZ_WORKER_ACCOUNT=${accountID}
 JAZZ_WORKER_SECRET=${agentSecret}
 `);
       }

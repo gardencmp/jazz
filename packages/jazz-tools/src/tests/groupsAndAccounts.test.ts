@@ -1,12 +1,11 @@
-import { RawGroup } from "cojson";
 import { describe, expect, test } from "vitest";
-import { Account, CoMap, Group, WasmCrypto, co } from "../index.web.js";
+import { Account, CoMap, Group, Profile, WasmCrypto, co } from "../index.web.js";
 import { setupTwoNodes } from "./utils.js";
 
 const Crypto = await WasmCrypto.create();
 
 describe("Custom accounts and groups", async () => {
-  class CustomProfile extends CoMap {
+  class CustomProfile extends Profile {
     name = co.string;
     color = co.string;
   }
