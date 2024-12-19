@@ -1,11 +1,9 @@
-import { Peer } from "cojson";
-import { createWebSocketPeer } from "cojson-transport-ws";
 import { createWorkerAccount } from "jazz-run/createWorkerAccount";
 import { startSyncServer } from "jazz-run/startSyncServer";
-import { CoMap, Group, co } from "jazz-tools";
-import { describe, expect, onTestFinished, test, vi } from "vitest";
-import { WebSocket } from "ws";
+import { CoMap, Group, InboxSender, co } from "jazz-tools";
+import { describe, expect, onTestFinished, test } from "vitest";
 import { startWorker } from "../index";
+import { waitFor } from "./utils";
 
 async function setup() {
   const { server, port } = await setupSyncServer();
@@ -34,13 +32,13 @@ async function setupSyncServer(defaultPort = "0") {
 }
 
 async function setupWorker(syncServer: string) {
-  const { accountId, agentSecret } = await createWorkerAccount({
+  const { accountID, agentSecret } = await createWorkerAccount({
     name: "test-worker",
     peer: syncServer,
   });
 
   return startWorker({
-    accountID: accountId,
+    accountID: accountID,
     accountSecret: agentSecret,
     syncServer,
   });
