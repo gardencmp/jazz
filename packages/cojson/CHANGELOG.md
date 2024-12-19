@@ -1,5 +1,11 @@
 # cojson
 
+## 0.8.44
+
+### Patch Changes
+
+- 5d20c81: Add an internal API to disable the permission errors logs
+
 ## 0.8.41
 
 ### Patch Changes
