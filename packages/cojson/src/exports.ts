@@ -53,6 +53,7 @@ import type { AgentSecret } from "./crypto/crypto.js";
 import type { AgentID, RawCoID, SessionID } from "./ids.js";
 import type { JsonValue } from "./jsonValue.js";
 import type * as Media from "./media.js";
+import { disablePermissionErrors } from "./permissions.js";
 import type {
   IncomingSyncStream,
   OutgoingSyncQueue,
@@ -91,6 +92,7 @@ export const cojsonInternals = {
   getPriorityFromHeader,
   getGroupDependentKeyList,
   getGroupDependentKey,
+  disablePermissionErrors,
 };
 
 export {
