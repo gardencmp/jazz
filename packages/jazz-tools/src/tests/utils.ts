@@ -54,12 +54,26 @@ export async function setupTwoNodes() {
     peersToLoadFrom: [serverAsPeer],
     crypto: Crypto,
     creationProps: { name: "Client" },
+    migration: async (rawAccount, _node, creationProps) => {
+      const account = new Account({
+        fromRaw: rawAccount,
+      });
+
+      await account.migrate?.(creationProps);
+    },
   });
 
   const server = await LocalNode.withNewlyCreatedAccount({
     peersToLoadFrom: [clientAsPeer],
     crypto: Crypto,
     creationProps: { name: "Server" },
+    migration: async (rawAccount, _node, creationProps) => {
+      const account = new Account({
+        fromRaw: rawAccount,
+      });
+
+      await account.migrate?.(creationProps);
+    },
   });
 
   return {

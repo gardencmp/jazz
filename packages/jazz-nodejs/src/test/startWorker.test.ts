@@ -96,4 +96,34 @@ describe("startWorker integration", () => {
 
     await worker2.done();
   });
+
+  test("reiceves the messages from the inbox", async () => {
+    const worker1 = await setup();
+    const worker2 = await setupWorker(worker1.syncServer);
+
+    const group = Group.create({ owner: worker1.worker });
+    const map = TestMap.create(
+      {
+        value: "test",
+      },
+      { owner: group },
+    );
+
+    let message: TestMap | undefined = undefined;
+
+    worker2.experimental.inbox.subscribe(TestMap, async (value) => {
+      message = value;
+    });
+
+    const sender = await InboxSender.load(worker2.worker.id, worker1.worker);
+
+    sender.sendMessage(map);
+
+    await waitFor(() => message !== undefined);
+
+    expect(message).toEqual(map);
+
+    await worker1.done();
+    await worker2.done();
+  });
 });
