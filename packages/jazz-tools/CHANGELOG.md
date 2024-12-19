@@ -1,5 +1,12 @@
 # jazz-tools
 
+## 0.8.45
+
+### Patch Changes
+
+- fa41f8e: Add a bundle step to not expose the circular deps to the lib consumers
+- 60e35ea: Reduce the amount of circular deps
+
 ## 0.8.44
 
 ### Patch Changes

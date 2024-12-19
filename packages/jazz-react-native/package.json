@@ -1,6 +1,6 @@
 {
   "name": "jazz-react-native",
-  "version": "0.8.44",
+  "version": "0.8.45",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
