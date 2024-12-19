@@ -1,0 +1,102 @@
+import { ContentByFramework, CodeGroup } from '@/components/forMdx'
+
+# Invites
+
+You can grant users access to a CoValue by sending them an invite link.
+
+This is used in the [pet example](https://github.com/garden-co/jazz/tree/main/examples/pets)
+and the [todo example](https://github.com/garden-co/jazz/tree/main/examples/todo).
+
+<ContentByFramework  framework="react">
+<CodeGroup>
+```ts
+import { createInviteLink } from "jazz-react";
+
+createInviteLink(organization, "writer"); // or reader, or admin
+```
+</CodeGroup>
+</ContentByFramework>
+
+<ContentByFramework  framework="react-native">
+<CodeGroup>
+```ts
+import { createInviteLink } from "jazz-react-native";
+
+createInviteLink(organization, "writer"); // or reader, or admin
+```
+</CodeGroup>
+</ContentByFramework>
+
+<ContentByFramework  framework="vue">
+<CodeGroup>
+```ts
+import { createInviteLink } from "jazz-vue";
+
+createInviteLink(organization, "writer"); // or reader, or admin
+```
+</CodeGroup>
+</ContentByFramework>
+
+<ContentByFramework  framework="svelte">
+<CodeGroup>
+```ts
+import { createInviteLink } from "jazz-browser";
+
+createInviteLink(organization, "writer"); // or reader, or admin
+```
+</CodeGroup>
+</ContentByFramework>
+
+It generates a URL that looks like `.../invite/[CoValue ID]/[inviteSecret]`
+
+In your app, you need to handle this route, and let the user accept the invitation,
+as done [here](https://github.com/garden-co/jazz/tree/main/examples/pets/src/2_main.tsx).
+
+<CodeGroup>
+```ts
+useAcceptInvite({
+  invitedObjectSchema: PetPost,
+  onAccept: (petPostID) => navigate("/pet/" + petPostID),
+});
+```
+</CodeGroup>
+
+`useAcceptInvite` is exported from your Jazz app.
+
+<ContentByFramework framework="react">
+<CodeGroup>
+```ts
+const Jazz = createJazzReactApp();
+export const { useAcceptInvite } = Jazz;
+```
+</CodeGroup>
+</ContentByFramework>
+
+<ContentByFramework framework="react-native">
+<CodeGroup>
+```ts
+const Jazz = createJazzReactNativeApp();
+export const { useAcceptInvite } = Jazz;
+```
+</CodeGroup>
+</ContentByFramework>
+
+<ContentByFramework framework="vue">
+<CodeGroup>
+```ts
+const Jazz = createJazzVueApp();
+export const { useAcceptInvite } = Jazz;
+```
+</CodeGroup>
+</ContentByFramework>
+
+<ContentByFramework framework="svelte">
+<CodeGroup>
+```ts
+const Jazz = createJazzApp();
+export const { useAcceptInvite } = Jazz;
+```
+</CodeGroup>
+</ContentByFramework>
+
+...more docs coming soon
