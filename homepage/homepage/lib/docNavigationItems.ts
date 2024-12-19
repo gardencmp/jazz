@@ -101,8 +101,8 @@ export const docNavigationItems = [
         done: 10,
       },
       {
-        name: "Invites",
-        href: "/docs/groups/invites",
+        name: "Public sharing & invites",
+        href: "/docs/groups/sharing",
         done: 10,
       },
       {

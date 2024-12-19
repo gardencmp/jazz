@@ -1,6 +1,26 @@
 import { ContentByFramework, CodeGroup } from '@/components/forMdx'
 
-# Invites
+# Public sharing and invites
+
+...more docs coming soon
+
+## Public sharing
+
+You can share CoValues publicly by setting the `owner` to a `Group`, and granting
+access to "everyone".
+
+<CodeGroup>
+  ```ts
+  const group = Group.create({ owner: me });
+  group.addMember("everyone", "writer"); // *highlight*
+  ```
+</CodeGroup>
+
+This is done in the [chat example](https://github.com/garden-co/jazz/tree/main/examples/chat) where anyone can join the chat, and send messages.
+
+You can also [add members by Account ID](/docs/groups/intro#adding-group-members-by-id).
+
+## Invites
 
 You can grant users access to a CoValue by sending them an invite link.
 
