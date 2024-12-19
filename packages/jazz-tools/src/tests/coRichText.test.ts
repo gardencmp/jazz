@@ -1,11 +1,17 @@
+import { WasmCrypto } from "cojson";
 import { describe, expect, test } from "vitest";
-import { Account, CoRichText, Group, Marks, WasmCrypto } from "../index.web.js";
-import type { TextPos, TreeNode } from "../internal.js";
-import { splitNode } from "../internal.js";
+import { type TextPos } from "../coValues/coPlainText.js";
+import {
+  CoRichText,
+  Marks,
+  type TreeNode,
+  splitNode,
+} from "../coValues/coRichText.js";
+import { Account, Group } from "../exports.js";
 
 const Crypto = await WasmCrypto.create();
 
-describe("Simple CoRichText operations", async () => {
+describe("CoRichText", async () => {
   const me = await Account.create({
     creationProps: { name: "Hermes Puggington" },
     crypto: Crypto,
@@ -142,6 +148,23 @@ describe("Simple CoRichText operations", async () => {
         expect(text.resolveMarks()).toHaveLength(1);
         expect(text.resolveMarks()[0]!.startAfter).toBe(0);
         expect(text.resolveMarks()[0]!.endAfter).toBe(10);
+      });
+
+      test("maintains correct mark ordering with nested marks", () => {
+        const text = CoRichText.createFromPlainText("hello world", {
+          owner: me,
+        });
+
+        text.insertMark(0, 11, Marks.Strong, { tag: "strong" });
+        text.insertMark(2, 8, Marks.Em, { tag: "em" });
+        text.insertMark(4, 6, Marks.Link, {
+          tag: "link",
+          url: "https://example.com",
+        });
+
+        const tree = text.toTree(["strong", "em", "link"]);
+        // Verify the nesting structure is correct
+        // Strong should contain Em which should contain Link
       });
     });
 

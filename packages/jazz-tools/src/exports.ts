@@ -8,7 +8,7 @@ export type {
   SyncMessage,
 } from "cojson";
 
-export type { CoValue, ID, TreeLeaf, TreeNode } from "./internal.js";
+export type { CoValue, ID } from "./internal.js";
 
 export { Encoders, co } from "./internal.js";
 
@@ -25,6 +25,13 @@ export {
 } from "./coValues/coFeed.js";
 export { CoList } from "./coValues/coList.js";
 export { CoMap, type CoMapInit } from "./coValues/coMap.js";
+export { CoPlainText } from "./coValues/coPlainText.js";
+export {
+  CoRichText,
+  Marks,
+  type TreeLeaf,
+  type TreeNode,
+} from "./coValues/coRichText.js";
 export { ImageDefinition } from "./coValues/extensions/imageDef.js";
 export { Group } from "./coValues/group.js";
 export { CoValueBase } from "./coValues/interfaces.js";

@@ -1,5 +1,6 @@
 import type { OpID, RawCoPlainText } from "cojson";
 import { RawAccount, stringifyOpID } from "cojson";
+import { Account, Group } from "../exports.js";
 import type {
   //   AccountCtx,
   CoValue,
@@ -7,8 +8,6 @@ import type {
   ID,
 } from "../internal.js";
 import {
-  Account,
-  Group,
   inspect,
   loadCoValue,
   //   loadCoValueEf,
