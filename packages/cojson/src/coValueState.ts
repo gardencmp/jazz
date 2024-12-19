@@ -100,14 +100,81 @@ type CoValueStateType =
   | CoValueAvailableState
   | CoValueUnavailableState;
 
+class UploadState {
+  private peers = new Map<
+    PeerID,
+    ReturnType<typeof createResolvablePromise<void>> & { completed?: boolean }
+  >();
+
+  constructor(public coValueEntry: CoValueState) {
+    this.peers = new Map();
+  }
+
+  setPendingForPeer(peerId: PeerID) {
+    if (!(this.coValueEntry.state.type === "available")) {
+      console.error(
+        "Trying to set pending download for a coValue that is not available",
+        this.coValueEntry.id,
+      );
+
+      return;
+    }
+
+    const peerUploadState = this.peers.get(peerId);
+    if (!peerUploadState) {
+      this.peers.set(peerId, createResolvablePromise<void>());
+    }
+  }
+
+  setCompletedForPeer(peerId: PeerID) {
+    const peerUploadState = this.peers.get(peerId);
+    if (!peerUploadState) {
+      console.error(
+        "Trying to set complete for a coValue that is not uploaded to",
+        peerId,
+        this.coValueEntry.id,
+      );
+
+      return;
+    }
+
+    peerUploadState.resolve();
+    peerUploadState.completed = true;
+  }
+
+  waitForPeer(peerId: PeerID) {
+    const peerUploadState = this.peers.get(peerId);
+    if (!peerUploadState) {
+      console.error(
+        "Trying to wait for no pending upload into peer",
+        peerId,
+        this.coValueEntry.id,
+      );
+
+      return;
+    }
+
+    return peerUploadState?.promise;
+  }
+
+  isCoValueFullyUploadedIntoPeer(peerId: PeerID) {
+    const peerUploadState = this.peers.get(peerId);
+
+    return !!peerUploadState?.completed;
+  }
+}
+
 export class CoValueState {
   promise?: Promise<CoValueCore | "unavailable">;
   private resolve?: (value: CoValueCore | "unavailable") => void;
+  public uploadState: UploadState;
 
   constructor(
     public id: RawCoID,
     public state: CoValueStateType,
-  ) {}
+  ) {
+    this.uploadState = new UploadState(this);
+  }
 
   static Unknown(id: RawCoID) {
     return new CoValueState(id, new CoValueUnknownState());

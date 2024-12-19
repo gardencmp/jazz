@@ -6,13 +6,7 @@ export const transformOutgoingMessageToPeer = (
   id: string,
 ): SyncMessage[] => {
   if (id.includes("indexedDB")) {
-    switch (msg.action) {
-      case "known":
-        return [{ ...msg, action: "ack" }];
-      default:
-        return [msg];
-      // return [msg];
-    }
+    return [msg];
   }
 
   const getSessionsObj = (msg: ContentMessage) =>

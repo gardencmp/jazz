@@ -1,5 +1,4 @@
 import { PeerState } from "./PeerState.js";
-import { SyncStateSubscriptionManager } from "./SyncStateSubscriptionManager.js";
 import { CoValueHeader, Transaction } from "./coValueCore.js";
 import { CoValueCore } from "./coValueCore.js";
 import { Signature } from "./crypto/crypto.js";
@@ -157,10 +156,7 @@ export class SyncManager {
 
   constructor(local: LocalNode) {
     this.local = local;
-    this.syncStateSubscriptionManager = new SyncStateSubscriptionManager(this);
   }
-
-  syncStateSubscriptionManager: SyncStateSubscriptionManager;
 
   peersInPriorityOrder(): PeerState[] {
     return Object.values(this.peers).sort((a, b) => {
@@ -182,7 +178,6 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage, peer: PeerState) {
-    // TODO peer.erroredCoValues??
     if (peer.erroredCoValues.has(msg.id)) {
       console.error(
         `Skipping message ${msg.action} on errored coValue ${msg.id} from peer ${peer.id}`,
@@ -198,8 +193,6 @@ export class SyncManager {
         return this.handlePull(msg, peer);
       case "ack":
         return this.handleAck(msg, peer);
-      // case "known":
-      //   return await this.handleKnownState(msg, peer);
 
       default:
         throw new Error(
@@ -382,7 +375,7 @@ export class SyncManager {
       return;
     }
 
-    // TODO if we need it - set loadedOnPeer flag on in the entry to use in waitForUploadIntoPeer
+    entry.uploadState.setCompletedForPeer(peer.id);
   }
 
   async subscribeToIncludingDependencies(id: RawCoID, peer: PeerState) {
@@ -410,11 +403,11 @@ export class SyncManager {
   }
 
   async sendNewContentIncludingDependencies(
-    peerknownState: CoValueKnownState,
+    peerKnownState: CoValueKnownState,
     peer: PeerState,
     action: "push" | "data",
   ) {
-    const coValue = this.local.expectCoValueLoaded(peerknownState.id);
+    const coValue = this.local.expectCoValueLoaded(peerKnownState.id);
 
     // TODO probably, dependencies don't provide any new data? Do we really need it within the new algorythm
     // await Promise.all(
@@ -423,7 +416,7 @@ export class SyncManager {
     //     .map((id) => this.sendNewContentIncludingDependencies(id, peer)),
     // );
 
-    const newContentPieces = coValue.newContentSince(peerknownState, action);
+    const newContentPieces = coValue.newContentSince(peerKnownState, action);
 
     if (newContentPieces) {
       const sendPieces = async () => {
@@ -438,7 +431,7 @@ export class SyncManager {
       sendPieces().catch((e) => {
         console.error("Error sending new content piece, retrying", e);
         return this.sendNewContentIncludingDependencies(
-          peerknownState,
+          peerKnownState,
           peer,
           action,
         );
@@ -462,13 +455,12 @@ export class SyncManager {
         for (const entry of this.local.coValuesStore.getValues()) {
           await this.subscribeToIncludingDependencies(entry.id, peerState);
 
-          if (entry.state.type === "available") {
-            await this.sendNewContentIncludingDependencies(
-              emptyKnownState(entry.id),
-              peerState,
-              "push",
-            );
-          }
+          await this.sendNewContentIncludingDependencies(
+            emptyKnownState(entry.id),
+            peerState,
+            "push",
+          );
+          entry.uploadState.setPendingForPeer(peer.id);
         }
       };
       void initialSync();
@@ -664,33 +656,26 @@ export class SyncManager {
         "push",
       );
     }
+    for (const peer of this.getPeers()) {
+      const entry = this.local.coValuesStore.get(coValue.id);
+
+      // invoke the internal promise to be resolved when ack message comes from the peer
+      entry.uploadState.setPendingForPeer(peer.id);
+    }
   }
 
-  // FIXME TODO
-  // async waitForUploadIntoPeer(peerId: PeerID, id: RawCoID) {
-  //   const isAlreadyUploaded =
-  //     this.syncStateSubscriptionManager.getIsCoValueFullyUploadedIntoPeer(
-  //       peerId,
-  //       id,
-  //     );
-  //
-  //   if (isAlreadyUploaded) {
-  //     return true;
-  //   }
-  //
-  //   return new Promise((resolve) => {
-  //     const unsubscribe =
-  //       this.syncStateSubscriptionManager.subscribeToPeerUpdates(
-  //         peerId,
-  //         (knownState, syncState) => {
-  //           if (syncState.isUploaded && knownState.id === id) {
-  //             resolve(true);
-  //             unsubscribe?.();
-  //           }
-  //         },
-  //       );
-  //   });
-  // }
+  async waitForUploadIntoPeer(peerId: PeerID, id: RawCoID) {
+    const entry = this.local.coValuesStore.get(id);
+    if (!entry) {
+      throw new Error(`Unknown coValue ${id}`);
+    }
+
+    if (entry.uploadState.isCoValueFullyUploadedIntoPeer(peerId)) {
+      return true;
+    }
+
+    return entry.uploadState.waitForPeer(peerId);
+  }
 
   gracefulShutdown() {
     for (const peer of Object.values(this.peers)) {
