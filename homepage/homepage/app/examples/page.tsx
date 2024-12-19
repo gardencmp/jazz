@@ -19,6 +19,7 @@ import { ExampleCard } from "@/components/examples/ExampleCard";
 import { ExampleDemo } from "@/components/examples/ExampleDemo";
 import { SvelteLogo } from "@/components/icons/SvelteLogo";
 import { Example, features, tech } from "@/lib/example";
+import { clsx } from "clsx";
 import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 
 const MockButton = ({ children }: { children: React.ReactNode }) => (
@@ -86,6 +87,69 @@ const OnboardingIllustration = () => (
           {text}
         </div>
       ))}
+    </div>
+  </div>
+);
+
+const OrganizationRow = ({
+  name,
+  members,
+  bgClassName,
+  children,
+}: {
+  name: string;
+  members: number;
+  bgClassName: string;
+  children?: React.ReactNode;
+}) => {
+  return (
+    <div className="flex items-center py-2 px-3">
+      <span
+        className={clsx(
+          bgClassName,
+          "size-8 rounded text-white font-medium text-lg inline-flex items-center justify-center mr-3",
+        )}
+      >
+        {name[0]}
+      </span>
+
+      <div className="flex-1">
+        <p className="text-sm font-medium text-stone-900 dark:text-white">
+          {name}
+        </p>
+        <p className="text-xs text-stone-500 dark:text-stone-600">
+          {members} {members > 1 ? "members" : "member"}
+        </p>
+      </div>
+
+      {children}
+    </div>
+  );
+};
+
+const OrganizationIllustration = () => (
+  <div className="flex bg-stone-100 h-full flex-col items-center justify-center dark:bg-transparent">
+    <div className="mx-auto">
+      <OrganizationRow
+        name="Garden Computing"
+        members={7}
+        bgClassName="bg-green-600"
+      >
+        <Icon name="chevronDown" className="ml-6" />
+      </OrganizationRow>
+
+      <div className="mt-3 rounded border divide-y shadow-sm bg-white dark:bg-transparent">
+        <OrganizationRow
+          name="Friends"
+          members={5}
+          bgClassName="bg-orange-600"
+        />
+        <OrganizationRow
+          name="Alice's projects"
+          members={1}
+          bgClassName="bg-rose-600"
+        />
+      </div>
     </div>
   </div>
 );
@@ -343,6 +407,15 @@ const reactExamples: Example[] = [
     tech: [tech.react],
     features: [features.imageUpload, features.inviteLink],
     illustration: <OnboardingIllustration />,
+  },
+  {
+    name: "Organization/Team",
+    slug: "organization",
+    description:
+      "Collaborate with members of your organization through a shared CoMap acting as a root or main database",
+    tech: [tech.react],
+    features: [features.inviteLink],
+    illustration: <OrganizationIllustration />,
   },
 ];
 
