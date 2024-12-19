@@ -23,6 +23,9 @@ const group = Group.create({ owner: me });
 
 The `Group` itself is a CoValue, and whoever owns it is the initial admin.
 
+You typically add members using [public sharing](/docs/groups/sharing#public-sharing) or [invites](/docs/groups/sharing#invites).
+But if you already know their ID, you can add them directly (see below).
+
 ## Adding group members by ID
 
 You can add group members by ID by using `Account.load` and `Group.addMember`.
@@ -49,8 +52,6 @@ group.addMember(bob, "writer");
 ```
 </CodeGroup>
 ...more docs coming soon
-
-You can also share CoValues [publicly](/docs/groups/sharing/#public-sharing).
 
 ## Getting the Group of an existing CoValue
 
