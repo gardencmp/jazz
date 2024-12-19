@@ -1,0 +1,93 @@
+import { ContentByFramework, CodeGroup } from "@/components/forMdx";
+
+# Storing per-user data in an Account
+
+The Account `root` is an app-specific per-user private `CoMap`
+where we can store top-level objects for that user.
+
+First, we need to customize the `AccountSchema`, and add a `root` field.
+
+<CodeGroup>
+<ContentByFramework framework="react">
+```ts
+const Jazz = createJazzReactApp({
+  AccountSchema: MyCustomAccount,
+});
+```
+</ContentByFramework>
+
+<ContentByFramework framework="vue">
+```ts
+const Jazz = createJazzVueApp({
+  AccountSchema: MyCustomAccount,
+});
+```
+</ContentByFramework>
+
+<ContentByFramework framework="react-native">
+```ts
+const Jazz = createJazzReactNativeApp({
+  AccountSchema: MyCustomAccount,
+});
+```
+</ContentByFramework>
+
+<ContentByFramework framework="svelte">
+```ts
+const Jazz = createJazzApp({
+  AccountSchema: MyCustomAccount,
+});
+```
+</ContentByFramework>
+</CodeGroup>
+
+The account migration is run on account creation and on every login.
+We can use it to set up the account root, and any other initial CoValues we need.
+
+<CodeGroup>
+```ts
+// schema.ts
+export class AccountRoot extends CoMap {
+  // Add custom fields here
+  emailAddress = co.string;
+}
+
+export class MyCustomAccount extends Account {
+  root = co.ref(AccountRoot); // *highlight*
+
+  migrate(this: MyCustomAccount, creationProps?: { name: string }) {
+    super.migrate(creationProps);
+    if (!this._refs.root) {
+      this.root = AccountRoot.create(
+        { emailAddress: "user@gmail.com" },
+        { owner: this },
+      );
+    }
+  }
+}
+```
+</CodeGroup>
+
+By assigning `owner` to `this`, we've made `root` private to the user who created the account.
+
+## Storing public data
+
+To store public data instead, we can use the Account `profile`.
+
+<CodeGroup>
+```ts
+// schema.ts
+export class JazzProfile extends Profile {
+  name = co.string;
+}
+
+export class MyCustomAccount extends Account {
+  profile = co.ref(JazzProfile); // *highlight*
+
+  migrate(this: MyCustomAccount, creationProps?: { name: string }) {
+    super.migrate(creationProps);
+  }
+}
+```
+</CodeGroup>
+

@@ -136,6 +136,11 @@ export const docNavigationItems = [
     name: "Design patterns",
     items: [
       {
+        name: "Account root",
+        href: "/docs/design-patterns/account-root",
+        done: 100,
+      },
+      {
         name: "Organization/Team",
         href: "/docs/design-patterns/organization",
         done: 80,
