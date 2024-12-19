@@ -1,5 +1,6 @@
 import { createJazzReactApp, useDemoAuth } from "jazz-react";
 import { useEffect, useRef } from "react";
+import { PingPong } from "./pages/Inbox";
 
 const url = new URL(window.location.href);
 
@@ -17,9 +18,16 @@ if (import.meta.env.VITE_WS_PEER) {
   peer = import.meta.env.VITE_WS_PEER;
 }
 
-const Jazz = createJazzReactApp();
+const Jazz = createJazzReactApp({
+  InboxMessageSchema: PingPong,
+});
 
-export const { useAccount, useCoState, useAcceptInvite } = Jazz;
+export const {
+  useAccount,
+  useCoState,
+  useAcceptInvite,
+  experimental: { useInboxListener, useInboxSender },
+} = Jazz;
 
 function getUserInfo() {
   return url.searchParams.get("userName") ?? "Mister X";

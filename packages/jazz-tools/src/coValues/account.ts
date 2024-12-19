@@ -36,6 +36,7 @@ import {
 import { coValuesCache } from "../lib/cache.js";
 import { type CoMap } from "./coMap.js";
 import { type Group } from "./group.js";
+import { createInboxRoot } from "./inbox.js";
 import { Profile } from "./profile.js";
 import { RegisteredSchemas } from "./registeredSchemas.js";
 
@@ -235,10 +236,7 @@ export class Account extends CoValueBase implements CoValue {
     return this.toJSON();
   }
 
-  migrate(
-    this: Account,
-    creationProps?: { name: string },
-  ): void | Promise<void> {
+  migrate(this: Account, creationProps?: { name: string }) {
     if (creationProps) {
       const profileGroup = RegisteredSchemas["Group"].create({ owner: this });
       profileGroup.addMember("everyone", "reader");
@@ -246,6 +244,17 @@ export class Account extends CoValueBase implements CoValue {
         { name: creationProps.name },
         { owner: profileGroup },
       );
+    }
+
+    const node = this._raw.core.node;
+    const profile = node
+      .expectCoValueLoaded(this._raw.get("profile")!)
+      .getCurrentContent() as RawCoMap;
+
+    if (!profile.get("inbox")) {
+      const inboxRoot = createInboxRoot(this);
+      profile.set("inbox", inboxRoot.id);
+      profile.set("inboxInvite", inboxRoot.inviteLink);
     }
   }
 

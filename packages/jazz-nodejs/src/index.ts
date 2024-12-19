@@ -3,25 +3,31 @@ import {
   Account,
   AccountClass,
   ID,
+  Inbox,
   createJazzContext,
   fixedCredentialsAuth,
   randomSessionProvider,
 } from "jazz-tools";
-import { WebSocket } from "ws";
 import { webSocketWithReconnection } from "./webSocketWithReconnection.js";
 
-/** @category Context Creation */
-export async function startWorker<Acc extends Account>({
-  accountID = process.env.JAZZ_WORKER_ACCOUNT,
-  accountSecret = process.env.JAZZ_WORKER_SECRET,
-  syncServer = "wss://cloud.jazz.tools",
-  AccountSchema = Account as unknown as AccountClass<Acc>,
-}: {
+type WorkerOptions<Acc extends Account> = {
   accountID?: string;
   accountSecret?: string;
   syncServer?: string;
   AccountSchema?: AccountClass<Acc>;
-}): Promise<{ worker: Acc; done: () => Promise<void> }> {
+};
+
+/** @category Context Creation */
+export async function startWorker<Acc extends Account>(
+  options: WorkerOptions<Acc>,
+) {
+  const {
+    accountID = process.env.JAZZ_WORKER_ACCOUNT,
+    accountSecret = process.env.JAZZ_WORKER_SECRET,
+    syncServer = "wss://cloud.jazz.tools",
+    AccountSchema = Account as unknown as AccountClass<Acc>,
+  } = options;
+
   let node: LocalNode | undefined = undefined;
   const wsPeer = webSocketWithReconnection(syncServer, (peer) => {
     node?.syncManager.addPeer(peer);
@@ -52,7 +58,14 @@ export async function startWorker<Acc extends Account>({
     crypto: await WasmCrypto.create(),
   });
 
-  node = context.account._raw.core.node;
+  const account = context.account as Acc;
+  node = account._raw.core.node;
+
+  if (!account._refs.profile?.id) {
+    throw new Error("Account has no profile");
+  }
+
+  const inbox = await Inbox.load(account);
 
   async function done() {
     await context.account.waitForAllCoValuesSync();
@@ -61,5 +74,15 @@ export async function startWorker<Acc extends Account>({
     context.done();
   }
 
-  return { worker: context.account as Acc, done };
+  const inboxPublicApi = {
+    subscribe: inbox.subscribe.bind(inbox) as Inbox["subscribe"],
+  };
+
+  return {
+    worker: context.account as Acc,
+    experimental: {
+      inbox: inboxPublicApi,
+    },
+    done,
+  };
 }
