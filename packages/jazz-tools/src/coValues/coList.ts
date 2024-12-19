@@ -13,9 +13,7 @@ import type {
   UnCo,
 } from "../internal.js";
 import {
-  Account,
   AnonymousJazzAgent,
-  Group,
   ItemsSym,
   Ref,
   SchemaInit,
@@ -30,6 +28,9 @@ import {
   subscriptionsScopes,
 } from "../internal.js";
 import { coValuesCache } from "../lib/cache.js";
+import { type Account } from "./account.js";
+import { type Group } from "./group.js";
+import { RegisteredSchemas } from "./registeredSchemas.js";
 
 /**
  * CoLists are collaborative versions of plain arrays.
@@ -108,8 +109,8 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
   /** @category Collaboration */
   get _owner(): Account | Group {
     return this._raw.group instanceof RawAccount
-      ? Account.fromRaw(this._raw.group)
-      : Group.fromRaw(this._raw.group);
+      ? RegisteredSchemas["Account"].fromRaw(this._raw.group)
+      : RegisteredSchemas["Group"].fromRaw(this._raw.group);
   }
 
   /**
@@ -162,7 +163,9 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
     const rawAccount = this._raw.core.node.account;
 
     if (rawAccount instanceof RawAccount) {
-      return coValuesCache.get(rawAccount, () => Account.fromRaw(rawAccount));
+      return coValuesCache.get(rawAccount, () =>
+        RegisteredSchemas["Account"].fromRaw(rawAccount),
+      );
     }
 
     return new AnonymousJazzAgent(this._raw.core.node);

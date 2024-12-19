@@ -14,16 +14,13 @@ import {
 } from "cojson";
 import {
   AnonymousJazzAgent,
-  CoMap,
   type CoValue,
   CoValueBase,
   CoValueClass,
   DeeplyLoaded,
   DepthsIn,
-  Group,
   ID,
   MembersSym,
-  Profile,
   Ref,
   type RefEncoded,
   RefIfCoValue,
@@ -37,6 +34,10 @@ import {
   subscriptionsScopes,
 } from "../internal.js";
 import { coValuesCache } from "../lib/cache.js";
+import { type CoMap } from "./coMap.js";
+import { type Group } from "./group.js";
+import { Profile } from "./profile.js";
+import { RegisteredSchemas } from "./registeredSchemas.js";
 
 /** @category Identity & Permissions */
 export class Account extends CoValueBase implements CoValue {
@@ -59,7 +60,7 @@ export class Account extends CoValueBase implements CoValue {
         optional: false,
       } satisfies RefEncoded<Profile>,
       root: {
-        ref: () => CoMap,
+        ref: () => RegisteredSchemas["CoMap"],
         optional: true,
       } satisfies RefEncoded<CoMap>,
     };
@@ -239,7 +240,7 @@ export class Account extends CoValueBase implements CoValue {
     creationProps?: { name: string },
   ): void | Promise<void> {
     if (creationProps) {
-      const profileGroup = Group.create({ owner: this });
+      const profileGroup = RegisteredSchemas["Group"].create({ owner: this });
       profileGroup.addMember("everyone", "reader");
       this.profile = Profile.create(
         { name: creationProps.name },
@@ -388,3 +389,5 @@ export function isControlledAccount(account: Account): account is Account & {
 export type AccountClass<Acc extends Account> = CoValueClass<Acc> & {
   fromNode: (typeof Account)["fromNode"];
 };
+
+RegisteredSchemas["Account"] = Account;

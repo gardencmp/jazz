@@ -14,23 +14,24 @@ export { Encoders, co } from "./internal.js";
 
 export {
   Account,
+  isControlledAccount,
+  type AccountClass,
+} from "./coValues/account.js";
+export { Group } from "./coValues/group.js";
+export {
+  CoStream,
+  CoFeed,
   FileStream,
   BinaryCoStream,
-  CoList,
-  CoMap,
-  CoFeed,
-  CoStream,
-  CoValueBase,
-  Group,
-  ImageDefinition,
-  Profile,
-  isControlledAccount,
-  SchemaUnion,
-  type AccountClass,
-  type CoMapInit,
-  type CoValueClass,
-} from "./internal.js";
-export type { DeeplyLoaded, DepthsIn } from "./internal.js";
+} from "./coValues/coFeed.js";
+export { CoList } from "./coValues/coList.js";
+export { CoMap, type CoMapInit } from "./coValues/coMap.js";
+export { CoValueBase } from "./coValues/interfaces.js";
+export { ImageDefinition } from "./coValues/extensions/imageDef.js";
+export { Profile } from "./coValues/profile.js";
+export { SchemaUnion } from "./coValues/schemaUnion.js";
+
+export type { CoValueClass, DeeplyLoaded, DepthsIn } from "./internal.js";
 
 export {
   createCoValueObservable,

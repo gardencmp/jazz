@@ -13,7 +13,6 @@ import type {
   CoValueClass,
   DeeplyLoaded,
   DepthsIn,
-  Group,
   ID,
   IfCo,
   RefEncoded,
@@ -22,7 +21,6 @@ import type {
   co,
 } from "../internal.js";
 import {
-  Account,
   CoValueBase,
   ItemsSym,
   Ref,
@@ -36,6 +34,9 @@ import {
   subscribeToExistingCoValue,
   subscriptionsScopes,
 } from "../internal.js";
+import { type Account } from "./account.js";
+import { type Group } from "./group.js";
+import { RegisteredSchemas } from "./registeredSchemas.js";
 
 type CoMapEdit<V> = {
   value?: V;
@@ -178,7 +179,7 @@ export class CoMap extends CoValueBase implements CoValue {
       by:
         rawEdit.by &&
         new Ref<Account>(rawEdit.by as ID<Account>, target._loadedAs, {
-          ref: Account,
+          ref: RegisteredSchemas["Account"],
           optional: false,
         }).accessFrom(target, "_edits." + key + ".by"),
       madeAt: rawEdit.at,
@@ -742,3 +743,5 @@ const CoMapProxyHandler: ProxyHandler<CoMap> = {
     }
   },
 };
+
+RegisteredSchemas["CoMap"] = CoMap;

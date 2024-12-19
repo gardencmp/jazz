@@ -1,6 +1,6 @@
 import type { CoID, RawCoValue } from "cojson";
+import { type Account } from "../coValues/account.js";
 import type {
-  Account,
   AnonymousJazzAgent,
   CoValue,
   ID,

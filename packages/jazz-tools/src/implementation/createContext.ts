@@ -9,7 +9,10 @@ import {
   RawAccountID,
   SessionID,
 } from "cojson";
-import { Account, AccountClass, ID } from "../internal.js";
+import { type Account, type AccountClass } from "../coValues/account.js";
+import { RegisteredSchemas } from "../coValues/registeredSchemas.js";
+import type { ID } from "../internal.js";
+import { AnonymousJazzAgent } from "./anonymousJazzAgent.js";
 
 export type Credentials = {
   accountID: ID<Account>;
@@ -136,7 +139,8 @@ export async function createJazzContext<Acc extends Account>(
 
     const { auth, sessionProvider, peersToLoadFrom, crypto } = options;
     const AccountSchema =
-      options.AccountSchema ?? (Account as unknown as AccountClass<Acc>);
+      options.AccountSchema ??
+      (RegisteredSchemas["Account"] as unknown as AccountClass<Acc>);
     let authResult: AuthResult;
     try {
       authResult = await auth.start(crypto);
@@ -241,11 +245,6 @@ export async function createJazzContext<Acc extends Account>(
       }
     }
   }
-}
-
-export class AnonymousJazzAgent {
-  _type = "Anonymous" as const;
-  constructor(public node: LocalNode) {}
 }
 
 export async function createAnonymousJazzContext({

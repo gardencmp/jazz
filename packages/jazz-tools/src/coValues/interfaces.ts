@@ -1,17 +1,18 @@
 import type { CojsonInternalTypes, RawCoValue } from "cojson";
 import { RawAccount } from "cojson";
+import { AnonymousJazzAgent } from "../implementation/anonymousJazzAgent.js";
 import type { DeeplyLoaded, DepthsIn } from "../internal.js";
 import {
-  Account,
-  AnonymousJazzAgent,
-  Group,
   Ref,
   SubscriptionScope,
   inspect,
   subscriptionsScopes,
 } from "../internal.js";
 import { coValuesCache } from "../lib/cache.js";
+import { type Account } from "./account.js";
 import { fulfillsDepth } from "./deepLoading.js";
+import { type Group } from "./group.js";
+import { RegisteredSchemas } from "./registeredSchemas.js";
 
 /** @category Abstract interfaces */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -85,8 +86,8 @@ export class CoValueBase implements CoValue {
   get _owner(): Account | Group {
     const owner =
       this._raw.group instanceof RawAccount
-        ? Account.fromRaw(this._raw.group)
-        : Group.fromRaw(this._raw.group);
+        ? RegisteredSchemas["Account"].fromRaw(this._raw.group)
+        : RegisteredSchemas["Group"].fromRaw(this._raw.group);
 
     const subScope = subscriptionsScopes.get(this);
     if (subScope) {
@@ -102,7 +103,9 @@ export class CoValueBase implements CoValue {
     const rawAccount = this._raw.core.node.account;
 
     if (rawAccount instanceof RawAccount) {
-      return coValuesCache.get(rawAccount, () => Account.fromRaw(rawAccount));
+      return coValuesCache.get(rawAccount, () =>
+        RegisteredSchemas["Account"].fromRaw(rawAccount),
+      );
     }
 
     return new AnonymousJazzAgent(this._raw.core.node);
