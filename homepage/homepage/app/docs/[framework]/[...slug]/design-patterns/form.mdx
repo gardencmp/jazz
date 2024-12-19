@@ -1,0 +1,397 @@
+import { CodeGroup } from "@/components/forMdx";
+
+# Creating and updating CoValues in a form
+
+Normally, when creating a form, we create a state to store the value of each field.
+Then we update that state as the user makes changes, like this:
+
+<CodeGroup>
+```tsx
+const [name, setName] = useState("");
+
+return (
+  <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+)
+```
+</CodeGroup>
+
+When the user submits the form, we make an API request to update the data in the server,
+then somehow reflect those changes in the UI.
+
+<CodeGroup>
+```tsx
+const [name, setName] = useState(""); // old
+
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  // make an API request to update the data
+
+  // show updated data from the server
+}
+
+return ( // old
+  <form onSubmit={handleSubmit}>
+    <input type="text" value={name} onChange={(e) => setName(e.target.value)} />  // old
+    <button type="submit">Save</button>
+  </form>
+) // old
+```
+</CodeGroup>
+
+In Jazz, it works a bit differently. We'll get through the steps in this guide, but you can also refer to the
+[form example app](https://github.com/garden-co/jazz/tree/main/examples/form).
+
+## Updating a CoValue
+
+When you subscribe to a CoValue, you get a reactive object. This changes the way you write forms.
+
+You no longer have to create a state for every field. You
+simply assign the new value directly as changes happen.
+
+<CodeGroup>
+```tsx
+return (
+  <input type="text" value={name} onChange={(e) => name = e.target.value} />
+)
+```
+</CodeGroup>
+
+As the user types, the changes are synced to the server. This means you don't need to handle form submissions either.
+
+## Creating a CoValue
+
+Because CoValues are reactive and synced instantly, we can write forms in fewer lines of code.
+But when creating a CoValue, the CoValue does not exist yet, so we don't have the advantages previously mentioned.
+
+There's a way around this, and it provides unexpected benefits too.
+
+### Using a Draft CoValue
+
+Let's say we have a CoValue called `BubbleTeaOrder`. We can create a "draft" CoValue,
+which is an empty version of a `BubbleTeaOrder`, that we can then modify when we are "creating"
+a new CoValue.
+
+A `DraftBubbleTeaOrder` is essentially a copy of `BubbleTeaOrder`, but with all the fields made optional.
+
+<CodeGroup>
+```tsx
+// schema.ts
+export class BubbleTeaOrder extends CoMap {
+  name = co.string;
+}
+
+export class DraftBubbleTeaOrder extends CoMap {
+  name = co.optional.string;
+}
+```
+</CodeGroup>
+
+Then, each Account will have a `DraftBubbleTeaOrder`.
+
+<CodeGroup>
+```tsx
+// schema.ts
+export class JazzProfile extends Profile {
+  draft = co.ref(DraftBubbleTeaOrder);
+}
+
+export class JazzAccount extends Account {
+  profile = co.ref(JazzProfile)!;
+
+  migrate(this: JazzAccount, creationProps?: { name: string }) {
+    super.migrate(creationProps);
+
+    if (!this.profile._refs.draft) {
+      this.profile.draft = DraftBubbleTeaOrder.create(
+        {}, { owner: this.profile._owner },
+      );
+    }
+  }
+}
+```
+</CodeGroup>
+
+### Form for creating a CoValue
+
+Using the draft, we can treat the create form the same way as the edit form.
+
+Creating an order consists of:
+1. Editing the draft order
+2. Converting the draft order to a "real" order on submit
+
+Now, let's put all that into practice.
+
+## Defining the schema
+
+Let's start with creating the full schema.
+
+<CodeGroup>
+```ts
+// schema.ts
+export class BubbleTeaOrder extends CoMap {
+  name = co.string;
+}
+
+export class DraftBubbleTeaOrder extends CoMap {
+  name = co.optional.string;
+}
+
+export class ListOfBubbleTeaOrders extends CoList.Of(co.ref(BubbleTeaOrder)) {}
+
+export class JazzProfile extends Profile {
+  draft = co.ref(DraftBubbleTeaOrder);
+  orders = co.ref(ListOfBubbleTeaOrders);
+}
+
+export class JazzAccount extends Account {
+  profile = co.ref(JazzProfile)!;
+
+  migrate(this: JazzAccount, creationProps?: { name: string }) {
+    super.migrate(creationProps);
+
+    const owner = this.profile._owner;
+
+    if (!this.profile._refs.orders) {
+      this.profile.orders = ListOfBubbleTeaOrders.create([], { owner });
+    }
+
+    if (!this.profile._refs.draft) {
+      this.profile.draft = DraftBubbleTeaOrder.create({}, { owner });
+    }
+  }
+}
+```
+</CodeGroup>
+
+Learn more about [defining schemas](/docs/schemas/covalues).
+
+## Writing the components in React
+
+Next, let's write the form component that will be used for both create and update.
+
+<CodeGroup>
+```tsx
+// OrderForm.tsx
+export function OrderForm({
+  order,
+  onSave,
+}: {
+  order: BubbleTeaOrder | DraftBubbleTeaOrder;
+  onSave?: (e: React.FormEvent<HTMLFormElement>) => void;
+}) {
+  return (
+    <form onSubmit={onSave}>
+      <label>
+        Name
+        <input
+          type="text"
+          value={order.name}
+          onChange={(e) => (order.name = e.target.value)}
+          required
+        />
+      </label>
+
+      {onSave && <button type="submit">Submit</button>}
+    </form>
+  );
+}
+```
+</CodeGroup>
+
+To make the edit form, simply pass the `BubbleTeaOrder`.
+
+<CodeGroup>
+```tsx
+// EditOrder.tsx
+export function EditOrder(props: { id: ID<BubbleTeaOrder> }) {
+  const order = useCoState(BubbleTeaOrder, props.id, []);
+
+  if (!order) return;
+
+  return <OrderForm order={order} />;
+}
+```
+</CodeGroup>
+
+For the create form, we need to:
+1. Pass the draft to `<OrderForm/>`.
+2. When the form is submitted, turn the draft into a real order.
+3. Create a new empty draft to reset the form.
+4. Subscribe to the new draft.
+
+Here's how that looks like:
+
+<CodeGroup>
+```tsx
+// CreateOrder.tsx
+export function CreateOrder() {
+  const { me } = useAccount({ profile: { draft: {}, orders: [] } });
+
+  if (!me?.profile) return;
+
+  const onSave = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // turn the draft into a real order
+    me.profile.orders.push(me.profile.draft as BubbleTeaOrder);
+
+    // create a new empty draft
+    me.profile.draft = DraftBubbleTeaOrder.create(
+      {}, { owner: me.profile._owner },
+    );
+  };
+
+  return <CreateOrderForm id={me?.profile?.draft.id} onSave={onSave} />
+}
+
+function CreateOrderForm({
+  id,
+  onSave,
+}: {
+  id: ID<DraftBubbleTeaOrder>;
+  onSave: (e: React.FormEvent<HTMLFormElement>) => void;
+}) {
+  const draft = useCoState(DraftBubbleTeaOrder, id);
+
+  if (!draft) return;
+
+  return <OrderForm order={draft} onSave={onSave} />;
+}
+```
+</CodeGroup>
+
+When the new draft is created, we need to call `useCoState` again, so that we are passing the new draft to `<OrderForm/>`.
+
+There you have it!
+
+## Validation
+
+In a `BubbleTeaOrder`, the `name` field is required, so it would be a good idea to validate this before turning the draft into a real order.
+
+Update the schema to include a `validate` method.
+
+<CodeGroup>
+```ts
+// schema.ts
+export class DraftBubbleTeaOrder extends CoMap { // old
+  name = co.optional.string; // old
+
+  validate() {
+    const errors: string[] = [];
+
+    if (!this.name) {
+      errors.push("Plese enter a name.");
+    }
+
+    return { errors };
+  }
+} // old
+```
+</CodeGroup>
+
+Then perform the validation on submit.
+
+<CodeGroup>
+```tsx
+// CreateOrder.tsx
+const onSave = (e: React.FormEvent<HTMLFormElement>) => { // old
+  e.preventDefault(); // old
+
+  const validation = draft.validate();
+  if (validation.errors.length > 0) {
+    console.log(validation.errors);
+    return;
+  }
+
+  me.profile.orders.push(me.profile.draft as BubbleTeaOrder); // old
+
+  me.profile.draft = DraftBubbleTeaOrder.create(  // old
+    {}, // old
+    { owner: me.profile._owner }, // old
+  ); // old
+}; // old
+```
+</CodeGroup>
+
+## Draft indicator for better UX
+
+Because we are saving the user's work-in-progress, they can come back to it anytime without losing their work. 🙌
+
+To improve the UX even further, in just a few more steps, we can tell the user that they currently have unsaved changes.
+
+Simply add a `hasChanges` checker to your schema.
+
+<CodeGroup>
+```ts
+// schema.ts
+export class DraftBubbleTeaOrder extends CoMap { // old
+  name = co.optional.string; // old
+
+  validate() { // old
+    const errors: string[] = []; // old
+
+    if (!this.name) { // old
+      errors.push("Plese enter a name."); // old
+    } // old
+
+    return { errors }; // old
+  } // old
+
+  get hasChanges() {
+    return Object.keys(this._edits).length
+  }
+} // old
+```
+</CodeGroup>
+
+In the UI, you can choose how you want to show the draft indicator.
+
+<CodeGroup>
+```tsx
+// DraftIndicator.tsx
+export function DraftIndicator() {
+  const { me } = useAccount({
+    profile: { draft: {} },
+  });
+
+  if (me?.profile.draft?.hasChanges) {
+    return (
+      <p>You have a draft</p>
+    );
+  }
+}
+```
+</CodeGroup>
+
+A more subtle way is to show a small dot next to the Create button.
+
+<div className="not-prose border p-5 text-center">
+  <button type="button" className="relative border rounded-md py-2 px-4 text-center shadow-sm">
+    Create order
+    <span
+      title="You have a draft"
+      className="absolute -top-1 -right-1 bg-blue-500 border-2 border-white w-3 h-3 rounded-full dark:border-stone-925"
+    >
+    </span>
+  </button>
+</div>
+
+## Handling different types of data
+
+Forms can be more complex than just a single string field, so we've put together an example app that shows you
+how to handle single select, multi select, date, and boolean inputs.
+
+[See the full example here.](https://github.com/garden-co/jazz/tree/main/examples/form)
+
+<CodeGroup>
+```tsx
+export class BubbleTeaOrder extends CoMap {
+  baseTea = co.literal(...BubbleTeaBaseTeaTypes);
+  addOns = co.ref(ListOfBubbleTeaAddOns);
+  deliveryDate = co.Date;
+  withMilk = co.boolean;
+  instructions = co.optional.string;
+}
+  ```
+</CodeGroup>
