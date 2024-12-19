@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { CoMap, co } from "../internal";
-import { setupTwoNodes } from "./utils";
+import { CoMap, co } from "../exports.js";
+import { setupTwoNodes } from "./utils.js";
 
 test("waitForAllCoValuesSync should resolve when all the values are synced", async () => {
   class TestMap extends CoMap {

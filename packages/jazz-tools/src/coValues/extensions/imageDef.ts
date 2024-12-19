@@ -1,4 +1,6 @@
-import { CoMap, FileStream, co, subscriptionsScopes } from "../../internal.js";
+import { co, subscriptionsScopes } from "../../internal.js";
+import { FileStream } from "../coFeed.js";
+import { CoMap } from "../coMap.js";
 
 /** @category Media */
 export class ImageDefinition extends CoMap {

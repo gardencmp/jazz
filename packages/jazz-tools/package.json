@@ -6,14 +6,14 @@
   "react-native": "dist/native/index.native.js",
   "exports": {
     ".": {
-      "react-native": "./dist/native/index.native.js",
+      "react-native": "./dist/index.native.js",
       "types": "./src/index.web.ts",
-      "default": "./dist/web/index.web.js"
+      "default": "./dist/index.web.js"
     },
     "./native": {
-      "react-native": "./dist/native/index.native.js",
+      "react-native": "./dist/index.native.js",
       "types": "./src/index.native.ts",
-      "default": "./dist/native/index.native.js"
+      "default": "./dist/index.native.js"
     },
     "./src/*": "./src/*"
   },
@@ -21,22 +21,19 @@
   "license": "MIT",
   "version": "0.8.44",
   "dependencies": {
-    "cojson": "workspace:*",
-    "fast-check": "^3.17.2"
+    "cojson": "workspace:*"
   },
   "scripts": {
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "dev:web": "tsc --sourceMap --watch --outDir dist/web -p tsconfig.web.json",
-    "dev:native": "tsc --sourceMap --watch --outDir dist/native -p tsconfig.native.json",
+    "dev": "tsup --watch",
     "test": "vitest --run --root ../../ --project jazz-tools",
     "test:watch": "vitest --watch --root ../../ --project jazz-tools",
-    "build:web": "tsc --sourceMap --outDir dist/web -p tsconfig.web.json",
-    "build:native": "tsc --sourceMap --outDir dist/native -p tsconfig.native.json",
-    "build": "rm -rf ./dist && pnpm run build:web && pnpm run build:native",
+    "build": "tsup",
     "prepublishOnly": "npm run build"
   },
   "devDependencies": {
+    "tsup": "^8.3.5",
     "typescript": "~5.6.2",
     "vitest": "1.5.3"
   },

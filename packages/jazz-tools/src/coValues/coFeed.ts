@@ -16,7 +16,6 @@ import type {
   CoValueClass,
   DeeplyLoaded,
   DepthsIn,
-  Group,
   ID,
   IfCo,
   Schema,
@@ -24,7 +23,6 @@ import type {
   UnCo,
 } from "../internal.js";
 import {
-  Account,
   CoValueBase,
   ItemsSym,
   Ref,
@@ -37,6 +35,9 @@ import {
   subscribeToCoValue,
   subscribeToExistingCoValue,
 } from "../internal.js";
+import { type Account } from "./account.js";
+import { type Group } from "./group.js";
+import { RegisteredSchemas } from "./registeredSchemas.js";
 
 /** @deprecated Use CoFeedEntry instead */
 export type CoStreamEntry<Item> = CoFeedEntry<Item>;
@@ -436,7 +437,7 @@ function entryFromRawEntry<Item>(
       return (
         accountID &&
         new Ref<Account>(accountID as unknown as ID<Account>, loadedAs, {
-          ref: Account,
+          ref: RegisteredSchemas["Account"],
           optional: false,
         })?.accessFrom(
           accessFrom,
