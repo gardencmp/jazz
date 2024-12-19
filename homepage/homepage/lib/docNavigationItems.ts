@@ -113,41 +113,11 @@ export const docNavigationItems = [
     ],
   },
   {
-    name: "Authentication methods",
+    name: "Authentication",
     items: [
       {
-        name: "Overview",
+        name: "Authentication methods",
         href: "/docs/authentication/auth-methods",
-        done: {
-          react: 50,
-          vue: 0,
-          "react-native": 0,
-          svelte: 0,
-        },
-      },
-      {
-        name: "Passphrase",
-        href: "/docs/authentication/auth-methods#passphrase",
-        done: {
-          react: 50,
-          vue: 0,
-          "react-native": 0,
-          svelte: 0,
-        },
-      },
-      {
-        name: "Passkey",
-        href: "/docs/authentication/auth-methods#passkey",
-        done: {
-          react: 50,
-          vue: 0,
-          "react-native": 0,
-          svelte: 0,
-        },
-      },
-      {
-        name: "Clerk",
-        href: "/docs/authentication/auth-methods#clerk",
         done: {
           react: 50,
           vue: 0,
@@ -165,6 +135,11 @@ export const docNavigationItems = [
   {
     name: "Design patterns",
     items: [
+      {
+        name: "Account root",
+        href: "/docs/design-patterns/account-root",
+        done: 100,
+      },
       {
         name: "Organization/Team",
         href: "/docs/design-patterns/organization",
