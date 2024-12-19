@@ -7,6 +7,8 @@ Different apps have different names for this concept, such as "teams" or "worksp
 
 We'll use the term Organization.
 
+[See the full example here.](https://github.com/garden-co/jazz/tree/main/examples/organization)
+
 ## Defining the schema for an Organization
 
 Create a CoMap shared by the users of the same organization to act as a root (or "main database") for the shared data within an organization.
@@ -83,6 +85,8 @@ export class JazzAccount extends Account {
 </CodeGroup>
 
 This schema now allows users to create `Organization`s and add `Project`s to them.
+
+[See the schema for the example app here.](https://github.com/garden-co/jazz/blob/main/examples/organization/src/schema.ts)
 
 ## Adding other users to an Organization
 
