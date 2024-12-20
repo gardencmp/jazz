@@ -31,13 +31,14 @@ import {
   isKeyForKeyField,
 } from "./permissions.js";
 import { getPriorityFromHeader } from "./priority.js";
-import { CoValueKnownState, NewContentMessage } from "./sync.js";
+import { CoValueKnownState, SessionNewContent } from "./sync.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
-import ContentMessage = CojsonInternalTypes.ContentMessage;
+import CoValueContent = CojsonInternalTypes.CoValueContent;
 import DataMessage = CojsonInternalTypes.DataMessage;
 import PushMessage = CojsonInternalTypes.PushMessage;
+import { PeerOperations } from "./peerOperations.js";
 
 /**
     In order to not block other concurrently syncing CoValues we introduce a maximum size of transactions,
@@ -111,7 +112,7 @@ export class CoValueCore {
   } = {};
   _cachedKnownState?: CoValueKnownState;
   _cachedDependentOn?: RawCoID[];
-  _cachedNewContentSinceEmpty?: ContentMessage[] | undefined;
+  _cachedNewContentSinceEmpty?: CoValueContent[] | undefined;
   _currentAsyncAddTransaction?: Promise<void>;
 
   constructor(
@@ -201,7 +202,7 @@ export class CoValueCore {
     };
   }
 
-  tryAddTransactions(
+  private tryAddTransactions(
     sessionID: SessionID,
     newTransactions: Transaction[],
     givenExpectedNewHash: Hash | undefined,
@@ -897,16 +898,14 @@ export class CoValueCore {
 
   newContentSince(
     knownState: CoValueKnownState | undefined,
-    action: "data" | "push",
-  ): ContentMessage[] | undefined {
+  ): CoValueContent[] | undefined {
     const isKnownStateEmpty = !knownState?.header && !knownState?.sessions;
 
     if (isKnownStateEmpty && this._cachedNewContentSinceEmpty) {
       return this._cachedNewContentSinceEmpty;
     }
 
-    let currentPiece: DataMessage | PushMessage = {
-      action,
+    let currentPiece: CoValueContent = {
       id: this.id,
       header: knownState?.header ? undefined : this.header,
       priority: getPriorityFromHeader(this.header),
@@ -970,7 +969,6 @@ export class CoValueCore {
 
         if (pieceSize >= MAX_RECOMMENDED_TX_SIZE) {
           currentPiece = {
-            action,
             id: this.id,
             header: undefined,
             new: {},
@@ -1050,6 +1048,55 @@ export class CoValueCore {
           ]
         : [];
   }
+
+  addNewContent(content: CoValueContent) {
+    let anyMissingTransaction = false;
+
+    for (const [sessionID, newContentForSession] of Object.entries(
+      content.new,
+    ) as [SessionID, SessionNewContent][]) {
+      const ourKnownTxIdx =
+        this.sessionLogs.get(sessionID)?.transactions.length;
+      const theirFirstNewTxIdx = newContentForSession.after;
+
+      if ((ourKnownTxIdx || 0) < theirFirstNewTxIdx) {
+        anyMissingTransaction = true;
+        continue;
+      }
+
+      const alreadyKnownOffset = ourKnownTxIdx
+        ? ourKnownTxIdx - theirFirstNewTxIdx
+        : 0;
+
+      const newTransactions =
+        newContentForSession.newTransactions.slice(alreadyKnownOffset);
+
+      if (newTransactions.length === 0) {
+        continue;
+      }
+
+      const result = this.tryAddTransactions(
+        sessionID,
+        newTransactions,
+        undefined,
+        newContentForSession.lastSignature,
+      );
+
+      if (result.isErr()) {
+        const message = `Failed to add transactions for ${content.id}: ${newTransactions.length} new transactions after: 
+        ${newContentForSession.after} our last known tx idx initially: ${ourKnownTxIdx} our last known tx idx now: 
+        ${this.sessionLogs.get(sessionID)?.transactions.length}`;
+
+        throw {
+          type: "TryAddTransactionsError",
+          error: result.error,
+          message,
+        } as TryAddTransactionsException;
+      }
+    }
+
+    return anyMissingTransaction;
+  }
 }
 
 function getNextKnownSignatureIdx(
@@ -1084,3 +1131,19 @@ export type TryAddTransactionsError =
   | ResolveAccountAgentError
   | InvalidHashError
   | InvalidSignatureError;
+
+export type TryAddTransactionsException = {
+  type: "TryAddTransactionsError";
+  error: TryAddTransactionsError;
+  message: string;
+};
+export function isTryAddTransactionsException(
+  e: any,
+): e is TryAddTransactionsException {
+  return (
+    e &&
+    e.type === "TryAddTransactionsError" &&
+    typeof e.message === "string" &&
+    e.error !== undefined
+  );
+}

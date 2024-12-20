@@ -67,9 +67,9 @@ describe("PriorityBasedMessageQueue", () => {
     void queue.push(mediumPriorityMsg);
     void queue.push(highPriorityMsg);
 
-    expect(queue.pull()?.msg).toEqual(highPriorityMsg);
-    expect(queue.pull()?.msg).toEqual(mediumPriorityMsg);
-    expect(queue.pull()?.msg).toEqual(lowPriorityMsg);
+    expect(queue.pull()?.content).toEqual(highPriorityMsg);
+    expect(queue.pull()?.content).toEqual(mediumPriorityMsg);
+    expect(queue.pull()?.content).toEqual(lowPriorityMsg);
   });
 
   test("should return undefined when pulling from empty queue", () => {

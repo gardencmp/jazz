@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
-import { PeerState } from "../PeerState";
+import { PeerEntry } from "../PeerEntry.js";
 import { CoValueCore } from "../coValueCore";
-import { CO_VALUE_LOADING_MAX_RETRIES, CoValueState } from "../coValueState";
+import { CO_VALUE_LOADING_MAX_RETRIES, CoValueEntry } from "../coValueEntry.js";
 import { RawCoID } from "../ids";
 import { Peer } from "../sync";
 
@@ -9,7 +9,7 @@ describe("CoValueState", () => {
   const mockCoValueId = "co_test123" as RawCoID;
 
   test("should create unknown state", () => {
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
 
     expect(state.id).toBe(mockCoValueId);
     expect(state.state.type).toBe("unknown");
@@ -17,7 +17,7 @@ describe("CoValueState", () => {
 
   test("should create loading state", () => {
     const peerIds = ["peer1", "peer2"];
-    const state = CoValueState.Loading(mockCoValueId, peerIds);
+    const state = CoValueEntry.Loading(mockCoValueId, peerIds);
 
     expect(state.id).toBe(mockCoValueId);
     expect(state.state.type).toBe("loading");
@@ -25,7 +25,7 @@ describe("CoValueState", () => {
 
   test("should create available state", async () => {
     const mockCoValue = createMockCoValueCore(mockCoValueId);
-    const state = CoValueState.Available(mockCoValue);
+    const state = CoValueEntry.Available(mockCoValue);
 
     expect(state.id).toBe(mockCoValueId);
     expect(state.state.type).toBe("available");
@@ -35,7 +35,7 @@ describe("CoValueState", () => {
 
   test("should handle found action", async () => {
     const mockCoValue = createMockCoValueCore(mockCoValueId);
-    const state = CoValueState.Loading(mockCoValueId, ["peer1", "peer2"]);
+    const state = CoValueEntry.Loading(mockCoValueId, ["peer1", "peer2"]);
 
     const stateValuePromise = state.getCoValue();
 
@@ -50,7 +50,7 @@ describe("CoValueState", () => {
   });
 
   test("should ignore actions when not in loading state", () => {
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
 
     state.dispatch({
       type: "not-found-in-peer",
@@ -87,9 +87,9 @@ describe("CoValueState", () => {
         });
       },
     );
-    const mockPeers = [peer1, peer2] as unknown as PeerState[];
+    const mockPeers = [peer1, peer2] as unknown as PeerEntry[];
 
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
     const loadPromise = state.loadFromPeers(mockPeers);
 
     // Should attempt CO_VALUE_LOADING_MAX_RETRIES retries
@@ -140,9 +140,9 @@ describe("CoValueState", () => {
       },
     );
 
-    const mockPeers = [peer1, peer2] as unknown as PeerState[];
+    const mockPeers = [peer1, peer2] as unknown as PeerEntry[];
 
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
     const loadPromise = state.loadFromPeers(mockPeers);
 
     // Should attempt CO_VALUE_LOADING_MAX_RETRIES retries
@@ -189,9 +189,9 @@ describe("CoValueState", () => {
         });
       },
     );
-    const mockPeers = [peer1, peer2] as unknown as PeerState[];
+    const mockPeers = [peer1, peer2] as unknown as PeerEntry[];
 
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
     const loadPromise = state.loadFromPeers(mockPeers);
 
     // Should attempt CO_VALUE_LOADING_MAX_RETRIES retries
@@ -239,9 +239,9 @@ describe("CoValueState", () => {
       },
     );
 
-    const mockPeers = [peer1] as unknown as PeerState[];
+    const mockPeers = [peer1] as unknown as PeerEntry[];
 
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
     const loadPromise = state.loadFromPeers(mockPeers);
 
     // Should attempt CO_VALUE_LOADING_MAX_RETRIES retries
@@ -273,9 +273,9 @@ describe("CoValueState", () => {
       },
     );
 
-    const mockPeers = [peer1] as unknown as PeerState[];
+    const mockPeers = [peer1] as unknown as PeerEntry[];
 
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
     const loadPromise = state.loadFromPeers(mockPeers);
 
     // Should attempt CO_VALUE_LOADING_MAX_RETRIES retries
@@ -322,9 +322,9 @@ describe("CoValueState", () => {
       },
     );
 
-    const mockPeers = [peer1] as unknown as PeerState[];
+    const mockPeers = [peer1] as unknown as PeerEntry[];
 
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
     const loadPromise = state.loadFromPeers(mockPeers);
 
     for (let i = 0; i < CO_VALUE_LOADING_MAX_RETRIES; i++) {
@@ -369,7 +369,7 @@ describe("CoValueState", () => {
       },
     );
 
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
     const loadPromise = state.loadFromPeers([peer1, peer2]);
 
     for (let i = 0; i < CO_VALUE_LOADING_MAX_RETRIES; i++) {
@@ -418,7 +418,7 @@ describe("CoValueState", () => {
 
     peer1.closed = true;
 
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
     const loadPromise = state.loadFromPeers([peer1, peer2]);
 
     for (let i = 0; i < CO_VALUE_LOADING_MAX_RETRIES; i++) {
@@ -446,7 +446,7 @@ describe("CoValueState", () => {
       async () => {},
     );
 
-    const state = CoValueState.Unknown(mockCoValueId);
+    const state = CoValueEntry.Unknown(mockCoValueId);
     const loadPromise = state.loadFromPeers([peer1]);
 
     for (let i = 0; i < CO_VALUE_LOADING_MAX_RETRIES * 2; i++) {
@@ -467,7 +467,7 @@ function createMockPeerState(
   peer: Partial<Peer>,
   pushFn = () => Promise.resolve(),
 ) {
-  const peerState = new PeerState(
+  const peerState = new PeerEntry(
     {
       id: "peer",
       role: "server",

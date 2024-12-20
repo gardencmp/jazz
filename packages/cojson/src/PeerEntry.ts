@@ -4,12 +4,18 @@ import {
 } from "./PriorityBasedMessageQueue.js";
 import { TryAddTransactionsError } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
+import { PeerOperations } from "./peerOperations.js";
 import { CO_VALUE_PRIORITY } from "./priority.js";
 import { Peer, SyncMessage } from "./sync.js";
 import { transformOutgoingMessageToPeer } from "./transformers.js";
 
-export class PeerState {
-  constructor(private peer: Peer) {}
+// NOTE Renamed PeerState into PeerEntry
+export class PeerEntry {
+  private readonly ops: PeerOperations;
+
+  constructor(private peer: Peer) {
+    this.ops = new PeerOperations(this);
+  }
 
   readonly erroredCoValues: Map<RawCoID, TryAddTransactionsError> = new Map();
 
@@ -27,6 +33,10 @@ export class PeerState {
 
   get crashOnClose() {
     return this.peer.crashOnClose;
+  }
+
+  get send() {
+    return this.ops;
   }
 
   shouldRetryUnavailableCoValues() {
@@ -68,7 +78,7 @@ export class PeerState {
     this.processing = false;
   }
 
-  pushOutgoingMessage(msg: SyncMessage) {
+  async pushOutgoingMessage(msg: SyncMessage) {
     if (this.closed) {
       return Promise.resolve();
     }
@@ -78,15 +88,19 @@ export class PeerState {
       console.log("🟢 <<<=== Sending to peer", this.id, msg);
     });
 
-    return Promise.all(
-      transformedMessages.map((msg) => {
-        const promise = this.queue.push(msg);
+    try {
+      return await Promise.all(
+        transformedMessages.map((msg_3) => {
+          const promise = this.queue.push(msg_3);
 
-        void this.processQueue();
+          void this.processQueue();
 
-        return promise;
-      }),
-    );
+          return promise;
+        }),
+      );
+    } catch (e) {
+      console.error("Error sending to peer", this.id, transformedMessages, e);
+    }
   }
 
   get incoming() {

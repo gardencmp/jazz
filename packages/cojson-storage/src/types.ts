@@ -51,7 +51,7 @@ export interface DBClientInterface {
     firstNewTxIdx: number,
   ): Promise<SignatureAfterRow[]> | SignatureAfterRow[];
 
-  addCoValue(msg: CojsonInternalTypes.ContentMessage): Promise<number> | number;
+  addCoValue(msg: CojsonInternalTypes.CoValueContent): Promise<number> | number;
 
   addSessionUpdate({
     sessionUpdate,

@@ -1,15 +1,15 @@
 import { CoValueCore } from "./coValueCore.js";
-import { CoValueState } from "./coValueState.js";
+import { CoValueEntry } from "./coValueEntry.js";
 import { RawCoID } from "./ids.js";
 
 export class CoValuesStore {
-  coValues = new Map<RawCoID, CoValueState>();
+  coValues = new Map<RawCoID, CoValueEntry>();
 
   get(id: RawCoID) {
     let entry = this.coValues.get(id);
 
     if (!entry) {
-      entry = CoValueState.Unknown(id);
+      entry = CoValueEntry.Unknown(id);
       this.coValues.set(id, entry);
     }
 

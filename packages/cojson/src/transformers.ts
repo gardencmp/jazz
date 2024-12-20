@@ -1,5 +1,5 @@
 import { SessionID } from "./ids.js";
-import { ContentMessage, SyncMessage, emptyDataMessage } from "./sync.js";
+import { CoValueContent, SyncMessage, emptyDataMessage } from "./sync.js";
 
 export const transformOutgoingMessageToPeer = (
   msg: SyncMessage,
@@ -9,7 +9,7 @@ export const transformOutgoingMessageToPeer = (
     return [msg];
   }
 
-  const getSessionsObj = (msg: ContentMessage) =>
+  const getSessionsObj = (msg: CoValueContent) =>
     Object.entries(msg.new).reduce<{ [sessionID: SessionID]: number }>(
       (acc, [session, content]) => {
         acc[session as SessionID] =

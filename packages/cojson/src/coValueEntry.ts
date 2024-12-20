@@ -1,6 +1,7 @@
-import { PeerState } from "./PeerState.js";
+import { PeerEntry } from "./PeerEntry.js";
 import { CoValueCore } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
+import { PeerOperations } from "./peerOperations.js";
 import { PeerID } from "./sync.js";
 
 export const CO_VALUE_LOADING_MAX_RETRIES = 5;
@@ -106,7 +107,7 @@ class UploadState {
     ReturnType<typeof createResolvablePromise<void>> & { completed?: boolean }
   >();
 
-  constructor(public coValueEntry: CoValueState) {
+  constructor(private readonly coValueEntry: CoValueEntry) {
     this.peers = new Map();
   }
 
@@ -164,7 +165,8 @@ class UploadState {
   }
 }
 
-export class CoValueState {
+// NOTE Renamed CoValueState into CoValueEntry
+export class CoValueEntry {
   promise?: Promise<CoValueCore | "unavailable">;
   private resolve?: (value: CoValueCore | "unavailable") => void;
   public uploadState: UploadState;
@@ -177,19 +179,19 @@ export class CoValueState {
   }
 
   static Unknown(id: RawCoID) {
-    return new CoValueState(id, new CoValueUnknownState());
+    return new CoValueEntry(id, new CoValueUnknownState());
   }
 
   static Loading(id: RawCoID, peersIds: Iterable<PeerID>) {
-    return new CoValueState(id, new CoValueLoadingState(peersIds));
+    return new CoValueEntry(id, new CoValueLoadingState(peersIds));
   }
 
   static Available(coValue: CoValueCore) {
-    return new CoValueState(coValue.id, new CoValueAvailableState(coValue));
+    return new CoValueEntry(coValue.id, new CoValueAvailableState(coValue));
   }
 
   static Unavailable(id: RawCoID) {
-    return new CoValueState(id, new CoValueUnavailableState());
+    return new CoValueEntry(id, new CoValueUnavailableState());
   }
 
   async getCoValue() {
@@ -237,7 +239,7 @@ export class CoValueState {
     this.resolve = undefined;
   }
 
-  async loadFromPeers(peers: PeerState[]) {
+  async loadFromPeers(peers: PeerEntry[]) {
     const state = this.state;
 
     if (state.type !== "unknown" && state.type !== "unavailable") {
@@ -248,7 +250,7 @@ export class CoValueState {
       return;
     }
 
-    const doLoad = async (peersToLoadFrom: PeerState[]) => {
+    const doLoad = async (peersToLoadFrom: PeerEntry[]) => {
       const peersWithoutErrors = getPeersWithoutErrors(
         peersToLoadFrom,
         this.id,
@@ -328,8 +330,8 @@ export class CoValueState {
 }
 
 async function loadCoValueFromPeers(
-  coValueEntry: CoValueState,
-  peers: PeerState[],
+  coValueEntry: CoValueEntry,
+  peers: PeerEntry[],
 ) {
   for (const peer of peers) {
     if (peer.closed) {
@@ -420,7 +422,7 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function getPeersWithoutErrors(peers: PeerState[], coValueId: RawCoID) {
+function getPeersWithoutErrors(peers: PeerEntry[], coValueId: RawCoID) {
   return peers.filter((p) => {
     if (p.erroredCoValues.has(coValueId)) {
       console.error(
