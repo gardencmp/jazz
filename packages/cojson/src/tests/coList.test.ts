@@ -75,6 +75,26 @@ test("Push is equivalent to append after last item", () => {
   expect(content.toJSON()).toEqual(["hello", "world", "hooray"]);
 });
 
+test("appendItems add an array of items at the end of the list", () => {
+  const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
+
+  const coValue = node.createCoValue({
+    type: "colist",
+    ruleset: { type: "unsafeAllowAll" },
+    meta: null,
+    ...Crypto.createdNowUnique(),
+  });
+
+  const content = expectList(coValue.getCurrentContent());
+
+  expect(content.type).toEqual("colist");
+
+  content.append("hello", 0, "trusting");
+  expect(content.toJSON()).toEqual(["hello"]);
+  content.appendItems(["world", "hooray", "universe"], undefined, "trusting");
+  expect(content.toJSON()).toEqual(["hello", "world", "hooray", "universe"]);
+});
+
 test("Can push into empty list", () => {
   const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 

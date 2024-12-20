@@ -239,9 +239,11 @@ export class CoList<Item = any> extends Array<Item> implements CoValue {
   }
 
   push(...items: Item[]): number {
-    for (const item of toRawItems(items as Item[], this._schema[ItemsSym])) {
-      this._raw.append(item);
-    }
+    this._raw.appendItems(
+      toRawItems(items, this._schema[ItemsSym]),
+      undefined,
+      "private",
+    );
 
     return this._raw.entries().length;
   }
