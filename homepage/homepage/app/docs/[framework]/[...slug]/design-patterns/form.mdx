@@ -2,67 +2,35 @@ import { CodeGroup } from "@/components/forMdx";
 
 # Creating and updating CoValues in a form
 
-Normally, when creating a form, we create a state to store the value of each field.
-Then we update that state as the user makes changes, like this:
+Normally we implement forms using
+[just the onSubmit handler](https://react.dev/reference/react-dom/components/form#handle-form-submission-on-the-client),
+or by making [a controlled form with useState](https://christinakozanian.medium.com/building-controlled-forms-with-usestate-in-react-f9053ad255a0),
+or by using special libraries like [react-hook-form](https://www.react-hook-form.com).
 
-<CodeGroup>
-```tsx
-const [name, setName] = useState("");
 
-return (
-  <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-)
-```
-</CodeGroup>
-
-When the user submits the form, we make an API request to update the data in the server,
-then somehow reflect those changes in the UI.
-
-<CodeGroup>
-```tsx
-const [name, setName] = useState(""); // old
-
-const handleSubmit = (e) => {
-  e.preventDefault();
-
-  // make an API request to update the data
-
-  // show updated data from the server
-}
-
-return ( // old
-  <form onSubmit={handleSubmit}>
-    <input type="text" value={name} onChange={(e) => setName(e.target.value)} />  // old
-    <button type="submit">Save</button>
-  </form>
-) // old
-```
-</CodeGroup>
-
-In Jazz, it works a bit differently. We'll get through the steps in this guide, but you can also refer to the
-[form example app](https://github.com/garden-co/jazz/tree/main/examples/form).
+In Jazz, we can do something simpler and more powerful, because CoValues give us reactive,
+persisted state which we can use to directly edit live objects, as well as to represent auto-saved drafts.
 
 ## Updating a CoValue
 
-When you subscribe to a CoValue, you get a reactive object. This changes the way you write forms.
-
-You no longer have to create a state for every field. You
-simply assign the new value directly as changes happen.
+You simply assign the new value directly as changes happen. These changes are synced to the server, which means
+you don't need to handle form submissions either.
 
 <CodeGroup>
 ```tsx
-return (
-  <input type="text" value={name} onChange={(e) => name = e.target.value} />
-)
+<input
+  type="text"
+  value={order.name}
+  onChange={(e) => order.name = e.target.value}
+/>
 ```
 </CodeGroup>
 
-As the user types, the changes are synced to the server. This means you don't need to handle form submissions either.
+This means we can write update forms in fewer lines of code.
 
 ## Creating a CoValue
 
-Because CoValues are reactive and synced instantly, we can write forms in fewer lines of code.
-But when creating a CoValue, the CoValue does not exist yet, so we don't have the advantages previously mentioned.
+However, when creating a CoValue, the CoValue does not exist yet, so we don't have the advantages previously mentioned.
 
 There's a way around this, and it provides unexpected benefits too.
 
@@ -92,20 +60,23 @@ Then, each Account will have a `DraftBubbleTeaOrder`.
 <CodeGroup>
 ```tsx
 // schema.ts
-export class JazzProfile extends Profile {
+export class AccountRoot extends CoMap {
   draft = co.ref(DraftBubbleTeaOrder);
 }
 
 export class JazzAccount extends Account {
-  profile = co.ref(JazzProfile)!;
+  root = co.ref(AccountRoot);
 
   migrate(this: JazzAccount, creationProps?: { name: string }) {
     super.migrate(creationProps);
 
-    if (!this.profile._refs.draft) {
-      this.profile.draft = DraftBubbleTeaOrder.create(
-        {}, { owner: this.profile._owner },
+    if (!this._refs.root) {
+      const ownership = { owner: this };
+      const draft = DraftBubbleTeaOrder.create(
+        {}, ownership,
       );
+
+      this.root = AccountRoot.create({ draft }, ownership);
     }
   }
 }
@@ -139,25 +110,26 @@ export class DraftBubbleTeaOrder extends CoMap {
 
 export class ListOfBubbleTeaOrders extends CoList.Of(co.ref(BubbleTeaOrder)) {}
 
-export class JazzProfile extends Profile {
+export class AccountRoot extends CoMap {
   draft = co.ref(DraftBubbleTeaOrder);
   orders = co.ref(ListOfBubbleTeaOrders);
 }
 
 export class JazzAccount extends Account {
-  profile = co.ref(JazzProfile)!;
+  root = co.ref(AccountRoot);
 
   migrate(this: JazzAccount, creationProps?: { name: string }) {
     super.migrate(creationProps);
 
-    const owner = this.profile._owner;
+    if (!this._refs.root) {
+      const ownership = { owner: this };
 
-    if (!this.profile._refs.orders) {
-      this.profile.orders = ListOfBubbleTeaOrders.create([], { owner });
-    }
+      const orders = ListOfBubbleTeaOrders.create([], ownership);
+      const draft = DraftBubbleTeaOrder.create(
+        {}, ownership,
+      );
 
-    if (!this.profile._refs.draft) {
-      this.profile.draft = DraftBubbleTeaOrder.create({}, { owner });
+      this.root = AccountRoot.create({ draft, orders }, ownership);
     }
   }
 }
@@ -226,23 +198,23 @@ Here's how that looks like:
 ```tsx
 // CreateOrder.tsx
 export function CreateOrder() {
-  const { me } = useAccount({ profile: { draft: {}, orders: [] } });
+  const { me } = useAccount({ root: { draft: {}, orders: [] } });
 
-  if (!me?.profile) return;
+  if (!me?.root) return;
 
   const onSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // turn the draft into a real order
-    me.profile.orders.push(me.profile.draft as BubbleTeaOrder);
+    me.root.orders.push(me.root.draft as BubbleTeaOrder);
 
     // create a new empty draft
-    me.profile.draft = DraftBubbleTeaOrder.create(
-      {}, { owner: me.profile._owner },
+    me.root.draft = DraftBubbleTeaOrder.create(
+      {}, { owner: me },
     );
   };
 
-  return <CreateOrderForm id={me?.profile?.draft.id} onSave={onSave} />
+  return <CreateOrderForm id={me?.root?.draft.id} onSave={onSave} />
 }
 
 function CreateOrderForm({
@@ -304,11 +276,11 @@ const onSave = (e: React.FormEvent<HTMLFormElement>) => { // old
     return;
   }
 
-  me.profile.orders.push(me.profile.draft as BubbleTeaOrder); // old
+  me.root.orders.push(me.root.draft as BubbleTeaOrder); // old
 
-  me.profile.draft = DraftBubbleTeaOrder.create(  // old
+  me.root.draft = DraftBubbleTeaOrder.create(  // old
     {}, // old
-    { owner: me.profile._owner }, // old
+    { owner: me }, // old
   ); // old
 }; // old
 ```
@@ -352,10 +324,10 @@ In the UI, you can choose how you want to show the draft indicator.
 // DraftIndicator.tsx
 export function DraftIndicator() {
   const { me } = useAccount({
-    profile: { draft: {} },
+    root: { draft: {} },
   });
 
-  if (me?.profile.draft?.hasChanges) {
+  if (me?.root.draft?.hasChanges) {
     return (
       <p>You have a draft</p>
     );
@@ -380,7 +352,7 @@ A more subtle way is to show a small dot next to the Create button.
 ## Handling different types of data
 
 Forms can be more complex than just a single string field, so we've put together an example app that shows you
-how to handle single select, multi select, date, and boolean inputs.
+how to handle single-select, multi-select, date, and boolean inputs.
 
 [See the full example here.](https://github.com/garden-co/jazz/tree/main/examples/form)
 
