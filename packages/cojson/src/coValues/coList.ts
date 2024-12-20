@@ -413,6 +413,14 @@ export class RawCoList<
     after?: number,
     privacy: "private" | "trusting" = "private",
   ) {
+    this.appendItems([item], after, privacy);
+  }
+
+  appendItems(
+    items: Item[],
+    after?: number,
+    privacy: "private" | "trusting" = "private",
+  ) {
     const entries = this.entries();
     after =
       after === undefined
@@ -420,7 +428,7 @@ export class RawCoList<
           ? entries.length - 1
           : 0
         : after;
-    let opIDBefore;
+    let opIDBefore: OpID | "start";
     if (entries.length > 0) {
       const entryBefore = entries[after];
       if (!entryBefore) {
@@ -433,14 +441,17 @@ export class RawCoList<
       }
       opIDBefore = "start";
     }
+
     this.core.makeTransaction(
-      [
-        {
+      // Since the operation is "append" we need to reverse
+      // the items to keep the same insertion order
+      items
+        .map((item) => ({
           op: "app",
           value: isCoValue(item) ? item.id : item,
           after: opIDBefore,
-        },
-      ],
+        }))
+        .reverse(),
       privacy,
     );
 

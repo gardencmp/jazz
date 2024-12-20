@@ -175,3 +175,35 @@ test("Can get last tx ID for a key in CoMap", () => {
   content.set("hello", "C", "trusting");
   expect(content.lastEditAt("hello")?.tx.txIndex).toEqual(2);
 });
+
+test("Can set items in bulk with assign", () => {
+  const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
+
+  const coValue = node.createCoValue({
+    type: "comap",
+    ruleset: { type: "unsafeAllowAll" },
+    meta: null,
+    ...Crypto.createdNowUnique(),
+  });
+
+  const content = expectMap(coValue.getCurrentContent());
+
+  expect(content.type).toEqual("comap");
+
+  content.set("key1", "set1", "trusting");
+
+  content.assign(
+    {
+      key1: "assign1",
+      key2: "assign2",
+      key3: "assign3",
+    },
+    "trusting",
+  );
+
+  expect(content.toJSON()).toEqual({
+    key1: "assign1",
+    key2: "assign2",
+    key3: "assign3",
+  });
+});
