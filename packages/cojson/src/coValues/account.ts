@@ -17,6 +17,7 @@ import { AgentID } from "../ids.js";
 import { JsonObject } from "../jsonValue.js";
 import { LocalNode } from "../localNode.js";
 import { RawCoMap } from "./coMap.js";
+import { RawCoPlainText } from "./coPlainText.js";
 import { InviteSecret, RawGroup } from "./group.js";
 
 export function accountHeaderForInitialAgentSecret(
@@ -101,6 +102,36 @@ export class RawControlledAccount<Meta extends AccountMeta = AccountMeta>
     uniqueness: CoValueUniqueness = this.core.crypto.createdNowUnique(),
   ) {
     return this.core.node.createGroup(uniqueness);
+  }
+
+  /**
+   * Creates a new `CoPlainText` within this Account, with the specified specialized
+   * `CoPlainText` type `T` and optional static metadata.
+   *
+   * @category 3. Value creation
+   */
+  createPlainText<T extends RawCoPlainText>(
+    init?: string,
+    meta?: T["headerMeta"],
+    initPrivacy: "trusting" | "private" = "private",
+  ): T {
+    const text = this.core.node
+      .createCoValue({
+        type: "coplaintext",
+        ruleset: {
+          type: "ownedByGroup",
+          group: this.id,
+        },
+        meta: meta || null,
+        ...this.core.crypto.createdNowUnique(),
+      })
+      .getCurrentContent() as T;
+
+    if (init) {
+      text.insertAfter(0, init, initPrivacy);
+    }
+
+    return text;
   }
 
   async acceptInvite<T extends RawCoValue>(
