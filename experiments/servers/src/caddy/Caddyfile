@@ -1,0 +1,19 @@
+{
+    servers {
+        protocols h1 h2 h3
+    }
+}
+
+:3000 {
+    tls {$CERT_PATH:../../cert/localhost+1.pem} {$KEY_PATH:../../cert/localhost+1-key.pem}    
+    
+    # Transparently proxy all requests to the Node.js server
+    reverse_proxy localhost:3001 {
+        transport http {
+            dial_timeout 10s
+            read_timeout 30s
+            write_timeout 30s
+            response_header_timeout 30s
+        }
+    }
+}
