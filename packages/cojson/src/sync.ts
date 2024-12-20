@@ -9,7 +9,6 @@ import { Signature } from "./crypto/crypto.js";
 import { RawCoID, SessionID } from "./ids.js";
 import { LocalNode } from "./localNode.js";
 import { CoValuePriority } from "./priority.js";
-import { transformIncomingMessageFromPeer } from "./transformers.js";
 
 export type CoValueKnownState = {
   id: RawCoID;
@@ -125,33 +124,7 @@ export interface Peer {
   deletePeerStateOnClose?: boolean;
 }
 
-export function combinedKnownStates(
-  stateA: CoValueKnownState,
-  stateB: CoValueKnownState,
-): CoValueKnownState {
-  const sessionStates: CoValueKnownState["sessions"] = {};
-
-  const allSessions = new Set([
-    ...Object.keys(stateA.sessions),
-    ...Object.keys(stateB.sessions),
-  ] as SessionID[]);
-
-  for (const sessionID of allSessions) {
-    const stateAValue = stateA.sessions[sessionID];
-    const stateBValue = stateB.sessions[sessionID];
-
-    sessionStates[sessionID] = Math.max(stateAValue || 0, stateBValue || 0);
-  }
-
-  return {
-    id: stateA.id,
-    header: stateA.header || stateB.header,
-    sessions: sessionStates,
-  };
-}
-
 export class SyncManager {
-  peers: { [key: PeerID]: PeerEntry } = {};
   local: LocalNode;
   requestedSyncs: {
     [id: RawCoID]:
@@ -163,23 +136,8 @@ export class SyncManager {
     this.local = local;
   }
 
-  peersInPriorityOrder(): PeerEntry[] {
-    return Object.values(this.peers).sort((a, b) => {
-      const aPriority = a.priority || 0;
-      const bPriority = b.priority || 0;
-
-      return bPriority - aPriority;
-    });
-  }
-
   getPeers(): PeerEntry[] {
-    return Object.values(this.peers);
-  }
-
-  getServerAndStoragePeers(excludePeerId?: PeerID): PeerEntry[] {
-    return this.peersInPriorityOrder().filter(
-      (peer) => peer.isServerOrStoragePeer() && peer.id !== excludePeerId,
-    );
+    return Object.values(this.local.peers);
   }
 
   async handleSyncMessage(msg: SyncMessage, peer: PeerEntry) {
@@ -253,7 +211,7 @@ export class SyncManager {
     // TODO maybe to send a PULL req if we have less data?
     // Initiate a new PULL flow
     if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
-      const eligiblePeers = this.getServerAndStoragePeers(peer.id);
+      const eligiblePeers = this.local.getServerAndStoragePeers(peer.id);
 
       if (eligiblePeers.length === 0) {
         // If the load request contains a header or any session data
@@ -332,7 +290,9 @@ export class SyncManager {
       return;
     }
 
-    const peers = this.peersInPriorityOrder().filter((p) => p.id !== peer.id);
+    const peers = this.local
+      .peersInPriorityOrder()
+      .filter((p) => p.id !== peer.id);
     return this.syncCoValue(coValue, peerKnownState, peers);
   }
 
@@ -368,11 +328,13 @@ export class SyncManager {
       if (isTryAddTransactionsException(e)) {
         const { message, error } = e;
         console.error(peer.id, message, error);
-        // TODO
+        // TODO !!!!!!!!@@@@@@@@@@@#############$$$$$$$$$$$$$$$
       }
     }
 
-    const peers = this.peersInPriorityOrder().filter((p) => p.id !== peer.id);
+    const peers = this.local
+      .peersInPriorityOrder()
+      .filter((p) => p.id !== peer.id);
     await this.syncCoValue(coValue, peerKnownState, peers);
   }
 
@@ -397,87 +359,19 @@ export class SyncManager {
 
     void peer.send.pull({ coValue });
   }
+  async initialSync(peerData: Peer, peer: PeerEntry) {
+    for (const entry of this.local.coValuesStore.getValues()) {
+      const coValue = this.local.expectCoValueLoaded(entry.id);
+      // TODO does it make sense to additionally pull dependencies now that we're sending all that we know from here ?
+      await this.pullIncludingDependencies(coValue, peer);
 
-  addPeer(peerData: Peer) {
-    const prevPeer = this.peers[peerData.id];
-    const peer = new PeerEntry(peerData);
-    this.peers[peerData.id] = peer;
-
-    if (prevPeer && !prevPeer.closed) {
-      prevPeer.gracefulShutdown();
-    }
-
-    if (peer.isServerOrStoragePeer()) {
-      const initialSync = async () => {
-        for (const entry of this.local.coValuesStore.getValues()) {
-          const coValue = this.local.expectCoValueLoaded(entry.id);
-          // TODO does it make sense to additionally pull dependencies now that we're sending all that we know from here ?
-          await this.pullIncludingDependencies(coValue, peer);
-
-          // We send only push messages to be compatible  (load + content as previously), see transformOutgoingMessageToPeer()
-          await peer.send.push({
-            peerKnownState: emptyKnownState(entry.id),
-            coValue,
-          });
-          entry.uploadState.setPendingForPeer(peerData.id);
-        }
-      };
-      void initialSync();
-    }
-
-    const processMessages = async () => {
-      for await (const msg of peer.incoming) {
-        if (msg === "Disconnected") {
-          return;
-        }
-        if (msg === "PingTimeout") {
-          console.error("Ping timeout from peer", peerData.id);
-          return;
-        }
-        try {
-          console.log("🔵 ===>>> Received from", peerData.id, msg);
-          await this.handleSyncMessage(
-            transformIncomingMessageFromPeer(msg, peerData.id),
-            peer,
-          );
-        } catch (e) {
-          throw new Error(
-            `Error reading from peer ${
-              peerData.id
-            }, handling msg\n\n${JSON.stringify(msg, (k, v) =>
-              k === "changes" || k === "encryptedChanges"
-                ? v.slice(0, 20) + "..."
-                : v,
-            )}`,
-            { cause: e },
-          );
-        }
-      }
-    };
-
-    processMessages()
-      .then(() => {
-        if (peerData.crashOnClose) {
-          console.error("Unexepcted close from peer", peerData.id);
-          this.local.crashed = new Error("Unexpected close from peer");
-          throw new Error("Unexpected close from peer");
-        }
-      })
-      .catch((e) => {
-        console.error("Error processing messages from peer", peerData.id, e);
-        if (peerData.crashOnClose) {
-          this.local.crashed = e;
-          throw new Error(e);
-        }
-      })
-      .finally(() => {
-        const state = this.peers[peerData.id];
-        state?.gracefulShutdown();
-
-        if (peerData.deletePeerStateOnClose) {
-          delete this.peers[peerData.id];
-        }
+      // We send only push messages to be compatible  (load + content as previously), see transformOutgoingMessageToPeer()
+      await peer.send.push({
+        peerKnownState: emptyKnownState(entry.id),
+        coValue,
       });
+      entry.uploadState.setPendingForPeer(peerData.id);
+    }
   }
 
   async syncCoValue(
@@ -492,9 +386,7 @@ export class SyncManager {
       const done = new Promise<void>((resolve) => {
         queueMicrotask(async () => {
           delete this.requestedSyncs[coValue.id];
-          // if (entry.nRequestsThisTick >= 2) {
-          //     console.log("Syncing", coValue.id, "for", entry.nRequestsThisTick, "requests");
-          // }
+
           await this.actuallySyncCoValue(coValue, peersKnownState, peers);
           resolve();
         });
@@ -513,7 +405,7 @@ export class SyncManager {
     peerKnownState: CoValueKnownState,
     peers?: PeerEntry[],
   ) {
-    const peersToSync = peers || this.peersInPriorityOrder();
+    const peersToSync = peers || this.local.peersInPriorityOrder();
     for (const peer of peersToSync) {
       if (peer.closed) continue;
       if (peer.erroredCoValues.has(coValue.id)) continue;
@@ -542,11 +434,5 @@ export class SyncManager {
     }
 
     return entry.uploadState.waitForPeer(peerId);
-  }
-
-  gracefulShutdown() {
-    for (const peer of Object.values(this.peers)) {
-      peer.gracefulShutdown();
-    }
   }
 }

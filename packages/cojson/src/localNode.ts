@@ -1,5 +1,6 @@
 import { Result, ResultAsync, err, ok, okAsync } from "neverthrow";
 import { CoValuesStore } from "./CoValuesStore.js";
+import { PeerEntry } from "./PeerEntry.js";
 import { CoID } from "./coValue.js";
 import { RawCoValue } from "./coValue.js";
 import {
@@ -28,6 +29,7 @@ import {
 import { AgentSecret, CryptoProvider } from "./crypto/crypto.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
 import { Peer, PeerID, SyncManager, emptyKnownState } from "./sync.js";
+import { transformIncomingMessageFromPeer } from "./transformers.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
@@ -52,7 +54,7 @@ export class LocalNode {
   currentSessionID: SessionID;
   /** @category 3. Low-level */
   syncManager = new SyncManager(this);
-
+  peers: { [key: PeerID]: PeerEntry } = {};
   crashed: Error | undefined = undefined;
 
   /** @category 3. Low-level */
@@ -64,6 +66,89 @@ export class LocalNode {
     this.account = account;
     this.currentSessionID = currentSessionID;
     this.crypto = crypto;
+  }
+
+  peersInPriorityOrder(): PeerEntry[] {
+    return Object.values(this.peers).sort((a, b) => {
+      const aPriority = a.priority || 0;
+      const bPriority = b.priority || 0;
+
+      return bPriority - aPriority;
+    });
+  }
+
+  getServerAndStoragePeers(excludePeerId?: PeerID): PeerEntry[] {
+    return this.peersInPriorityOrder().filter(
+      (peer) => peer.isServerOrStoragePeer() && peer.id !== excludePeerId,
+    );
+  }
+
+  async processMessages(peer: PeerEntry) {
+    for await (const msg of peer.incoming) {
+      if (msg === "Disconnected") {
+        return;
+      }
+      if (msg === "PingTimeout") {
+        console.error("Ping timeout from peer", peer.id);
+        return;
+      }
+      try {
+        console.log("🔵 ===>>> Received from", peer.id, msg);
+        await this.syncManager.handleSyncMessage(
+          transformIncomingMessageFromPeer(msg, peer.id),
+          peer,
+        );
+      } catch (e) {
+        throw new Error(
+          `Error reading from peer ${peer.id}, handling msg\n\n${JSON.stringify(
+            msg,
+            (k, v) =>
+              k === "changes" || k === "encryptedChanges"
+                ? v.slice(0, 20) + "..."
+                : v,
+          )}`,
+          { cause: e },
+        );
+      }
+    }
+  }
+
+  addPeer(peerData: Peer) {
+    const prevPeer = this.peers[peerData.id];
+    const peer = new PeerEntry(peerData);
+    this.peers[peerData.id] = peer;
+
+    if (prevPeer && !prevPeer.closed) {
+      prevPeer.gracefulShutdown();
+    }
+
+    if (peer.isServerOrStoragePeer()) {
+      void this.syncManager.initialSync(peerData, peer);
+    }
+
+    this.processMessages(peer)
+      .then(() => {
+        if (peerData.crashOnClose) {
+          console.error("Unexepcted close from peer", peerData.id);
+          this.crashed = new Error("Unexpected close from peer");
+          throw new Error("Unexpected close from peer");
+        }
+      })
+      .catch((e) => {
+        console.error("Error processing messages from peer", peerData.id, e);
+        if (peerData.crashOnClose) {
+          this.crashed = e;
+          throw new Error(e);
+        }
+      })
+      .finally(() => {
+        const state = this.peers[peerData.id];
+        state?.gracefulShutdown();
+
+        if (peerData.deletePeerStateOnClose) {
+          delete this.peers[peerData.id];
+        }
+      });
   }
 
   /** @category 2. Node Creation */
@@ -104,7 +189,7 @@ export class LocalNode {
 
     if (peersToLoadFrom) {
       for (const peer of peersToLoadFrom) {
-        nodeWithAccount.syncManager.addPeer(peer);
+        nodeWithAccount.addPeer(peer);
       }
     }
 
@@ -183,7 +268,7 @@ export class LocalNode {
       );
 
       for (const peer of peersToLoadFrom) {
-        loadingNode.syncManager.addPeer(peer);
+        loadingNode.addPeer(peer);
       }
 
       const accountPromise = loadingNode.load(accountID);
@@ -266,8 +351,7 @@ export class LocalNode {
     const entry = this.coValuesStore.get(id);
 
     if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
-      const peers =
-        this.syncManager.getServerAndStoragePeers(skipLoadingFromPeer);
+      const peers = this.getServerAndStoragePeers(skipLoadingFromPeer);
 
       await entry.loadFromPeers(peers).catch((e) => {
         console.error("Error loading from peers", id, e);
@@ -671,7 +755,9 @@ export class LocalNode {
   }
 
   gracefulShutdown() {
-    this.syncManager.gracefulShutdown();
+    for (const peer of Object.values(this.peers)) {
+      peer.gracefulShutdown();
+    }
   }
 }
 
