@@ -322,6 +322,44 @@ export interface PerformanceEntry {
     durationInMillis: string;
 }
 
+export class PerformanceTimer {
+    private requestId: string;
+    private start: number;
+    private timestamp: string;
+    private methodName: string = "";
+    private pathString: string = "";
+    private statusCode: number = -1;
+    private duration: number = -1;
+    private durationInMillis: string = "";
+
+    constructor(requestId: string) {
+        this.requestId = requestId;
+        this.start = performance.now();
+        this.timestamp = new Date().toISOString();
+    }
+
+    method(method: string): PerformanceTimer {
+        this.methodName = method;
+        return this;
+    }
+
+    path(path: string): PerformanceTimer {
+        this.pathString = path;
+        return this;
+    }
+
+    status(statusCode: number): PerformanceTimer {
+        this.statusCode = statusCode;
+        return this;
+    }
+
+    end(): void {
+        this.duration = performance.now() - this.start;
+
+    }
+
+}
+
 export class PerformanceStore {
     private entries: PerformanceEntry[] = [];
     private requestCounter: number = 0;
@@ -330,12 +368,35 @@ export class PerformanceStore {
         this.entries.push(entry);
     }
 
+    aggregateMultipleEntries(): void {
+        interface Accumulator {
+            remaining: PerformanceEntry[];
+            aggregate: number;
+        }
+
+        const result = this.entries.reduce<Accumulator>((acc, entry) => {
+            if (entry.method === "POST" && entry.path === "/covalue/binary") {
+                return entry.statusCode === 200
+                    ? { remaining: acc.remaining, aggregate: acc.aggregate + entry.duration }
+                    : entry.statusCode === 201
+                        ? { remaining: [...acc.remaining, { ...entry, duration: entry.duration + acc.aggregate, durationInMillis: (entry.duration + acc.aggregate).toFixed(2) }], aggregate: 0 }
+                        : { remaining: [...acc.remaining, entry], aggregate: acc.aggregate };
+            }
+            return { remaining: [...acc.remaining, entry], aggregate: acc.aggregate };
+        }, { remaining: [], aggregate: 0 });
+
+        this.entries = result.remaining;
+    }
+
     writeToCSVFile(filename: string = 'time.csv'): void {
         const outputPath = `public/${filename}`;
         const outDir = path.dirname(outputPath);
         if (!fs.existsSync(outDir)) {
             fs.mkdirSync(outDir, { recursive: true });
         }
+
+        // sum up the duration of multiple chunked POST requests into a single duration
+        this.aggregateMultipleEntries();
 
         // Write performance data to CSV
         const csvHeaders = 'RequestID,Method,Path,StatusCode,Timestamp,Duration,Duration (milliseconds)';
