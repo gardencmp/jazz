@@ -10,6 +10,7 @@ import {
 } from "../coValues/coRichText.js";
 import { Account, Group } from "../exports.js";
 import {
+  cojsonInternals,
   createJazzContext,
   fixedCredentialsAuth,
   isControlledAccount,
@@ -505,8 +506,68 @@ describe("CoRichText", async () => {
       expect(loadedText2).toBeDefined();
       expect(loadedText2?.toString()).toEqual("hello world");
     });
+
+    test.only("Subscription & auto-resolution", async () => {
+      const [initialAsPeer, secondPeer] = connectedPeers("initial", "second", {
+        peer1role: "server",
+        peer2role: "client",
+      });
+
+      if (!isControlledAccount(me)) {
+        throw "me is not a controlled account";
+      }
+      me._raw.core.node.syncManager.addPeer(secondPeer);
+      const { account: meOnSecondPeer } = await createJazzContext({
+        auth: fixedCredentialsAuth({
+          accountID: me.id,
+          secret: me._raw.agentSecret,
+        }),
+        sessionProvider: randomSessionProvider,
+        peersToLoadFrom: [initialAsPeer],
+        crypto: Crypto,
+      });
+
+      const queue = new cojsonInternals.Channel<CoRichText>();
+
+      CoRichText.subscribe(
+        text.id,
+        meOnSecondPeer,
+        { marks: [{}], text: [] },
+        (subscribedText) => {
+          void queue.push(subscribedText);
+        },
+      );
+
+      const update1 = (await queue.next()).value;
+      expect(update1.toString()).toBe("hello world");
+
+      text.insertAfter(5, " beautiful");
+      const update2 = (await queue.next()).value;
+      expect(update2.toString()).toBe("hello beautiful world");
+
+      text.deleteRange({ from: 5, to: 15 });
+      const update3 = (await queue.next()).value;
+      expect(update3.toString()).toBe("hello world");
+
+      text.insertMark(0, 11, Marks.Strong, { tag: "strong" });
+      const update4 = (await queue.next()).value;
+      expect(update4.toString()).toBe("hello world");
+      expect(update4.resolveMarks()).toHaveLength(1);
+      expect(update4.resolveMarks()[0]!.tag).toBe("strong");
+
+      text.removeMark(5, 11, Marks.Strong, { tag: "strong" });
+      const update5 = (await queue.next()).value;
+      expect(update5.toString()).toBe("hello world");
+      expect(update5.resolveMarks()).toHaveLength(1);
+      expect(update5.resolveMarks()[0]!.tag).toBe("strong");
+      expect(update5.resolveMarks()[0]!.startAfter).toBe(0);
+      expect(update5.resolveMarks()[0]!.startBefore).toBe(1);
+      expect(update5.resolveMarks()[0]!.endAfter).toBe(4);
+      expect(update5.resolveMarks()[0]!.endBefore).toBe(5);
+    });
   });
 
+  // In the sense of the mark resolving in the text, not sync resolution
   describe("Mark resolution", () => {
     test("basic position resolution", () => {
       const text = CoRichText.createFromPlainText("hello world", {
