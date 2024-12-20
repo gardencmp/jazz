@@ -12,11 +12,11 @@ import {
 } from "./schema.ts";
 
 export function CreateOrder() {
-  const { me } = useAccount({ profile: { draft: {}, orders: [] } });
+  const { me } = useAccount({ root: { draft: {}, orders: [] } });
   const router = useIframeHashRouter();
   const [errors, setErrors] = useState<string[]>([]);
 
-  if (!me?.profile) return;
+  if (!me?.root) return;
 
   const onSave = (draft: DraftBubbleTeaOrder) => {
     // validate if the draft is a valid order
@@ -27,14 +27,14 @@ export function CreateOrder() {
     }
 
     // turn the draft into a real order
-    me.profile.orders.push(draft as BubbleTeaOrder);
+    me.root.orders.push(draft as BubbleTeaOrder);
 
     // reset the draft
-    me.profile.draft = DraftBubbleTeaOrder.create(
+    me.root.draft = DraftBubbleTeaOrder.create(
       {
-        addOns: ListOfBubbleTeaAddOns.create([], { owner: me.profile._owner }),
+        addOns: ListOfBubbleTeaAddOns.create([], { owner: me }),
       },
-      { owner: me.profile._owner },
+      { owner: me },
     );
 
     router.navigate("/");
@@ -50,7 +50,7 @@ export function CreateOrder() {
 
       <Errors errors={errors} />
 
-      <CreateOrderForm id={me?.profile?.draft.id} onSave={onSave} />
+      <CreateOrderForm id={me?.root?.draft.id} onSave={onSave} />
     </>
   );
 }

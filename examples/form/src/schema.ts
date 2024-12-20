@@ -1,4 +1,4 @@
-import { Account, CoList, CoMap, Profile, co } from "jazz-tools";
+import { Account, CoList, CoMap, co } from "jazz-tools";
 
 export const BubbleTeaAddOnTypes = [
   "Pearl",
@@ -59,28 +59,30 @@ export class DraftBubbleTeaOrder extends CoMap {
 
 export class ListOfBubbleTeaOrders extends CoList.Of(co.ref(BubbleTeaOrder)) {}
 
-/** The profile is an app-specific per-user public `CoMap`
+/** The root is an app-specific per-user private `CoMap`
  *  where you can store top-level objects for that user */
-export class JazzProfile extends Profile {
+export class AccountRoot extends CoMap {
   draft = co.ref(DraftBubbleTeaOrder);
   orders = co.ref(ListOfBubbleTeaOrders);
 }
 
 export class JazzAccount extends Account {
-  profile = co.ref(JazzProfile)!;
+  root = co.ref(AccountRoot);
 
   migrate(this: JazzAccount, creationProps?: { name: string }) {
     super.migrate(creationProps);
 
-    if (!this.profile._refs.orders) {
-      const owner = this.profile._owner;
-      this.profile.orders = ListOfBubbleTeaOrders.create([], { owner });
-      this.profile.draft = DraftBubbleTeaOrder.create(
+    if (!this._refs.root) {
+      const ownership = { owner: this };
+      const orders = ListOfBubbleTeaOrders.create([], ownership);
+      const draft = DraftBubbleTeaOrder.create(
         {
-          addOns: ListOfBubbleTeaAddOns.create([], { owner }),
+          addOns: ListOfBubbleTeaAddOns.create([], ownership),
         },
-        { owner },
+        ownership,
       );
+
+      this.root = AccountRoot.create({ draft, orders }, ownership);
     }
   }
 }
