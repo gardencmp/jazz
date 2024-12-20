@@ -1240,12 +1240,6 @@ importers:
       cojson:
         specifier: workspace:*
         version: link:../../packages/cojson
-      hash-slash:
-        specifier: workspace:*
-        version: link:../../packages/hash-slash
-      is-ci:
-        specifier: ^3.0.1
-        version: 3.0.1
       jazz-react:
         specifier: workspace:*
         version: link:../../packages/jazz-react
@@ -1265,9 +1259,6 @@ importers:
         specifier: ^6.16.0
         version: 6.21.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
-      '@playwright/test':
-        specifier: ^1.46.1
-        version: 1.46.1
       '@types/node':
         specifier: ^22.5.1
         version: 22.5.1
@@ -1283,9 +1274,6 @@ importers:
       jazz-run:
         specifier: workspace:*
         version: link:../../packages/jazz-run
-      jstat:
-        specifier: ^1.9.6
-        version: 1.9.6
       typescript:
         specifier: ^5.3.3
         version: 5.6.3
