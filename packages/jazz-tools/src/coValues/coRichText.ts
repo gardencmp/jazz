@@ -126,6 +126,9 @@ export type ResolvedAndFocusedMark<R extends Mark = Mark> = {
  * Main class for handling rich text content with marks.
  * Combines plain text with a list of marks for formatting and annotations.
  * Provides methods for text manipulation, mark insertion, and tree conversion.
+ *
+ * @experimental This is an experimental API that may change in future versions.
+ * Not recommended for production use yet.
  */
 export class CoRichText extends CoMap {
   text = co.ref(CoPlainText);
@@ -490,12 +493,6 @@ export class CoRichText extends CoMap {
         const [inside, after] = inOrAfter
           ? splitNode(inOrAfter, range.end)
           : [undefined, undefined];
-
-        // console.log("split", range.start, range.end, {
-        //     before,
-        //     inside,
-        //     after,
-        // });
 
         return [
           ...(before ? [before] : []),

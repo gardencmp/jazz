@@ -138,7 +138,6 @@ describe("CoPlainText", () => {
 
     // Subscribe to text updates
     CoPlainText.subscribe(text.id, meOnSecondPeer, (subscribedText) => {
-      console.log("subscribedText", subscribedText.toString());
       void queue.push(subscribedText);
     });
 
