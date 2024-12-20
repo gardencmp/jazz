@@ -471,7 +471,22 @@ describe("CoRichText", async () => {
   });
 
   describe("Resolution", () => {
+    const initNodeAndText = async () => {
+      const me = await Account.create({
+        creationProps: { name: "Hermes Puggington" },
+        crypto: Crypto,
+      });
+
+      const text = CoRichText.createFromPlainText("hello world", {
+        owner: me,
+      });
+
+      return { me, text };
+    };
+
     test("Loading and availability", async () => {
+      const { me, text } = await initNodeAndText();
+
       const [initialAsPeer, secondPeer] = connectedPeers("initial", "second", {
         peer1role: "server",
         peer2role: "client",
@@ -507,7 +522,9 @@ describe("CoRichText", async () => {
       expect(loadedText2?.toString()).toEqual("hello world");
     });
 
-    test.only("Subscription & auto-resolution", async () => {
+    test("Subscription & auto-resolution", async () => {
+      const { me, text } = await initNodeAndText();
+
       const [initialAsPeer, secondPeer] = connectedPeers("initial", "second", {
         peer1role: "server",
         peer2role: "client",
