@@ -104,24 +104,30 @@ describe("startWorker integration", () => {
     const group = Group.create({ owner: worker1.worker });
     const map = TestMap.create(
       {
-        value: "test",
+        value: "Hello!",
       },
       { owner: group },
     );
 
-    let message: TestMap | undefined = undefined;
-
     worker2.experimental.inbox.subscribe(TestMap, async (value) => {
-      message = value;
+      return TestMap.create(
+        {
+          value: value.value + " Responded from the inbox",
+        },
+        { owner: value._owner },
+      );
     });
 
-    const sender = await InboxSender.load(worker2.worker.id, worker1.worker);
+    const sender = await InboxSender.load<TestMap, TestMap>(
+      worker2.worker.id,
+      worker1.worker,
+    );
 
-    sender.sendMessage(map);
+    const resultId = await sender.sendMessage(map);
 
-    await waitFor(() => message !== undefined);
+    const result = await TestMap.load(resultId, worker2.worker, {});
 
-    expect(message).toEqual(map);
+    expect(result?.value).toEqual("Hello! Responded from the inbox");
 
     await worker1.done();
     await worker2.done();

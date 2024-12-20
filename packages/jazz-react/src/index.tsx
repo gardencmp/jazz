@@ -357,39 +357,36 @@ export function createJazzReactApp<
     }, [onAccept]);
   }
 
-  function useInboxSender<V extends CoValue>(
+  function useInboxSender<I extends CoValue, O extends CoValue | undefined>(
     inboxOwnerID: ID<Acc> | undefined,
   ) {
     const me = useAccount().me;
-    const inboxRef = useRef<InboxSender<V> | undefined>();
-    const messagesRef = useRef<V[]>([]);
+    const inboxRef = useRef<Promise<InboxSender<I, O>> | undefined>();
 
-    useEffect(() => {
-      async function load() {
-        if (!inboxOwnerID) return;
+    const sendMessage = useCallback(
+      async (message: I) => {
+        if (!inboxOwnerID) throw new Error("Inbox owner ID is required");
 
-        const inbox = await InboxSender.load(inboxOwnerID, me);
-        inboxRef.current = inbox;
-
-        for (const message of messagesRef.current) {
-          inbox.sendMessage(message);
+        if (!inboxRef.current) {
+          const inbox = InboxSender.load<I, O>(inboxOwnerID, me);
+          inboxRef.current = inbox;
         }
-        messagesRef.current.length = 0;
-      }
-      load();
-    }, [inboxOwnerID]);
 
-    const sendMessage = useCallback((message: V) => {
-      if (!inboxRef.current) {
-        // If not loaded yet, we store the message in a local array
-        // and wait for the inbox to be loaded.
-        messagesRef.current.push(message);
-      } else {
-        inboxRef.current.sendMessage(message);
-      }
-    }, []);
+        let inbox = await inboxRef.current;
 
-    return { sendMessage };
+        // @ts-expect-error inbox.owner.id is typed as RawAccount id
+        if (inbox.owner.id !== inboxOwnerID) {
+          const req = InboxSender.load<I, O>(inboxOwnerID, me);
+          inboxRef.current = req;
+          inbox = await req;
+        }
+
+        return inbox.sendMessage(message);
+      },
+      [inboxOwnerID],
+    );
+
+    return sendMessage;
   }
 
   function useInboxListener(
@@ -475,12 +472,9 @@ export interface JazzReactApp<
   }): void;
 
   experimental: {
-    useInboxSender<V extends CoValue>(
+    useInboxSender<I extends CoValue, O extends CoValue | undefined>(
       inboxOwnerID: ID<Acc> | undefined,
-    ): {
-      sendMessage: (message: V) => void;
-    };
-
+    ): (message: I) => Promise<O extends CoValue ? ID<O> : undefined>;
     useInboxListener(onMessage: (message: InboxMessage) => Promise<void>): void;
   };
 }

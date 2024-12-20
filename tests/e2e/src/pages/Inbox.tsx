@@ -19,14 +19,15 @@ export function Inbox() {
   const [pingPong, setPingPong] = useState<PingPong | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>();
 
-  useInboxListener(async (pingPong) => {
-    pingPong.pong = Date.now();
+  useInboxListener(async (message) => {
+    const pingPong = PingPong.create(
+      { ping: message.ping, pong: Date.now() },
+      { owner: message._owner },
+    );
     setPingPong(pingPong);
-    iframeRef.current?.remove();
-    iframeRef.current = undefined;
   });
 
-  const { sendMessage } = useInboxSender(id);
+  const sendPingPong = useInboxSender(id);
 
   useEffect(() => {
     async function load() {
@@ -39,7 +40,7 @@ export function Inbox() {
       group.addMember(account, "writer");
       const pingPong = PingPong.create({ ping: Date.now() }, { owner: group });
 
-      sendMessage(pingPong);
+      sendPingPong(pingPong);
     }
 
     load();
@@ -47,6 +48,8 @@ export function Inbox() {
 
   const handlePingPong = () => {
     if (!me || id) return;
+
+    iframeRef.current?.remove();
 
     const url = new URL(window.location.href);
     url.searchParams.set("id", me.id);

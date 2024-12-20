@@ -13,10 +13,10 @@ import { CoValue, CoValueClass, ID, loadCoValue } from "./interfaces.js";
 export type InboxInvite = `${CoID<MessagesStream>}/${InviteSecret}`;
 type TxKey = `${SessionID}/${number}`;
 
-type MessagesStream = RawCoStream<ID<CoValue>>;
+type MessagesStream = RawCoStream<CoID<InboxMessage<CoValue, any>>>;
 type FailedMessagesStream = RawCoStream<{
   errors: string[];
-  value: ID<CoValue>;
+  value: CoID<InboxMessage<CoValue, any>>;
 }>;
 type TxKeyStream = RawCoStream<TxKey>;
 export type InboxRoot = RawCoMap<{
@@ -53,6 +53,35 @@ export function createInboxRoot(account: Account) {
   };
 }
 
+type InboxMessage<I extends CoValue, O extends CoValue | undefined> = RawCoMap<{
+  payload: ID<I>;
+  result: ID<O> | undefined;
+  processed: boolean;
+  error: string | undefined;
+}>;
+
+function createInboxMessage<I extends CoValue, O extends CoValue | undefined>(
+  payload: I,
+  inboxOwner: RawAccount,
+) {
+  const group = payload._raw.group;
+
+  if (group instanceof RawAccount) {
+    throw new Error("Inbox messages should be owned by a group");
+  }
+
+  group.addMember(inboxOwner, "writer");
+
+  const message = group.createMap<InboxMessage<I, O>>({
+    payload: payload.id,
+    result: undefined,
+    processed: false,
+    error: undefined,
+  });
+
+  return message;
+}
+
 export class Inbox {
   account: Account;
   messages: MessagesStream;
@@ -75,13 +104,17 @@ export class Inbox {
     this.failed = failed;
   }
 
-  subscribe<I extends CoValue>(
+  subscribe<I extends CoValue, O extends CoValue | undefined>(
     Schema: CoValueClass<I>,
-    callback: (message: I, senderAccountID: ID<Account>) => Promise<void>,
+    callback: (
+      message: I,
+      senderAccountID: ID<Account>,
+    ) => Promise<O | undefined | void>,
     options: { retries?: number } = {},
   ) {
     const processed = new Set<`${SessionID}/${number}`>();
     const failed = new Map<`${SessionID}/${number}`, string[]>();
+    const node = this.account._raw.core.node;
 
     this.processed.subscribe((stream) => {
       for (const items of Object.values(stream.items)) {
@@ -107,7 +140,7 @@ export class Inbox {
 
       for (const [sessionID, items] of Object.entries(stream.items) as [
         SessionID,
-        CoStreamItem<ID<CoValue>>[],
+        CoStreamItem<CoID<InboxMessage<I, O>>>[],
       ][]) {
         const accountID = getAccountIDfromSessionID(sessionID);
 
@@ -124,7 +157,22 @@ export class Inbox {
 
             const id = item.value;
 
-            loadCoValue(Schema, id, account, [])
+            node
+              .load(id)
+              .then((message) => {
+                if (message === "unavailable") {
+                  return Promise.reject(
+                    new Error("Unable to load inbox message " + id),
+                  );
+                }
+
+                return loadCoValue(
+                  Schema,
+                  message.get("payload") as ID<I>,
+                  account,
+                  [],
+                );
+              })
               .then((value) => {
                 if (!value) {
                   return Promise.reject(
@@ -134,7 +182,17 @@ export class Inbox {
 
                 return callback(value, accountID);
               })
-              .then(() => {
+              .then((result) => {
+                const inboxMessage = node
+                  .expectCoValueLoaded(item.value)
+                  .getCurrentContent() as RawCoMap;
+
+                if (result) {
+                  inboxMessage.set("result", result.id);
+                }
+
+                inboxMessage.set("processed", true);
+
                 this.processed.push(txKey);
                 this.processing.delete(txKey);
               })
@@ -142,9 +200,18 @@ export class Inbox {
                 console.error("Error processing inbox message", error);
                 this.processing.delete(txKey);
                 const errors = failed.get(txKey) ?? [];
-                errors.push(error.toString());
+
+                const stringifiedError = String(error);
+                errors.push(stringifiedError);
+
+                const inboxMessage = node
+                  .expectCoValueLoaded(item.value)
+                  .getCurrentContent() as RawCoMap;
+
+                inboxMessage.set("error", stringifiedError);
 
                 if (errors.length > retries) {
+                  inboxMessage.set("processed", true);
                   this.processed.push(txKey);
                   this.failed.push({ errors, value: item.value });
                 } else {
@@ -202,7 +269,7 @@ export class Inbox {
   }
 }
 
-export class InboxSender<V extends CoValue> {
+export class InboxSender<I extends CoValue, O extends CoValue | undefined> {
   currentAccount: Account;
   owner: RawAccount;
   messages: MessagesStream;
@@ -221,22 +288,31 @@ export class InboxSender<V extends CoValue> {
     return this.owner;
   }
 
-  sendMessage(message: V) {
-    const content = message._raw;
-    const group = content.group;
+  sendMessage(message: I): Promise<O extends CoValue ? ID<O> : undefined> {
+    const inboxMessage = createInboxMessage<I, O>(message, this.owner);
 
-    if (group instanceof RawAccount) {
-      throw new Error("Inbox messages should be owned by a group");
-    }
+    this.messages.push(inboxMessage.id);
 
-    if (!group.roleOf(this.owner.id)) {
-      group.addMember(this.owner, "writer");
-    }
-
-    this.messages.push(message.id);
+    return new Promise((resolve, reject) => {
+      inboxMessage.subscribe((message) => {
+        if (message.get("processed")) {
+          const error = message.get("error");
+          if (error) {
+            reject(new Error(error));
+          } else {
+            resolve(
+              message.get("result") as O extends CoValue ? ID<O> : undefined,
+            );
+          }
+        }
+      });
+    });
   }
 
-  static async load(inboxOwnerID: ID<Account>, currentAccount: Account) {
+  static async load<
+    I extends CoValue,
+    O extends CoValue | undefined = undefined,
+  >(inboxOwnerID: ID<Account>, currentAccount: Account) {
     const node = currentAccount._raw.core.node;
 
     const inboxOwnerRaw = await node.load(
@@ -267,7 +343,7 @@ export class InboxSender<V extends CoValue> {
       throw new Error("Inbox not found");
     }
 
-    return new InboxSender(currentAccount, inboxOwnerRaw, messages);
+    return new InboxSender<I, O>(currentAccount, inboxOwnerRaw, messages);
   }
 }
 
