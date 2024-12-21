@@ -2,14 +2,9 @@ import { CoID, RawCoValue } from "../coValue.js";
 import { CoValueHeader, Transaction } from "../coValueCore.js";
 import { Signature } from "../crypto/crypto.js";
 import { RawCoID } from "../ids.js";
+import { IncomingSyncStream, OutgoingSyncQueue, Peer } from "../localNode.js";
 import { connectedPeers } from "../streamUtils.js";
-import {
-  CoValueKnownState,
-  IncomingSyncStream,
-  NewContentMessage,
-  OutgoingSyncQueue,
-  Peer,
-} from "../sync.js";
+import { CoValueKnownState, NewContentMessage } from "../sync.js";
 import {
   BlockFilename,
   FileSystem,

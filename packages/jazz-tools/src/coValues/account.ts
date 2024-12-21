@@ -204,7 +204,7 @@ export class Account extends CoValueBase implements CoValue {
       { peer1role: "server", peer2role: "client" },
     );
 
-    as._raw.core.node.syncManager.addPeer(connectedPeers[1]);
+    as._raw.core.node.addPeer(connectedPeers[1]);
 
     return this.create<A>({
       creationProps: options.creationProps,

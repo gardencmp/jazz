@@ -1,4 +1,4 @@
-import type { RawCoValue } from "cojson";
+import { CoID, CoValueCore, RawCoValue } from "cojson";
 import type {
   Account,
   AnonymousJazzAgent,
@@ -86,7 +86,7 @@ export class SubscriptionScope<Root extends CoValue> {
         this.subscriber._type === "Account"
           ? this.subscriber._raw.core.node
           : this.subscriber.node;
-      void node.loadCoValueCore(accessedOrSetId).then((core) => {
+      void node.load(accessedOrSetId, true).then((core) => {
         if (loadingEntry.state === "loading" && loadingEntry.immediatelyUnsub) {
           return;
         }

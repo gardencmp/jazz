@@ -1,8 +1,9 @@
 import { describe, expect, test, vi } from "vitest";
 import { PeerEntry } from "../PeerEntry.js";
 import { PeerKnownStateActions } from "../PeerKnownStates.js";
+import { Peer } from "../localNode.js";
 import { CO_VALUE_PRIORITY } from "../priority.js";
-import { Peer, SyncMessage } from "../sync.js";
+import { SyncMessage } from "../sync.js";
 
 function setup() {
   const mockPeer: Peer = {

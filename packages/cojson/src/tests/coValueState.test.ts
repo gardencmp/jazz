@@ -3,7 +3,8 @@ import { PeerEntry } from "../PeerEntry.js";
 import { CoValueCore } from "../coValueCore";
 import { CO_VALUE_LOADING_MAX_RETRIES, CoValueEntry } from "../coValueEntry.js";
 import { RawCoID } from "../ids";
-import { Peer } from "../sync";
+
+import { Peer } from "../localNode.js";
 
 describe("CoValueState", () => {
   const mockCoValueId = "co_test123" as RawCoID;

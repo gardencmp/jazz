@@ -31,14 +31,11 @@ import {
   isKeyForKeyField,
 } from "./permissions.js";
 import { getPriorityFromHeader } from "./priority.js";
-import { CoValueKnownState, SessionNewContent } from "./sync.js";
+import { CoValueKnownState } from "./sync.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
 import CoValueContent = CojsonInternalTypes.CoValueContent;
-import DataMessage = CojsonInternalTypes.DataMessage;
-import PushMessage = CojsonInternalTypes.PushMessage;
-import { PeerOperations } from "./peerOperations.js";
 
 /**
     In order to not block other concurrently syncing CoValues we introduce a maximum size of transactions,
@@ -54,6 +51,12 @@ export type CoValueHeader = {
   ruleset: RulesetDef;
   meta: JsonObject | null;
 } & CoValueUniqueness;
+
+export type SessionNewContent = {
+  after: number;
+  newTransactions: Transaction[];
+  lastSignature: Signature;
+};
 
 export type CoValueUniqueness = {
   uniqueness: JsonValue;

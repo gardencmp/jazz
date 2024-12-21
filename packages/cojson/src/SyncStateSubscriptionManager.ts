@@ -1,10 +1,6 @@
 import { RawCoID } from "./ids.js";
-import {
-  CoValueKnownState,
-  PeerID,
-  SyncManager,
-  emptyKnownState,
-} from "./sync.js";
+import { PeerID } from "./localNode.js";
+import { CoValueKnownState, SyncManager, emptyKnownState } from "./sync.js";
 
 export type SyncStateGetter = {
   isUploaded: boolean;

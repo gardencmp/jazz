@@ -31,7 +31,12 @@ import {
   rawCoIDtoBytes,
 } from "./ids.js";
 import { Stringified, parseJSON } from "./jsonStringify.js";
-import { LocalNode } from "./localNode.js";
+import {
+  IncomingSyncStream,
+  LocalNode,
+  OutgoingSyncQueue,
+  Peer,
+} from "./localNode.js";
 import type { Role } from "./permissions.js";
 import { Channel, connectedPeers } from "./streamUtils.js";
 import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromSessionID.js";
@@ -53,12 +58,7 @@ import type { AgentSecret } from "./crypto/crypto.js";
 import type { AgentID, SessionID } from "./ids.js";
 import type { JsonValue } from "./jsonValue.js";
 import type * as Media from "./media.js";
-import type {
-  IncomingSyncStream,
-  OutgoingSyncQueue,
-  Peer,
-  SyncMessage,
-} from "./sync.js";
+import type { SyncMessage } from "./sync.js";
 import {
   DisconnectedError,
   PingTimeoutError,
@@ -158,7 +158,7 @@ export namespace CojsonInternalTypes {
   export type PushMessage = import("./sync.js").PushMessage;
   export type DataMessage = import("./sync.js").DataMessage;
   export type AckMessage = import("./sync.js").AckMessage;
-  export type SessionNewContent = import("./sync.js").SessionNewContent;
+  export type SessionNewContent = import("./coValueCore.js").SessionNewContent;
   export type CoValueHeader = import("./coValueCore.js").CoValueHeader;
   export type Transaction = import("./coValueCore.js").Transaction;
   export type TransactionID = import("./ids.js").TransactionID;

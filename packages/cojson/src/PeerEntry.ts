@@ -4,9 +4,10 @@ import {
 } from "./PriorityBasedMessageQueue.js";
 import { TryAddTransactionsError } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
+import { Peer } from "./localNode.js";
 import { PeerOperations } from "./peerOperations.js";
 import { CO_VALUE_PRIORITY } from "./priority.js";
-import { Peer, SyncMessage } from "./sync.js";
+import { SyncMessage } from "./sync.js";
 import { transformOutgoingMessageToPeer } from "./transformers.js";
 
 // NOTE Renamed PeerState into PeerEntry

@@ -146,14 +146,10 @@ export class RawGroup<
       const id = getChildGroupId(key);
       const child = store.get(id);
 
-      if (
-        child.state.type === "unknown" ||
-        child.state.type === "unavailable"
-      ) {
-        child.loadFromPeers(peers).catch(() => {
-          console.error(`Failed to load child group ${id}`);
-        });
-      }
+      // NOTE the same code invoked form another end (vs entry.load...)
+      this.core.node.load(id).catch(() => {
+        console.error(`Failed to load child group ${id}`);
+      });
 
       requests.push(
         child.getCoValue().then((coValue) => {

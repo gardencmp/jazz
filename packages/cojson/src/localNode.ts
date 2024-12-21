@@ -1,8 +1,7 @@
-import { Result, ResultAsync, err, ok, okAsync } from "neverthrow";
+import { Result, err, ok } from "neverthrow";
 import { CoValuesStore } from "./CoValuesStore.js";
 import { PeerEntry } from "./PeerEntry.js";
-import { CoID } from "./coValue.js";
-import { RawCoValue } from "./coValue.js";
+import { CoID, RawCoValue } from "./coValue.js";
 import {
   CoValueCore,
   CoValueHeader,
@@ -28,9 +27,34 @@ import {
 } from "./coValues/group.js";
 import { AgentSecret, CryptoProvider } from "./crypto/crypto.js";
 import { AgentID, RawCoID, SessionID, isAgentID } from "./ids.js";
-import { Peer, PeerID, SyncManager, emptyKnownState } from "./sync.js";
+import {
+  DisconnectedError,
+  PingTimeoutError,
+  SyncManager,
+  SyncMessage,
+  emptyKnownState,
+} from "./sync.js";
 import { transformIncomingMessageFromPeer } from "./transformers.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
+
+export type PeerID = string;
+export type IncomingSyncStream = AsyncIterable<
+  SyncMessage | DisconnectedError | PingTimeoutError
+>;
+export type OutgoingSyncQueue = {
+  push: (msg: SyncMessage) => Promise<unknown>;
+  close: () => void;
+};
+
+export interface Peer {
+  id: PeerID;
+  incoming: IncomingSyncStream;
+  outgoing: OutgoingSyncQueue;
+  role: "peer" | "server" | "client" | "storage";
+  priority?: number;
+  crashOnClose: boolean;
+  deletePeerStateOnClose?: boolean;
+}
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
 
@@ -271,7 +295,7 @@ export class LocalNode {
         loadingNode.addPeer(peer);
       }
 
-      const accountPromise = loadingNode.load(accountID);
+      const accountPromise = loadingNode.load<RawAccount>(accountID);
 
       const account = await accountPromise;
 
@@ -337,30 +361,6 @@ export class LocalNode {
     return coValue;
   }
 
-  /** @internal */
-  async loadCoValueCore(
-    id: RawCoID,
-    skipLoadingFromPeer?: PeerID,
-  ): Promise<CoValueCore | "unavailable"> {
-    if (this.crashed) {
-      throw new Error("Trying to load CoValue after node has crashed", {
-        cause: this.crashed,
-      });
-    }
-
-    const entry = this.coValuesStore.get(id);
-
-    if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
-      const peers = this.getServerAndStoragePeers(skipLoadingFromPeer);
-
-      await entry.loadFromPeers(peers).catch((e) => {
-        console.error("Error loading from peers", id, e);
-      });
-    }
-
-    return entry.getCoValue();
-  }
-
   /**
    * Loads a CoValue's content, syncing from peers as necessary and resolving the returned
    * promise once a first version has been loaded. See `coValue.subscribe()` and `node.useTelepathicData()`
@@ -368,11 +368,32 @@ export class LocalNode {
    *
    * @category 3. Low-level
    */
-  async load<T extends RawCoValue>(id: CoID<T>): Promise<T | "unavailable"> {
-    const core = await this.loadCoValueCore(id);
+  async load<T extends RawCoValue>(
+    id: RawCoID,
+    returnCore?: false,
+  ): Promise<"unavailable" | T>;
+  async load<T extends RawCoValue>(
+    id: RawCoID,
+    returnCore: true,
+  ): Promise<"unavailable" | CoValueCore>;
+  async load<T extends RawCoValue>(
+    id: RawCoID,
+    returnCore: boolean = false,
+  ): Promise<"unavailable" | CoValueCore | T> {
+    if (this.crashed) {
+      throw new Error("Trying to load CoValue after node has crashed", {
+        cause: this.crashed,
+      });
+    }
+
+    const core = await this.syncManager.loadCoValueCore(id);
 
     if (core === "unavailable") {
       return "unavailable";
+    }
+
+    if (returnCore) {
+      return core;
     }
 
     return core.getCurrentContent() as T;
@@ -398,7 +419,7 @@ export class LocalNode {
 
     // console.log("Subscribing to " + id);
 
-    this.load(id)
+    this.load<T>(id)
       .then((coValue) => {
         if (stopped) {
           return;
@@ -613,50 +634,6 @@ export class LocalNode {
     }
 
     return (coValue.getCurrentContent() as RawAccount).currentAgentID();
-  }
-
-  resolveAccountAgentAsync(
-    id: RawAccountID | AgentID,
-    expectation?: string,
-  ): ResultAsync<AgentID, ResolveAccountAgentError> {
-    if (isAgentID(id)) {
-      return okAsync(id);
-    }
-
-    return ResultAsync.fromPromise(
-      this.loadCoValueCore(id),
-      (e) =>
-        ({
-          type: "ErrorLoadingCoValueCore",
-          expectation,
-          id,
-          error: e,
-        }) satisfies LoadCoValueCoreError,
-    ).andThen((coValue) => {
-      if (coValue === "unavailable") {
-        return err({
-          type: "AccountUnavailableFromAllPeers" as const,
-          expectation,
-          id,
-        } satisfies AccountUnavailableFromAllPeersError);
-      }
-
-      if (
-        coValue.header.type !== "comap" ||
-        coValue.header.ruleset.type !== "group" ||
-        !coValue.header.meta ||
-        !("type" in coValue.header.meta) ||
-        coValue.header.meta.type !== "account"
-      ) {
-        return err({
-          type: "UnexpectedlyNotAccount" as const,
-          expectation,
-          id,
-        } satisfies UnexpectedlyNotAccountError);
-      }
-
-      return (coValue.getCurrentContent() as RawAccount).currentAgentID();
-    });
   }
 
   /**

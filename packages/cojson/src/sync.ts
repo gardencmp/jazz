@@ -1,13 +1,12 @@
 import { PeerEntry } from "./PeerEntry.js";
 import {
+  CoValueCore,
   CoValueHeader,
-  Transaction,
+  SessionNewContent,
   isTryAddTransactionsException,
 } from "./coValueCore.js";
-import { CoValueCore } from "./coValueCore.js";
-import { Signature } from "./crypto/crypto.js";
 import { RawCoID, SessionID } from "./ids.js";
-import { LocalNode } from "./localNode.js";
+import { LocalNode, Peer, PeerID } from "./localNode.js";
 import { CoValuePriority } from "./priority.js";
 
 export type CoValueKnownState = {
@@ -90,39 +89,14 @@ export type PushMessage = {
   asDependencyOf?: RawCoID;
 } & CoValueContent;
 
-export type SessionNewContent = {
-  after: number;
-  newTransactions: Transaction[];
-  lastSignature: Signature;
-};
 export type DoneMessage = {
   action: "done";
   id: RawCoID;
 };
 
-export type PeerID = string;
-
 export type DisconnectedError = "Disconnected";
 
 export type PingTimeoutError = "PingTimeout";
-
-export type IncomingSyncStream = AsyncIterable<
-  SyncMessage | DisconnectedError | PingTimeoutError
->;
-export type OutgoingSyncQueue = {
-  push: (msg: SyncMessage) => Promise<unknown>;
-  close: () => void;
-};
-
-export interface Peer {
-  id: PeerID;
-  incoming: IncomingSyncStream;
-  outgoing: OutgoingSyncQueue;
-  role: "peer" | "server" | "client" | "storage";
-  priority?: number;
-  crashOnClose: boolean;
-  deletePeerStateOnClose?: boolean;
-}
 
 export class SyncManager {
   local: LocalNode;
@@ -219,13 +193,14 @@ export class SyncManager {
         // we try to load it from the sender because it is the only place
         // where we can get informations about the coValue
         if (msg.header || Object.keys(msg.sessions).length > 0) {
+          // TODO !!!!!!!!@@@@@@@@@@@@#################
           entry.loadFromPeers([peer]).catch((e) => {
             console.error("Error loading coValue in handleLoad", e);
           });
         }
         return;
       } else {
-        this.local.loadCoValueCore(msg.id, peer.id).catch((e) => {
+        this.loadCoValueCore(msg.id, peer.id).catch((e) => {
           console.error("Error loading coValue in handleLoad", e);
         });
       }
@@ -328,8 +303,13 @@ export class SyncManager {
       if (isTryAddTransactionsException(e)) {
         const { message, error } = e;
         console.error(peer.id, message, error);
-        // TODO !!!!!!!!@@@@@@@@@@@#############$$$$$$$$$$$$$$$
+
+        peer.erroredCoValues.set(msg.id, error);
+      } else {
+        console.error("Unknown error", peer.id, e);
       }
+
+      return;
     }
 
     const peers = this.local
@@ -351,19 +331,20 @@ export class SyncManager {
     entry.uploadState.setCompletedForPeer(peer.id);
   }
 
-  async pullIncludingDependencies(coValue: CoValueCore, peer: PeerEntry) {
-    for (const id of coValue.getDependedOnCoValues()) {
-      const dependentCoValue = this.local.expectCoValueLoaded(id);
-      await this.pullIncludingDependencies(dependentCoValue, peer);
-    }
-
-    void peer.send.pull({ coValue });
-  }
+  // async pullIncludingDependencies(coValue: CoValueCore, peer: PeerEntry) {
+  //   for (const id of coValue.getDependedOnCoValues()) {
+  //     const dependentCoValue = this.local.expectCoValueLoaded(id);
+  //     await this.pullIncludingDependencies(dependentCoValue, peer);
+  //   }
+  //
+  //   void peer.send.pull({ coValue });
+  // }
+  //
   async initialSync(peerData: Peer, peer: PeerEntry) {
     for (const entry of this.local.coValuesStore.getValues()) {
       const coValue = this.local.expectCoValueLoaded(entry.id);
       // TODO does it make sense to additionally pull dependencies now that we're sending all that we know from here ?
-      await this.pullIncludingDependencies(coValue, peer);
+      // await this.pullIncludingDependencies(coValue, peer);
 
       // We send only push messages to be compatible  (load + content as previously), see transformOutgoingMessageToPeer()
       await peer.send.push({
@@ -418,7 +399,7 @@ export class SyncManager {
     for (const peer of this.getPeers()) {
       const entry = this.local.coValuesStore.get(coValue.id);
 
-      // invoke the internal promise to be resolved when ack message comes from the peer
+      // invoke the internal promise to be resolved once an ack message arrives from the peer
       entry.uploadState.setPendingForPeer(peer.id);
     }
   }
@@ -435,4 +416,35 @@ export class SyncManager {
 
     return entry.uploadState.waitForPeer(peerId);
   }
+
+  async loadCoValueCore(
+    id: RawCoID,
+    skipLoadingFromPeer?: PeerID,
+  ): Promise<CoValueCore | "unavailable"> {
+    const entry = this.local.coValuesStore.get(id);
+
+    if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
+      const peers = this.local.getServerAndStoragePeers(skipLoadingFromPeer);
+
+      // TODO @@@@@@@@@@@@@@@@@##############$$$$$$$$$$$$$$$$$
+      await entry.loadFromPeers(getPeersWithoutErrors(peers, id)).catch((e) => {
+        console.error("Error loading from peers", id, e);
+      });
+    }
+
+    return entry.getCoValue();
+  }
+}
+
+function getPeersWithoutErrors(peers: PeerEntry[], coValueId: RawCoID) {
+  return peers.filter((p) => {
+    if (p.erroredCoValues.has(coValueId)) {
+      console.error(
+        `Skipping load on errored coValue ${coValueId} from peer ${p.id}`,
+      );
+      return false;
+    }
+
+    return true;
+  });
 }

@@ -2,7 +2,8 @@ import { PeerEntry } from "./PeerEntry.js";
 import { CoValueCore } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
 import { PeerOperations } from "./peerOperations.js";
-import { PeerID } from "./sync.js";
+
+import { PeerID } from "./localNode.js";
 
 export const CO_VALUE_LOADING_MAX_RETRIES = 5;
 export const CO_VALUE_LOADING_TIMEOUT = 30_000;
@@ -251,16 +252,11 @@ export class CoValueEntry {
     }
 
     const doLoad = async (peersToLoadFrom: PeerEntry[]) => {
-      const peersWithoutErrors = getPeersWithoutErrors(
-        peersToLoadFrom,
-        this.id,
-      );
-
       // If we are in the loading state we move to a new loading state
       // to reset all the loading promises
       if (this.state.type === "loading" || this.state.type === "unknown") {
         this.moveToState(
-          new CoValueLoadingState(peersWithoutErrors.map((p) => p.id)),
+          new CoValueLoadingState(peersToLoadFrom.map((p) => p.id)),
         );
       }
 
@@ -273,7 +269,7 @@ export class CoValueEntry {
       // We may not enter the loading state if the coValue has become available in between
       // of the retries
       if (currentState.type === "loading") {
-        await loadCoValueFromPeers(this, peersWithoutErrors);
+        await loadCoValueFromPeers(this, peersToLoadFrom);
 
         const result = await currentState.result;
         return result !== "unavailable";
@@ -420,17 +416,4 @@ function createResolvablePromise<T>() {
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function getPeersWithoutErrors(peers: PeerEntry[], coValueId: RawCoID) {
-  return peers.filter((p) => {
-    if (p.erroredCoValues.has(coValueId)) {
-      console.error(
-        `Skipping load on errored coValue ${coValueId} from peer ${p.id}`,
-      );
-      return false;
-    }
-
-    return true;
-  });
 }

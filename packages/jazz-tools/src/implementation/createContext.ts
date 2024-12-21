@@ -265,7 +265,7 @@ export async function createAnonymousJazzContext({
   );
 
   for (const peer of peersToLoadFrom) {
-    node.syncManager.addPeer(peer);
+    node.addPeer(peer);
   }
 
   return {

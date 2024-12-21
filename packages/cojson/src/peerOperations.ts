@@ -1,12 +1,8 @@
 import { PeerEntry } from "./PeerEntry.js";
 import { CoValueCore } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
-import {
-  CoValueKnownState,
-  PeerID,
-  SyncMessage,
-  emptyDataMessage,
-} from "./sync.js";
+import { PeerID } from "./localNode.js";
+import { CoValueKnownState, SyncMessage, emptyDataMessage } from "./sync.js";
 
 export class PeerOperations {
   constructor(private readonly peer: PeerEntry) {}

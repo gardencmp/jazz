@@ -1,11 +1,10 @@
 import { expect } from "vitest";
 import { ControlledAgent } from "../coValues/account.js";
 import { WasmCrypto } from "../crypto/WasmCrypto.js";
-import { CoID, RawCoValue } from "../exports.js";
+import { CoID, Peer, RawCoValue } from "../exports.js";
 import { SessionID } from "../ids.js";
 import { LocalNode } from "../localNode.js";
 import { connectedPeers } from "../streamUtils.js";
-import { Peer } from "../sync.js";
 import { expectGroup } from "../typeUtils/expectGroup.js";
 
 const Crypto = await WasmCrypto.create();
