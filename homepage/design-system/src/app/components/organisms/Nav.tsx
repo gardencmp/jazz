@@ -125,6 +125,32 @@ function NavItem({
   );
 }
 
+function MobileNavItem({
+  item,
+  onClick,
+}: { item: NavItemProps; onClick?: () => void }) {
+  if (item.items) {
+    return (
+      <>
+        {item.items.map((child) => (
+          <MobileNavItem key={child.href} item={child} onClick={onClick} />
+        ))}
+      </>
+    );
+  }
+
+  return (
+    <NavLink
+      className="p-1 text-sm"
+      href={item.href}
+      onClick={onClick}
+      newTab={item.newTab}
+    >
+      {item.title}
+    </NavLink>
+  );
+}
+
 export function MobileNav({
   mainLogo,
   items,
@@ -203,18 +229,15 @@ export function MobileNav({
           )}
 
           <div className="flex flex-wrap justify-end py-2 gap-x-3 gap-y-1 border-b">
+            !!!!!! TEST!!!!!
             {[{ title: "Home", href: "/" }, ...items]
               .filter((item) => !("icon" in item))
               .map((item, i) => (
-                <NavLink
-                  className="p-1 text-sm"
+                <MobileNavItem
                   key={i}
-                  href={item.href}
                   onClick={() => setMenuOpen(false)}
-                  newTab={item.newTab}
-                >
-                  {item.title}
-                </NavLink>
+                  item={item}
+                />
               ))}
           </div>
         </div>
