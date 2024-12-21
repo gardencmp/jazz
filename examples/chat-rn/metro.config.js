@@ -1,5 +1,6 @@
 // Learn more https://docs.expo.dev/guides/monorepos
 const { getDefaultConfig } = require("expo/metro-config");
+const { withNativeWind } = require("nativewind/metro");
 const { FileStore } = require("metro-cache");
 const path = require("path");
 
@@ -7,7 +8,7 @@ const path = require("path");
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(projectRoot, "../..");
 
-const config = getDefaultConfig(projectRoot);
+const config = getDefaultConfig(projectRoot, { isCSSEnabled: true });
 
 // Since we are using pnpm, we have to setup the monorepo manually for Metro
 // #1 - Watch all files in the monorepo
@@ -19,7 +20,10 @@ config.resolver.nodeModulesPaths = [
 ];
 config.resolver.sourceExts = ["mjs", "js", "json", "ts", "tsx"];
 config.resolver.unstable_enablePackageExports = true;
-config.resolver.requireCycleIgnorePatterns = [/(^|\/|\\)node_modules($|\/|\\)/];
+config.resolver.requireCycleIgnorePatterns = [
+  /(^|\/|\\)node_modules($|\/|\\)/,
+  /(^|\/|\\)packages($|\/|\\)/,
+];
 
 // Use turborepo to restore the cache when possible
 config.cacheStores = [
@@ -28,4 +32,5 @@ config.cacheStores = [
   }),
 ];
 
-module.exports = config;
+// module.exports = config;
+module.exports = withNativeWind(config, { input: "./global.css" });

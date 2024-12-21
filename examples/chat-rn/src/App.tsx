@@ -1,3 +1,5 @@
+import "../global.css";
+
 import {
   NavigationContainer,
   useNavigationContainerRef,
