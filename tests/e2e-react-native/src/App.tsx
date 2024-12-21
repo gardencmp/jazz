@@ -18,10 +18,10 @@ function App() {
 
   useEffect(() => {
     if (state.state === "ready" && !signedUp.current) {
-      if (state.existingUsers.includes("Mister X")) {
-        state.logInAs("Mister X");
+      if (state.existingUsers.includes("MisterX")) {
+        state.logInAs("MisterX");
       } else {
-        state.signUp("Mister X");
+        state.signUp("MisterX");
       }
 
       signedUp.current = true;
