@@ -1,3 +1,4 @@
+import slugify from "@sindresorhus/slugify";
 import { AgentSecret } from "cojson";
 import { Account, AuthMethod, AuthResult, ID } from "jazz-tools";
 import { KvStore, KvStoreContext } from "../storage/kv-store-context.js";
@@ -22,6 +23,10 @@ export namespace RNDemoAuth {
 }
 
 const localStorageKey = "demo-auth-logged-in-secret";
+
+function getExisitingUserKey(username: string) {
+  return `demo-auth-existing-users-${slugify(username)}`;
+}
 
 export class RNDemoAuth implements AuthMethod {
   private constructor(
@@ -58,7 +63,7 @@ export class RNDemoAuth implements AuthMethod {
           await kvStore.set("demo-auth-existing-users", name);
         }
       }
-      await kvStore.set("demo-auth-existing-users-" + name, storageData);
+      await kvStore.set(getExisitingUserKey(name), storageData);
     }
     return new RNDemoAuth(driver, kvStore);
   }
@@ -122,7 +127,7 @@ export class RNDemoAuth implements AuthMethod {
                   // Save credentials using the unique username
                   await this.kvStore.set(localStorageKey, storageData);
                   await this.kvStore.set(
-                    "demo-auth-existing-users-" + uniqueUsername,
+                    getExisitingUserKey(uniqueUsername),
                     storageData,
                   );
 
@@ -157,9 +162,8 @@ export class RNDemoAuth implements AuthMethod {
             },
             logInAs: async (existingUser) => {
               const storageData = JSON.parse(
-                (await this.kvStore.get(
-                  "demo-auth-existing-users-" + existingUser,
-                )) ?? "{}",
+                (await this.kvStore.get(getExisitingUserKey(existingUser))) ??
+                  "{}",
               ) as StorageData;
 
               await this.kvStore.set(
