@@ -96,4 +96,40 @@ describe("startWorker integration", () => {
 
     await worker2.done();
   });
+
+  test("reiceves the messages from the inbox", async () => {
+    const worker1 = await setup();
+    const worker2 = await setupWorker(worker1.syncServer);
+
+    const group = Group.create({ owner: worker1.worker });
+    const map = TestMap.create(
+      {
+        value: "Hello!",
+      },
+      { owner: group },
+    );
+
+    worker2.experimental.inbox.subscribe(TestMap, async (value) => {
+      return TestMap.create(
+        {
+          value: value.value + " Responded from the inbox",
+        },
+        { owner: value._owner },
+      );
+    });
+
+    const sender = await InboxSender.load<TestMap, TestMap>(
+      worker2.worker.id,
+      worker1.worker,
+    );
+
+    const resultId = await sender.sendMessage(map);
+
+    const result = await TestMap.load(resultId, worker2.worker, {});
+
+    expect(result?.value).toEqual("Hello! Responded from the inbox");
+
+    await worker1.done();
+    await worker2.done();
+  });
 });

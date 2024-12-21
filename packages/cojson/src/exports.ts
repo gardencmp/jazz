@@ -14,7 +14,11 @@ import {
 } from "./coValues/account.js";
 import { RawCoList } from "./coValues/coList.js";
 import { RawCoMap } from "./coValues/coMap.js";
-import { RawBinaryCoStream, RawCoStream } from "./coValues/coStream.js";
+import {
+  CoStreamItem,
+  RawBinaryCoStream,
+  RawCoStream,
+} from "./coValues/coStream.js";
 import { EVERYONE, RawGroup } from "./coValues/group.js";
 import type { Everyone } from "./coValues/group.js";
 import {
@@ -145,6 +149,7 @@ export type {
   PingTimeoutError,
   CoValueUniqueness,
   Stringified,
+  CoStreamItem,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
