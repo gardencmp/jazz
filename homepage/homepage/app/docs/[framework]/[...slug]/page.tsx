@@ -1,8 +1,10 @@
 import DocsLayout from "@/app/docs/[framework]/(others)/layout";
+import { DocsLayout as DocsLayoutWithToc } from "@/components/docs/DocsLayout";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import ComingSoonPage from "@/components/docs/coming-soon.mdx";
+import { DocNav } from "@/components/docs/nav";
 import { docNavigationItems } from "@/lib/docNavigationItems";
-import { Framework, frameworks, isValidFramework } from "@/lib/framework";
+import { Framework, frameworks } from "@/lib/framework";
 import type { Toc } from "@stefanprobst/rehype-extract-toc";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
@@ -22,12 +24,14 @@ export default async function Page({
     const { default: Content, tableOfContents } = mdxSource;
 
     return (
-      <>
+      <DocsLayoutWithToc
+        nav={<DocNav />}
+        tableOfContents={tableOfContents as Toc}
+      >
         <Prose className="overflow-x-hidden lg:flex-1  py-8">
           <Content />
         </Prose>
-        {tableOfContents && <TableOfContents items={tableOfContents as Toc} />}
-      </>
+      </DocsLayoutWithToc>
     );
   } catch (error) {
     return (

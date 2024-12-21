@@ -1,11 +1,16 @@
+import { TableOfContents } from "@/components/docs/TableOfContents";
+import { DocNav } from "@/components/docs/nav";
+import { Toc } from "@stefanprobst/rehype-extract-toc";
 import { clsx } from "clsx";
 
-export default function DocsLayout({
+export function DocsLayout({
   children,
   nav,
+  tableOfContents,
 }: {
   children: React.ReactNode;
   nav?: React.ReactNode;
+  tableOfContents?: Toc;
 }) {
   return (
     <div className="container relative grid grid-cols-12 gap-5">
@@ -17,9 +22,14 @@ export default function DocsLayout({
           "hidden md:block",
         )}
       >
-        {nav}
+        <DocNav />
       </div>
-      <div className="col-span-12 md:col-span-8 lg:col-span-9">{children}</div>
+      <div className="col-span-12 md:col-span-8 lg:col-span-9">
+        <div className=" flex justify-center gap-5">
+          {children}
+          {tableOfContents && <TableOfContents items={tableOfContents} />}
+        </div>
+      </div>
     </div>
   );
 }
