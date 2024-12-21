@@ -52,7 +52,6 @@ test("Can create account with one node, and then load it on another", async () =
   expect(map.get("foo")).toEqual("bar");
 
   const [node1asPeer, node2asPeer] = connectedPeers("node1", "node2", {
-    trace: true,
     peer1role: "server",
     peer2role: "client",
   });
