@@ -55,7 +55,6 @@ export function JazzNav() {
         },
       ]}
       socials={socials}
-      docNav={<DocNav className="block h-auto" />}
     />
   );
 }

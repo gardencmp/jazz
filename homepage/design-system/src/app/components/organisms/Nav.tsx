@@ -35,7 +35,6 @@ type NavItemProps = {
 type NavProps = {
   mainLogo: ReactNode;
   items: NavItemProps[];
-  docNav?: ReactNode;
   cta?: ReactNode;
   socials?: SocialLinksProps;
   themeToggle: ComponentType<{ className?: string }>;
@@ -128,8 +127,6 @@ function NavItem({
 export function MobileNav({
   mainLogo,
   items,
-  docNav,
-  cta,
   socials,
   themeToggle: ThemeToggle,
 }: NavProps) {
@@ -195,12 +192,6 @@ export function MobileNav({
 
             <SocialLinks className="px-2 gap-2" {...socials} />
           </div>
-
-          {pathname.startsWith("/docs") && docNav && (
-            <div className="max-h-[calc(100dvh-15rem)] p-4 border-b overflow-x-auto">
-              {docNav}
-            </div>
-          )}
 
           <div className="flex flex-wrap justify-end py-2 gap-x-3 gap-y-1 border-b">
             {[{ title: "Home", href: "/" }, ...items]
@@ -310,7 +301,7 @@ function NavLinkLogo({
 }
 
 export function Nav(props: NavProps) {
-  const { mainLogo, items, docNav, cta } = props;
+  const { mainLogo, items, cta } = props;
   return (
     <>
       <div className="w-full border-b py-2 sticky top-0 z-50 bg-white dark:bg-stone-950 hidden md:block">
