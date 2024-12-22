@@ -1,14 +1,25 @@
+import { PeerOperations } from "./PeerOperations.js";
 import {
   PriorityBasedMessageQueue,
   QueueEntry,
 } from "./PriorityBasedMessageQueue.js";
 import { TryAddTransactionsError } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
-import { Peer } from "./localNode.js";
-import { PeerOperations } from "./peerOperations.js";
+import { IncomingSyncStream, OutgoingSyncQueue } from "./localNode.js";
 import { CO_VALUE_PRIORITY } from "./priority.js";
 import { SyncMessage } from "./sync.js";
 import { transformOutgoingMessageToPeer } from "./transformers.js";
+
+export type PeerID = string;
+export interface Peer {
+  id: PeerID;
+  incoming: IncomingSyncStream;
+  outgoing: OutgoingSyncQueue;
+  role: "peer" | "server" | "client" | "storage";
+  priority?: number;
+  crashOnClose: boolean;
+  deletePeerStateOnClose?: boolean;
+}
 
 // NOTE Renamed PeerState into PeerEntry
 export class PeerEntry {

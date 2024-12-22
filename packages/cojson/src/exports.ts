@@ -1,3 +1,4 @@
+import type { Peer } from "./PeerEntry.js";
 import { base64URLtoBytes, bytesToBase64url } from "./base64url.js";
 import { type RawCoValue } from "./coValue.js";
 import {
@@ -35,7 +36,6 @@ import {
   IncomingSyncStream,
   LocalNode,
   OutgoingSyncQueue,
-  Peer,
 } from "./localNode.js";
 import type { Role } from "./permissions.js";
 import { Channel, connectedPeers } from "./streamUtils.js";

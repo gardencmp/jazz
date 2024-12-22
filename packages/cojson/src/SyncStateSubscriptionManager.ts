@@ -1,5 +1,4 @@
-import { RawCoID } from "./ids.js";
-import { PeerID } from "./localNode.js";
+import { PeerID } from "./PeerEntry.js";
 import { CoValueKnownState, SyncManager, emptyKnownState } from "./sync.js";
 
 export type SyncStateGetter = {

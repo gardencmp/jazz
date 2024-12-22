@@ -1,22 +1,25 @@
 import { PeerEntry } from "./PeerEntry.js";
 import { CoValueCore } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
-import { PeerID } from "./localNode.js";
 import { CoValueKnownState, SyncMessage, emptyDataMessage } from "./sync.js";
 
 export class PeerOperations {
   constructor(private readonly peer: PeerEntry) {}
 
-  async pull({ coValue }: { coValue: CoValueCore }) {
+  async pull({ knownState }: { knownState: CoValueKnownState }) {
+    if (this.peer.closed) return;
+
     return this.peer.pushOutgoingMessage({
-      ...coValue.knownState(),
+      ...knownState,
       action: "pull",
     });
   }
 
-  async ack({ coValue }: { coValue: CoValueCore }) {
+  async ack({ knownState }: { knownState: CoValueKnownState }) {
+    if (this.peer.closed) return;
+
     return this.peer.pushOutgoingMessage({
-      ...coValue.knownState(),
+      ...knownState,
       action: "ack",
     });
   }
@@ -25,6 +28,8 @@ export class PeerOperations {
     peerKnownState,
     coValue,
   }: { peerKnownState: CoValueKnownState; coValue: CoValueCore }) {
+    if (this.peer.closed) return;
+
     return this.sendContentIncludingDependencies({
       peerKnownState,
       coValue,
@@ -36,6 +41,8 @@ export class PeerOperations {
     peerKnownState,
     coValue,
   }: { peerKnownState: CoValueKnownState; coValue: CoValueCore }) {
+    if (this.peer.closed) return;
+
     return this.sendContentIncludingDependencies({
       peerKnownState,
       coValue,
@@ -47,7 +54,7 @@ export class PeerOperations {
     return this.peer.pushOutgoingMessage(emptyDataMessage(id));
   }
 
-  async sendContentIncludingDependencies({
+  private async sendContentIncludingDependencies({
     peerKnownState,
     coValue,
     action,

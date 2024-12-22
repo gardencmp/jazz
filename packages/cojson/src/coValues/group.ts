@@ -136,7 +136,6 @@ export class RawGroup<
   loadAllChildGroups() {
     const requests: Promise<unknown>[] = [];
     const store = this.core.node.coValuesStore;
-    const peers = this.core.node.getServerAndStoragePeers();
 
     for (const key of this.keys()) {
       if (!isChildGroupReference(key)) {

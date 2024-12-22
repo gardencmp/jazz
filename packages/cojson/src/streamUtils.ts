@@ -1,5 +1,5 @@
 import { Channel } from "queueueue";
-import { Peer, PeerID } from "./localNode.js";
+import { Peer, PeerID } from "./PeerEntry.js";
 import { SyncMessage } from "./sync.js";
 export { Channel } from "queueueue";
 

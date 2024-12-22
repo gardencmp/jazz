@@ -1,6 +1,7 @@
 import { Result, err, ok } from "neverthrow";
 import { CoValuesStore } from "./CoValuesStore.js";
-import { PeerEntry } from "./PeerEntry.js";
+import { Peer, PeerEntry, PeerID } from "./PeerEntry.js";
+import { Peers } from "./Peers.js";
 import { CoID, RawCoValue } from "./coValue.js";
 import {
   CoValueCore,
@@ -37,7 +38,6 @@ import {
 import { transformIncomingMessageFromPeer } from "./transformers.js";
 import { expectGroup } from "./typeUtils/expectGroup.js";
 
-export type PeerID = string;
 export type IncomingSyncStream = AsyncIterable<
   SyncMessage | DisconnectedError | PingTimeoutError
 >;
@@ -45,16 +45,6 @@ export type OutgoingSyncQueue = {
   push: (msg: SyncMessage) => Promise<unknown>;
   close: () => void;
 };
-
-export interface Peer {
-  id: PeerID;
-  incoming: IncomingSyncStream;
-  outgoing: OutgoingSyncQueue;
-  role: "peer" | "server" | "client" | "storage";
-  priority?: number;
-  crashOnClose: boolean;
-  deletePeerStateOnClose?: boolean;
-}
 
 /** A `LocalNode` represents a local view of a set of loaded `CoValue`s, from the perspective of a particular account (or primitive cryptographic agent).
 
@@ -77,8 +67,8 @@ export class LocalNode {
   /** @category 3. Low-level */
   currentSessionID: SessionID;
   /** @category 3. Low-level */
+  peers = new Peers();
   syncManager = new SyncManager(this);
-  peers: { [key: PeerID]: PeerEntry } = {};
   crashed: Error | undefined = undefined;
 
   /** @category 3. Low-level */
@@ -92,20 +82,20 @@ export class LocalNode {
     this.crypto = crypto;
   }
 
-  peersInPriorityOrder(): PeerEntry[] {
-    return Object.values(this.peers).sort((a, b) => {
-      const aPriority = a.priority || 0;
-      const bPriority = b.priority || 0;
-
-      return bPriority - aPriority;
-    });
-  }
-
-  getServerAndStoragePeers(excludePeerId?: PeerID): PeerEntry[] {
-    return this.peersInPriorityOrder().filter(
-      (peer) => peer.isServerOrStoragePeer() && peer.id !== excludePeerId,
-    );
-  }
+  // peersInPriorityOrder(): PeerEntry[] {
+  //   return Object.values(this.peers).sort((a, b) => {
+  //     const aPriority = a.priority || 0;
+  //     const bPriority = b.priority || 0;
+  //
+  //     return bPriority - aPriority;
+  //   });
+  // }
+  //
+  // getServerAndStoragePeers(excludePeerId?: PeerID): PeerEntry[] {
+  //   return this.peersInPriorityOrder().filter(
+  //     (peer) => peer.isServerOrStoragePeer() && peer.id !== excludePeerId,
+  //   );
+  // }
 
   async processMessages(peer: PeerEntry) {
     for await (const msg of peer.incoming) {
@@ -138,13 +128,7 @@ export class LocalNode {
   }
 
   addPeer(peerData: Peer) {
-    const prevPeer = this.peers[peerData.id];
-    const peer = new PeerEntry(peerData);
-    this.peers[peerData.id] = peer;
-
-    if (prevPeer && !prevPeer.closed) {
-      prevPeer.gracefulShutdown();
-    }
+    const peer: PeerEntry = this.peers.add(peerData);
 
     if (peer.isServerOrStoragePeer()) {
       void this.syncManager.initialSync(peerData, peer);
@@ -166,11 +150,11 @@ export class LocalNode {
         }
       })
       .finally(() => {
-        const state = this.peers[peerData.id];
+        const state = this.peers.get(peerData.id);
         state?.gracefulShutdown();
 
         if (peerData.deletePeerStateOnClose) {
-          delete this.peers[peerData.id];
+          this.peers.delete(peer.id);
         }
       });
   }
@@ -387,6 +371,7 @@ export class LocalNode {
     }
 
     const core = await this.syncManager.loadCoValueCore(id);
+    // HERE TODO const core = await this.syncManager.loadCoValue(id);
 
     if (core === "unavailable") {
       return "unavailable";
@@ -732,7 +717,7 @@ export class LocalNode {
   }
 
   gracefulShutdown() {
-    for (const peer of Object.values(this.peers)) {
+    for (const peer of this.peers.getAll()) {
       peer.gracefulShutdown();
     }
   }

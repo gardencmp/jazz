@@ -1,9 +1,6 @@
-import { PeerEntry } from "./PeerEntry.js";
+import { PeerEntry, PeerID } from "./PeerEntry.js";
 import { CoValueCore } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
-import { PeerOperations } from "./peerOperations.js";
-
-import { PeerID } from "./localNode.js";
 
 export const CO_VALUE_LOADING_MAX_RETRIES = 5;
 export const CO_VALUE_LOADING_TIMEOUT = 30_000;
@@ -261,7 +258,7 @@ export class CoValueEntry {
       }
 
       // Assign the current state to a variable to not depend on the state changes
-      // that may happen while we wait for loadCoValueFromPeers to complete
+      // that may happen while we wait for loadCoValueCallback to complete
       const currentState = this.state;
 
       // If we entered successfully the loading state, we load the coValue from the peers
@@ -301,6 +298,74 @@ export class CoValueEntry {
       this.moveToState(new CoValueUnavailableState());
     }
   }
+
+  // async loadFromPeers(
+  //   peers: PeerEntry[],
+  //   loadCoValueCallback: (
+  //     coValueEntry: CoValueEntry,
+  //     peers: PeerEntry[],
+  //   ) => Promise<void>,
+  // ) {
+  //   const state = this.state;
+  //
+  //   if (state.type !== "unknown" && state.type !== "unavailable") {
+  //     return;
+  //   }
+  //
+  //   if (peers.length === 0) {
+  //     return;
+  //   }
+  //
+  //   const doLoad = async (peersToLoadFrom: PeerEntry[]) => {
+  //     // If we are in the loading state we move to a new loading state
+  //     // to reset all the loading promises
+  //     if (this.state.type === "loading" || this.state.type === "unknown") {
+  //       this.moveToState(
+  //         new CoValueLoadingState(peersToLoadFrom.map((p) => p.id)),
+  //       );
+  //     }
+  //
+  //     // Assign the current state to a variable to not depend on the state changes
+  //     // that may happen while we wait for loadCoValueCallback to complete
+  //     const currentState = this.state;
+  //
+  //     // If we entered successfully the loading state, we load the coValue from the peers
+  //     //
+  //     // We may not enter the loading state if the coValue has become available in between
+  //     // of the retries
+  //     if (currentState.type === "loading") {
+  //       await loadCoValueCallback(this, peersToLoadFrom);
+  //
+  //       const result = await currentState.result;
+  //       return result !== "unavailable";
+  //     }
+  //
+  //     return currentState.type === "available";
+  //   };
+  //
+  //   await doLoad(peers);
+  //
+  //   // Retry loading from peers that have the retry flag enabled
+  //   const peersWithRetry = peers.filter((p) =>
+  //     p.shouldRetryUnavailableCoValues(),
+  //   );
+  //
+  //   if (peersWithRetry.length > 0) {
+  //     // We want to exit early if the coValue becomes available in between the retries
+  //     await Promise.race([
+  //       this.getCoValue(),
+  //       runWithRetry(
+  //         () => doLoad(peersWithRetry),
+  //         CO_VALUE_LOADING_MAX_RETRIES,
+  //       ),
+  //     ]);
+  //   }
+  //
+  //   // If after the retries the coValue is still loading, we consider the load failed
+  //   if (this.state.type === "loading") {
+  //     this.moveToState(new CoValueUnavailableState());
+  //   }
+  // }
 
   dispatch(action: CoValueStateAction) {
     const currentState = this.state;
