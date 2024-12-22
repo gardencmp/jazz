@@ -14,6 +14,9 @@ import {
     updateCoValueBinary,
     parseUUIDAndUAFromCookie,
     formatClientNumber,
+    BenchmarkStore,
+    shutdown,
+    uWebSocketResponseWrapper,
     PORT,
 } from "../util";
 import logger from "../util/logger";
@@ -33,11 +36,12 @@ const staticDir =
         : path.join(rootDir, "public");
 
 const fileManager = new FileStreamManager();
+const benchmarkStore = new BenchmarkStore();
 
 const app = uWS.SSLApp({
     key_file_name: tlsCertPath.tlsKeyName,
     cert_file_name: tlsCertPath.tlsCertName
-}).any("/*", (res, req) => {
+}).any("/*", (res: uWS.HttpResponse, req: uWS.HttpRequest) => {
 
     const query = req.getQuery();
     const params = query?.split('&') || [];
@@ -77,7 +81,9 @@ const app = uWS.SSLApp({
             res.writeHeader("Content-Length", `${fileStat.size}`);
             res.writeHeader("Content-Type", lookup(filePath) || "application/octet-stream");
             res.end(fileContents);
-            
+        } else if (url.startsWith("/stop")) {
+            shutdown(new uWebSocketResponseWrapper(res), benchmarkStore);
+
         } else {
             res.writeStatus('404').end('Not found');
         }
@@ -122,11 +128,12 @@ const app = uWS.SSLApp({
     },
 
     message: (ws: uWS.WebSocket<{}>, message: ArrayBuffer, isBinary: boolean) => {
+        let res;
         try {
             const messageStr = Buffer.from(message).toString();
             const data = JSON.parse(messageStr);
             const { action, binary, payload } = data;
-            const res = new uWebSocketResponse(ws, payload?.uuid);
+            res = new uWebSocketResponse(ws, payload?.uuid, benchmarkStore.requestId());
 
             switch (action) {
                 case "LIST":
@@ -139,10 +146,11 @@ const app = uWS.SSLApp({
                     break;
 
                 case "GET":
-                    res.action("GET");
+                    res.action("GET").path(`/covalue/${payload.uuid}`);
                     const covalue: CoValue = covalues[payload.uuid];
                     if (covalue) {
                         if (binary) {
+                            res.path(`/covalue/${payload.uuid}/binary`);
                             const filePath = covalue.url?.path as string;
                             if (!filePath) {
                                 res.status(404).json({
@@ -171,9 +179,10 @@ const app = uWS.SSLApp({
                     break;
 
                 case "POST":
-                    res.action("POST");
+                    res.action("POST").path(`/covalue`);
                     if (payload) {
                         if (binary) {
+                            res.path(`/covalue/binary`);
                             fileManager.chunkFileUpload(payload, res);
                         } else {
                             addCoValue(covalues, payload);
@@ -185,12 +194,13 @@ const app = uWS.SSLApp({
                     break;
 
                 case "PATCH":
-                    res.action("PATCH");
+                    res.action("PATCH").path(`/covalue/${payload.uuid}`);
                     const { uuid, ...partialCovalue } = payload;
                     const existingCovalue = covalues[uuid];
 
                     if (existingCovalue) {
                         if (binary) {
+                            res.path(`/covalue/${uuid}/binary`);
                             updateCoValueBinary(
                                 existingCovalue,
                                 partialCovalue,
@@ -238,6 +248,12 @@ const app = uWS.SSLApp({
                 .status(500)
                 .action("ERROR")
                 .json({ m: "Error processing request" });
+        } finally {
+            if (res) {
+                const log = res.requestLog();
+                log.method = log.method === "MUTATION" ? "PATCH" : log.method; // change it back for consistency
+                if (log.method && ["GET", "POST", "PATCH"].includes(log.method)) benchmarkStore.addRequestLog(log);
+            }
         }
     },
 

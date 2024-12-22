@@ -10,6 +10,9 @@ import {
     updateCoValue,
     updateCoValueBinary,
     formatClientNumber,
+    BenchmarkStore,
+    shutdown,
+    WebSocketResponseWrapper,
     PORT,
 } from "../util";
 import logger from "../util/logger";
@@ -56,6 +59,9 @@ function sendFile(res: ServerResponse, filePath: string) {
     }
 }
 
+const fileManager = new FileStreamManager();
+const benchmarkStore = new BenchmarkStore();
+
 // Create the HTTPS server
 const server = https.createServer(
     tlsCert,
@@ -70,6 +76,9 @@ const server = https.createServer(
 
             // logger.info(`File ${file} fetching from path: ${filePath}`);
             sendFile(res, filePath);
+        } else if (req.url?.startsWith("/stop")) {
+            shutdown(new WebSocketResponseWrapper(res), benchmarkStore);
+
         } else {
             // Serve other static content or handle other routes
             serveIndex(req, res, finalhandler(req, res));
@@ -79,16 +88,16 @@ const server = https.createServer(
 
 // Create WebSocket server
 const wss = new WebSocket.Server({ server });
-const fileManager = new FileStreamManager();
-
 wss.on("connection", (ws: WebSocket) => {
     logger.debug("New Websocket connection");
 
     ws.on("message", async (message: string) => {
+        let res;
+
         try {
             const data = JSON.parse(message);
             const { action, binary, payload } = data;
-            const res = new WebSocketResponse(ws, wss);
+            res = new WebSocketResponse(ws, wss, benchmarkStore.requestId());
 
             switch (action) {
                 case "LIST":
@@ -101,10 +110,11 @@ wss.on("connection", (ws: WebSocket) => {
                     break;
 
                 case "GET":
-                    res.action("GET");
+                    res.action("GET").path(`/covalue/${payload.uuid}`);
                     const covalue: CoValue = covalues[payload.uuid];
                     if (covalue) {
                         if (binary) {
+                            res.path(`/covalue/${payload.uuid}/binary`);
                             const filePath = covalue.url?.path as string;
                             if (!filePath) {
                                 res.status(404).json({
@@ -133,9 +143,10 @@ wss.on("connection", (ws: WebSocket) => {
                     break;
 
                 case "POST":
-                    res.action("POST");
+                    res.action("POST").path(`/covalue`);
                     if (payload) {
                         if (binary) {
+                            res.path(`/covalue/binary`);
                             await fileManager.chunkFileUpload(payload, res);
                         } else {
                             addCoValue(covalues, payload);
@@ -147,12 +158,13 @@ wss.on("connection", (ws: WebSocket) => {
                     break;
 
                 case "PATCH":
-                    res.action("PATCH");
+                    res.action("PATCH").path(`/covalue/${payload.uuid}`);
                     const { uuid, ...partialCovalue } = payload;
                     const existingCovalue = covalues[uuid];
 
                     if (existingCovalue) {
                         if (binary) {
+                            res.path(`/covalue/${uuid}/binary`);
                             updateCoValueBinary(
                                 existingCovalue,
                                 partialCovalue,
@@ -204,6 +216,12 @@ wss.on("connection", (ws: WebSocket) => {
                 .status(500)
                 .action("ERROR")
                 .json({ m: "Error processing request" });
+        } finally {
+            if (res) {
+                const log = res.requestLog();
+                log.method = log.method === "MUTATION" ? "PATCH" : log.method; // change it back for consistency
+                if (log.method && ["GET", "POST", "PATCH"].includes(log.method)) benchmarkStore.addRequestLog(log);
+            }
         }
     });
 });

@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import https from "https";
-import http from "http";
+import http, { ServerResponse } from "http";
 import spdy from "spdy";
 import path from "path";
 import bodyParser from "body-parser";
@@ -12,10 +12,10 @@ import {
     addCoValue,
     updateCoValue,
     updateCoValueBinary,
+    BenchmarkStore,
+    RequestTimer,
+    shutdown,
     PORT,
-    PerformanceStore,
-    PerformanceEntry,
-    PerformanceTimer,
 } from "../util";
 import logger from "../util/logger";
 import { tlsCert } from "../util/tls";
@@ -37,15 +37,14 @@ app.use((req, res, next) => {
     next();
 });
 
-const performanceStore = new PerformanceStore();
+const benchmarkStore = new BenchmarkStore();
 app.use((req: Request, res: Response, next: NextFunction): void => {
     if ((req.method === 'GET' && req.path.startsWith("/covalue/")) || req.method === 'POST' || req.method === 'PATCH') {
-        const timer = new PerformanceTimer(performanceStore.requestId());
+        const timer = new RequestTimer(benchmarkStore.requestId());
 
         res.on('finish', () => {
             timer.method(req.method).path(req.path).status(res.statusCode).end();
-            performanceStore.addEntry(timer.toEntry());
-            logger.debug(`Performance entry: ${JSON.stringify(timer.toEntry())}`);
+            benchmarkStore.addRequestLog(timer.toRequestLog());
         });
     }
 
@@ -131,10 +130,10 @@ app.patch("/covalue/:uuid", (req: Request, res: Response) => {
     }
 
     updateCoValue(covalue, partialCovalue);
-    res.status(204).send();
 
     // broadcast the mutation to subscribers
     broadcast(uuid);
+    res.status(204).send();
 });
 
 app.patch("/covalue/:uuid/binary", (req: Request, res: Response) => {
@@ -147,10 +146,10 @@ app.patch("/covalue/:uuid/binary", (req: Request, res: Response) => {
     }
 
     updateCoValueBinary(covalue, partialCovalue);
-    res.status(204).send();
 
     // broadcast the mutation to subscribers
     broadcast(uuid);
+    res.status(204).send();
 });
 
 interface Client {
@@ -194,22 +193,18 @@ app.get("/covalue/:uuid/subscribe/:ua", (req: Request, res: Response) => {
 });
 
 app.post("/stop", async (req: Request, res: Response) => {
-    performanceStore.writeToCSVFile();
-    res.status(200).send({ m: `Performance data written to CSV. Server shutting down.` });
-
-    if (PORT === "3001") {
-        // also shutdown Caddy on TLS port 3000 via the `/stop` endpoint of the admin URL
-        const caddyAdminUrl = "http://localhost:2019/stop";
-        try {
-            await fetch(`${caddyAdminUrl}`, { method: 'POST' });
-            logger.debug("Caddy server shutdown successfully.");
-        } catch (error) {
-            logger.error("Error shutting down Caddy server:", error);
+    shutdown(res, benchmarkStore, async () => {
+        if (PORT === "3001") {
+            // also shutdown Caddy on TLS port 3000 via the `/stop` endpoint of the admin URL
+            const caddyAdminUrl = "http://localhost:2019/stop";
+            try {
+                await fetch(`${caddyAdminUrl}`, { method: 'POST' });
+                logger.debug("Caddy server shutdown successfully.");
+            } catch (error) {
+                logger.error("Error shutting down Caddy server:", error);
+            }
         }
-    }
-
-    logger.debug("Server shutdown");
-    process.exit(0);
+    });
 });
 
 export function createWebServer(isHttp2: boolean, useTLS: boolean = true) {

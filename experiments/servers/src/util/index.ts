@@ -4,6 +4,8 @@ import path from "path";
 import fs from "fs";
 import WebSocket from "ws";
 import * as uWS from "uWebSockets.js";
+import { ServerResponse } from 'http';
+import { Response } from "express";
 import logger from "./logger";
 import os from "os";
 
@@ -206,18 +208,27 @@ export abstract class WebSocketResponseBase<TWebSocket> {
     protected ws: TWebSocket;
     protected actionName: string = "";
     protected statusCode: number = 200;
+    protected timer: RequestTimer;
 
-    constructor(ws: TWebSocket) {
+    constructor(ws: TWebSocket, requestId?: string) {
         this.ws = ws;
+        this.timer = new RequestTimer(requestId ?? "ua-00");
     }
 
     action(action: string): this {
         this.actionName = action;
+        this.timer.method(action);
         return this;
     }
 
     status(code: number): this {
         this.statusCode = code;
+        this.timer.status(code);
+        return this;
+    }
+
+    path(path: string): this {
+        this.timer.path(path);
         return this;
     }
 
@@ -229,6 +240,11 @@ export abstract class WebSocketResponseBase<TWebSocket> {
                 payload: data,
             })
         );
+        this.timer.end();
+    }
+
+    requestLog(): RequestLog {
+        return this.timer.toRequestLog();
     }
 
     /**
@@ -251,8 +267,8 @@ export abstract class WebSocketResponseBase<TWebSocket> {
 export class WebSocketResponse extends WebSocketResponseBase<WebSocket> {
     private wss: WebSocket.Server;
 
-    constructor(ws: WebSocket, wss: WebSocket.Server) {
-        super(ws);
+    constructor(ws: WebSocket, wss: WebSocket.Server, requestId?: string) {
+        super(ws, requestId);
         this.wss = wss;
     }
 
@@ -272,6 +288,7 @@ export class WebSocketResponse extends WebSocketResponseBase<WebSocket> {
                 );
             }
         });
+        this.timer.end();
     }
 }
 
@@ -281,8 +298,8 @@ export class WebSocketResponse extends WebSocketResponseBase<WebSocket> {
 export class uWebSocketResponse extends WebSocketResponseBase<uWS.WebSocket<{}>> {
     private topic: string;
 
-    constructor(ws: uWS.WebSocket<{}>, topic: string) {
-        super(ws);
+    constructor(ws: uWS.WebSocket<{}>, topic: string, requestId?: string) {
+        super(ws, requestId);
         this.topic = topic;
     }
 
@@ -309,10 +326,11 @@ export class uWebSocketResponse extends WebSocketResponseBase<uWS.WebSocket<{}>>
             }),
             false
         );
+        this.timer.end();
     }
 }
 
-export interface PerformanceEntry {
+interface RequestLog {
     requestId: string;
     duration: number;
     durationInMillis?: string;
@@ -322,52 +340,57 @@ export interface PerformanceEntry {
     timestamp?: string;
 }
 
-export class PerformanceTimer {
-    private start: number;
-    private data: PerformanceEntry;
+export class RequestTimer {
+    private startTime: number;
+    private data: RequestLog;
 
     constructor(requestId: string) {
-        this.start = performance.now();
+        this.startTime = performance.now();
         this.data = { requestId, duration: -1, timestamp: new Date().toISOString() };
     }
 
-    method(method: string): PerformanceTimer {
+    method(method: string): this {
         this.data.method = method;
         return this;
     }
 
-    path(path: string): PerformanceTimer {
+    path(path: string): this {
         this.data.path = path;
         return this;
     }
 
-    status(status: number): PerformanceTimer {
+    status(status: number): this {
         this.data.status = status;
         return this;
     }
 
-    end(): PerformanceTimer {
-        this.data.duration = performance.now() - this.start;
+    end(): this {
+        this.data.duration = performance.now() - this.startTime;
         this.data.durationInMillis = this.data.duration.toFixed(2);
+        logger.debug(`Performance entry: ${JSON.stringify(this.toRequestLog())}`);
         return this;
     }
 
-    toEntry(): PerformanceEntry {
+    toRequestLog(): RequestLog {
         return this.data;
     }
 }
 
-export class PerformanceStore {
-    private entries: PerformanceEntry[] = [];
+export class BenchmarkStore {
+    private entries: RequestLog[] = [];
     private requestCounter: number = 0;
 
-    addEntry(entry: PerformanceEntry): void {
+    requestId(): string {
+        return `${++this.requestCounter}`;
+    }
+
+    addRequestLog(entry: RequestLog): void {
         this.entries.push(entry);
     }
 
-    aggregateMultipleEntries(): void {
+    aggregateRequestLogs(): void {
         interface Accumulator {
-            remaining: PerformanceEntry[];
+            remaining: RequestLog[];
             aggregate: number;
         }
 
@@ -385,7 +408,7 @@ export class PerformanceStore {
         this.entries = result.remaining;
     }
 
-    writeToCSVFile(filename: string = 'time.csv'): void {
+    exportToCSVFile(filename: string = 'time.csv'): void {
         const outputPath = `public/${filename}`;
         const outDir = path.dirname(outputPath);
         if (!fs.existsSync(outDir)) {
@@ -393,7 +416,7 @@ export class PerformanceStore {
         }
 
         // sum up the duration of multiple chunked POST requests into a single duration
-        this.aggregateMultipleEntries();
+        this.aggregateRequestLogs();
 
         // Write performance data to CSV
         const csvHeaders = 'RequestID,Method,Path,StatusCode,Timestamp,Duration,Duration (milliseconds)';
@@ -407,12 +430,43 @@ export class PerformanceStore {
         // Clear the store after writing to disk
         this.entries = [];
     }
+}
 
-    getRequestCounter(): number {
-        return ++this.requestCounter;
+export class WebSocketResponseWrapper {
+    constructor(protected res: ServerResponse) {}
+
+    status(code: number): this {
+        this.res.statusCode = code;
+        return this;
     }
 
-    requestId(): string {
-        return `${this.getRequestCounter()}`;
+    json(data: any): void {
+        this.res.setHeader('Content-Type', 'application/json');
+        this.res.end(JSON.stringify(data));
     }
+}
+
+export class uWebSocketResponseWrapper {
+    constructor(protected res: uWS.HttpResponse) {}
+
+    status(code: number): this {
+        this.res.statusCode = code;
+        return this;
+    }
+
+    json(data: any): void {
+        this.res.writeStatus(this.res.statusCode.toString());
+        this.res.writeHeader('Content-Type', 'application/json');
+        this.res.end(JSON.stringify(data));
+    }
+}
+
+export function shutdown(res: Response | WebSocketResponseWrapper | uWebSocketResponseWrapper, benchmarkStore: BenchmarkStore, callback?: () => void) {
+    benchmarkStore.exportToCSVFile();
+    res.status(200).json({ m: `Performance data written to CSV. Server shutting down.` });
+
+    callback?.();
+
+    logger.debug("Server shutdown");
+    process.exit(0);
 }
