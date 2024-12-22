@@ -182,7 +182,9 @@ export class SyncManager {
     // TODO maybe to send a PULL req if we have less data?
     // Initiate a new PULL flow
     if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
-      const eligiblePeers = this.local.peers.getServerAndStoragePeers(peer.id);
+      const eligiblePeers = this.local.peers.getServerAndStorage({
+        excludedId: peer.id,
+      });
 
       if (eligiblePeers.length === 0) {
         // If the load request contains a header or any session data
@@ -473,8 +475,9 @@ export class SyncManager {
     const entry = this.local.coValuesStore.get(id);
 
     if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
-      const peers =
-        this.local.peers.getServerAndStoragePeers(skipLoadingFromPeer);
+      const peers = this.local.peers.getServerAndStorage({
+        excludedId: skipLoadingFromPeer,
+      });
 
       // TODO @@@@@@@@@@@@@@@@@##############$$$$$$$$$$$$$$$$$
       await entry.loadFromPeers(getPeersWithoutErrors(peers, id)).catch((e) => {

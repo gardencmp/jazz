@@ -44,14 +44,16 @@ export class Peers {
       .filter((peer) => (excludedId ? peer.id !== excludedId : true));
   }
 
-  // getServerAndStorage({
-  //   excludedId,
-  //   includedId,
-  // }: { excludedId?: PeerID; includedId?: PeerID }): PeerEntry[] {
-  //   return this.getInPriorityOrder({ excludedId }).filter(
-  //     (peer) => peer.isServerOrStoragePeer() || peer.id === includedId,
-  //   );
-  // }
+  getServerAndStorage({
+    excludedId,
+    includedId,
+  }: { excludedId?: PeerID; includedId?: PeerID } = {}): PeerEntry[] {
+    return this.getInPriorityOrder({ excludedId }).filter(
+      (peer) =>
+        peer.isServerOrStoragePeer() ||
+        (includedId ? peer.id === includedId : false),
+    );
+  }
 
   // peersInPriorityOrder(): PeerEntry[] {
   //   return Object.values(this.peers).sort((a, b) => {
@@ -62,9 +64,9 @@ export class Peers {
   //   });
   // }
 
-  getServerAndStoragePeers(excludePeerId?: PeerID): PeerEntry[] {
-    return this.getInPriorityOrder().filter(
-      (peer) => peer.isServerOrStoragePeer() && peer.id !== excludePeerId,
-    );
-  }
+  // getServerAndStoragePeers(excludePeerId?: PeerID): PeerEntry[] {
+  //   return this.getInPriorityOrder().filter(
+  //     (peer) => peer.isServerOrStoragePeer() && peer.id !== excludePeerId,
+  //   );
+  // }
 }
