@@ -112,6 +112,7 @@ export class SyncManager {
   }
 
   async handleSyncMessage(msg: SyncMessage, peer: PeerEntry) {
+    // TODO errored coValues?
     if (peer.erroredCoValues.has(msg.id)) {
       console.error(
         `Skipping message ${msg.action} on errored coValue ${msg.id} from peer ${peer.id}`,
@@ -154,75 +155,29 @@ export class SyncManager {
       // in a new task, otherwise we might block further incoming content messages that would
       // resolve the CoValue as available. This can happen when we receive fresh
       // content from a client, but we are a server with our own upstream server(s)
-      entry
-        .getCoValue()
-        .then(async (value) => {
-          if (value === "unavailable") {
-            void respondWithEmptyData();
-          } else {
-            const sentAmount = await peer.send.data({
-              peerKnownState: msg,
-              coValue: value,
-            });
-            if (sentAmount) {
-              void respondWithEmptyData();
-            }
-          }
-        })
-        .catch((e) => {
-          void respondWithEmptyData();
-          console.error("Error loading coValue in handleLoad loading state", e);
-        });
-
-      return;
+      return entry.getCoValue().then(async (value) => {
+        if (value === "unavailable") {
+          return respondWithEmptyData();
+        } else {
+          return peer.send.data({
+            peerKnownState: msg,
+            coValue: value,
+          });
+        }
+      });
     }
 
     void respondWithEmptyData();
 
-    // TODO maybe to send a PULL req if we have less data?
     // Initiate a new PULL flow
-    if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
-      const eligiblePeers = this.local.peers.getServerAndStorage({
-        excludedId: peer.id,
-      });
+    // TODO maybe to send a PULL req if we have less data?
+    // If the load request contains a header or any session data
+    // we try to load it from the sender as well
+    const peerToInclude =
+      msg.header || Object.keys(msg.sessions).length > 0 ? peer : null;
 
-      if (eligiblePeers.length === 0) {
-        // If the load request contains a header or any session data
-        // and we don't have any eligible peers to load the coValue from
-        // we try to load it from the sender because it is the only place
-        // where we can get informations about the coValue
-        if (msg.header || Object.keys(msg.sessions).length > 0) {
-          // TODO !!!!!!!!@@@@@@@@@@@@#################
-          entry.loadFromPeers([peer]).catch((e) => {
-            console.error("Error loading coValue in handleLoad", e);
-          });
-        }
-        return;
-      } else {
-        this.loadCoValueCore(msg.id, peer.id).catch((e) => {
-          console.error("Error loading coValue in handleLoad", e);
-        });
-      }
-    }
+    return this.loadCoValue(msg.id, peerToInclude?.id);
   }
-
-  /**
-   *
-
-   void respondWithEmptyData();
-
-   // Initiate a new PULL flow
-   // TODO maybe to send a PULL req if we have less data?
-   // If the load request contains a header or any session data
-   // we try to load it from the sender as well
-   const peerToInclude =
-   msg.header || Object.keys(msg.sessions).length > 0 ? peer : undefined;
-
-   this.loadCoValue(msg.id, peerToInclude).catch((e) => {
-   console.error("Error loading coValue in handleLoad", e);
-   });
-
-   */
 
   async handleData(msg: DataMessage, peer: PeerEntry) {
     const entry = this.local.coValuesStore.get(msg.id);
@@ -282,9 +237,6 @@ export class SyncManager {
       return;
     }
 
-    // const peers = this.local.peers
-    //   .peersInPriorityOrder()
-    //   .filter((p) => p.id !== peer.id);
     const peers = this.local.peers.getInPriorityOrder({ excludedId: peer.id });
 
     return this.syncCoValue(coValue, peerKnownState, peers);
@@ -331,9 +283,6 @@ export class SyncManager {
       return;
     }
 
-    // const peers = this.local.peers
-    //   .peersInPriorityOrder()
-    //   .filter((p) => p.id !== peer.id);
     const peers = this.local.peers.getInPriorityOrder({ excludedId: peer.id });
 
     await this.syncCoValue(coValue, peerKnownState, peers);
@@ -393,11 +342,11 @@ export class SyncManager {
           resolve();
         });
       });
-      const entry = {
+
+      this.requestedSyncs[coValue.id] = {
         done,
         nRequestsThisTick: 1,
       };
-      this.requestedSyncs[coValue.id] = entry;
       return done;
     }
   }
@@ -409,7 +358,6 @@ export class SyncManager {
   ) {
     const peersToSync = peers || this.local.peers.getInPriorityOrder();
     for (const peer of peersToSync) {
-      if (peer.closed) continue;
       if (peer.erroredCoValues.has(coValue.id)) continue;
 
       await peer.send.push({
@@ -425,36 +373,6 @@ export class SyncManager {
     }
   }
 
-  /**
-   *
-   // async actuallySyncCoValue(
-   //   coValue: CoValueCore,
-   //   peerKnownState: CoValueKnownState,
-   //   peers?: PeerEntry[],
-   // ) {
-   //   const entry = this.local.coValuesStore.get(coValue.id);
-   //
-   //   if (entry.state.type !== "available") {
-   //     throw new Error(`Can't sync unavailable coValue ${coValue.id}`);
-   //   }
-   //
-   //   const availablePeers = this.local.peers.getInPriorityOrder();
-   //   const peersToSync = peers || availablePeers;
-   //
-   //   for (const peer of peersToSync) {
-   //     if (peer.closed) continue;
-   //
-   //     await peer.send.push({
-   //       peerKnownState,
-   //       coValue,
-   //     });
-   //   }
-   //   for (const peer of availablePeers) {
-   //     // invoke the internal promise to be resolved once an ack message arrives from the peer
-   //     entry.uploadState.setWaitingForPeer(peer.id);
-   //   }
-   // }
-   */
   async waitForUploadIntoPeer(peerId: PeerID, id: RawCoID) {
     const entry = this.local.coValuesStore.get(id);
     if (!entry) {
@@ -468,49 +386,27 @@ export class SyncManager {
     return entry.uploadState.waitForPeer(peerId);
   }
 
-  async loadCoValueCore(
+  async loadCoValue(
     id: RawCoID,
-    skipLoadingFromPeer?: PeerID,
+    peerToIncludeId?: PeerID,
   ): Promise<CoValueCore | "unavailable"> {
     const entry = this.local.coValuesStore.get(id);
 
     if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
       const peers = this.local.peers.getServerAndStorage({
-        excludedId: skipLoadingFromPeer,
+        includedId: peerToIncludeId,
       });
 
-      // TODO @@@@@@@@@@@@@@@@@##############$$$$$$$$$$$$$$$$$
-      await entry.loadFromPeers(getPeersWithoutErrors(peers, id)).catch((e) => {
-        console.error("Error loading from peers", id, e);
-      });
+      await entry
+        .loadFromPeers(getPeersWithoutErrors(peers, id), loadCoValueFromPeers)
+        .catch((e) => {
+          console.error("Error loading from peers", id, e);
+        });
     }
 
     return entry.getCoValue();
   }
 }
-
-// async loadCoValue(
-//   id: RawCoID,
-//   peerToInclude?: PeerEntry,
-// ): Promise<CoValueCore | "unavailable"> {
-//   const entry = this.local.coValuesStore.get(id);
-//
-//   if(entry.state.type === "unknown" || entry.state.type === "unavailable"
-// )
-// {
-//   const peers = this.local.peers.getServerAndStorage({
-//     includedId: peerToInclude?.id,
-//   });
-//
-//   await entry
-//     .loadFromPeers(getPeersWithoutErrors(peers, id), loadCoValueFromPeers)
-//     .catch((e) => {
-//       console.error("Error loading from peers", id, e);
-//     });
-// }
-//
-// return entry.getCoValue();
-// }
 
 function getPeersWithoutErrors(peers: PeerEntry[], coValueId: RawCoID) {
   return peers.filter((p) => {
@@ -530,10 +426,6 @@ async function loadCoValueFromPeers(
   peers: PeerEntry[],
 ) {
   for (const peer of peers) {
-    if (peer.closed) {
-      continue;
-    }
-
     if (coValueEntry.state.type === "available") {
       void peer.send.pull({
         knownState: coValueEntry.state.coValue.knownState(),

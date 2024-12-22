@@ -370,8 +370,7 @@ export class LocalNode {
       });
     }
 
-    const core = await this.syncManager.loadCoValueCore(id);
-    // HERE TODO const core = await this.syncManager.loadCoValue(id);
+    const core = await this.syncManager.loadCoValue(id);
 
     if (core === "unavailable") {
       return "unavailable";

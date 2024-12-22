@@ -43,10 +43,17 @@ export class PeerOperations {
   }: { peerKnownState: CoValueKnownState; coValue: CoValueCore }) {
     if (this.peer.closed) return;
 
+    // Send new content pieces (possibly, in chunks) created after peerKnownState that passed in
     return this.sendContentIncludingDependencies({
       peerKnownState,
       coValue,
       action: "data",
+    }).then((newContentPiecesNumber) => {
+      // We send an empty data message
+      // if number of new content pieces is 0
+      if (!newContentPiecesNumber) {
+        void this.emptyData(coValue.id);
+      }
     });
   }
 
