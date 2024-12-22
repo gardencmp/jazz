@@ -255,7 +255,6 @@ export class FileStreamManager {
                 if (target.type === "websocket" && target.wsr) {
                     target.wsr.send(chunk, (error) => {
                         if (error) {
-                            logger.error(`[GET] Error in closure #1`);
                             this.chunkFileDownloadError(error, target, fileStream);
                             return;
                         }
@@ -267,7 +266,6 @@ export class FileStreamManager {
                 } else if (target.type === "http" && target.res) {
                     target.res.write(chunk, (error) => {
                         if (error) {
-                            logger.error(`[GET] Error in closure #2`);
                             this.chunkFileDownloadError(error, target, fileStream);
                             return;
                         }
@@ -300,7 +298,6 @@ export class FileStreamManager {
         });
 
         fileStream.on("error", (error) => {
-            logger.error(`[GET] Error in closure #3`);
             this.chunkFileDownloadError(error, target, fileStream);
         });
 

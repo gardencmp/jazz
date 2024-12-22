@@ -15,6 +15,7 @@ import {
     PORT,
     PerformanceStore,
     PerformanceEntry,
+    PerformanceTimer,
 } from "../util";
 import logger from "../util/logger";
 import { tlsCert } from "../util/tls";
@@ -39,24 +40,12 @@ app.use((req, res, next) => {
 const performanceStore = new PerformanceStore();
 app.use((req: Request, res: Response, next: NextFunction): void => {
     if ((req.method === 'GET' && req.path.startsWith("/covalue/")) || req.method === 'POST' || req.method === 'PATCH') {
-        const start = performance.now();
-        const timestamp = new Date().toISOString();
-        const requestId = `${performanceStore.getRequestCounter()}`;
+        const timer = new PerformanceTimer(performanceStore.requestId());
 
         res.on('finish', () => {
-            const duration = performance.now() - start;
-            const performanceEntry: PerformanceEntry = {
-                requestId: requestId,
-                method: req.method,
-                path: req.path,
-                statusCode: res.statusCode,
-                timestamp: timestamp,
-                duration: duration,
-                durationInMillis: duration.toFixed(2)
-            };
-
-            performanceStore.addEntry(performanceEntry);
-            logger.debug(`Performance entry: ${JSON.stringify(performanceEntry)}`);
+            timer.method(req.method).path(req.path).status(res.statusCode).end();
+            performanceStore.addEntry(timer.toEntry());
+            logger.debug(`Performance entry: ${JSON.stringify(timer.toEntry())}`);
         });
     }
 

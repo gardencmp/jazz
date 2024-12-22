@@ -313,51 +313,48 @@ export class uWebSocketResponse extends WebSocketResponseBase<uWS.WebSocket<{}>>
 }
 
 export interface PerformanceEntry {
-    requestId?: string;
-    method: string;
-    path: string;
-    statusCode: number;
-    timestamp: string;
+    requestId: string;
     duration: number;
-    durationInMillis: string;
+    durationInMillis?: string;
+    method?: string;
+    path?: string;
+    status?: number;
+    timestamp?: string;
 }
 
 export class PerformanceTimer {
-    private requestId: string;
     private start: number;
-    private timestamp: string;
-    private methodName: string = "";
-    private pathString: string = "";
-    private statusCode: number = -1;
-    private duration: number = -1;
-    private durationInMillis: string = "";
+    private data: PerformanceEntry;
 
     constructor(requestId: string) {
-        this.requestId = requestId;
         this.start = performance.now();
-        this.timestamp = new Date().toISOString();
+        this.data = { requestId, duration: -1, timestamp: new Date().toISOString() };
     }
 
     method(method: string): PerformanceTimer {
-        this.methodName = method;
+        this.data.method = method;
         return this;
     }
 
     path(path: string): PerformanceTimer {
-        this.pathString = path;
+        this.data.path = path;
         return this;
     }
 
-    status(statusCode: number): PerformanceTimer {
-        this.statusCode = statusCode;
+    status(status: number): PerformanceTimer {
+        this.data.status = status;
         return this;
     }
 
-    end(): void {
-        this.duration = performance.now() - this.start;
-
+    end(): PerformanceTimer {
+        this.data.duration = performance.now() - this.start;
+        this.data.durationInMillis = this.data.duration.toFixed(2);
+        return this;
     }
 
+    toEntry(): PerformanceEntry {
+        return this.data;
+    }
 }
 
 export class PerformanceStore {
@@ -376,9 +373,9 @@ export class PerformanceStore {
 
         const result = this.entries.reduce<Accumulator>((acc, entry) => {
             if (entry.method === "POST" && entry.path === "/covalue/binary") {
-                return entry.statusCode === 200
+                return entry.status === 200
                     ? { remaining: acc.remaining, aggregate: acc.aggregate + entry.duration }
-                    : entry.statusCode === 201
+                    : entry.status === 201
                         ? { remaining: [...acc.remaining, { ...entry, duration: entry.duration + acc.aggregate, durationInMillis: (entry.duration + acc.aggregate).toFixed(2) }], aggregate: 0 }
                         : { remaining: [...acc.remaining, entry], aggregate: acc.aggregate };
             }
@@ -401,7 +398,7 @@ export class PerformanceStore {
         // Write performance data to CSV
         const csvHeaders = 'RequestID,Method,Path,StatusCode,Timestamp,Duration,Duration (milliseconds)';
         const csvContent = this.entries
-        .map(entry => `${entry.requestId},${entry.method},${entry.path},${entry.statusCode},${entry.timestamp},${entry.duration},${entry.durationInMillis}`)
+        .map(entry => `${entry.requestId},${entry.method},${entry.path},${entry.status},${entry.timestamp},${entry.duration},${entry.durationInMillis}`)
         .join(os.EOL);
 
         fs.writeFileSync(outputPath, csvHeaders + os.EOL + csvContent);
@@ -413,5 +410,9 @@ export class PerformanceStore {
 
     getRequestCounter(): number {
         return ++this.requestCounter;
+    }
+
+    requestId(): string {
+        return `${this.getRequestCounter()}`;
     }
 }
