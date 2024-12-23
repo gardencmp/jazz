@@ -237,68 +237,6 @@ export class CoValueEntry {
     this.resolve = undefined;
   }
 
-  // async loadFromPeers(peers: PeerEntry[]) {
-  //   const state = this.state;
-  //
-  //   if (state.type !== "unknown" && state.type !== "unavailable") {
-  //     return;
-  //   }
-  //
-  //   if (peers.length === 0) {
-  //     return;
-  //   }
-  //
-  //   const doLoad = async (peersToLoadFrom: PeerEntry[]) => {
-  //     // If we are in the loading state we move to a new loading state
-  //     // to reset all the loading promises
-  //     if (this.state.type === "loading" || this.state.type === "unknown") {
-  //       this.moveToState(
-  //         new CoValueLoadingState(peersToLoadFrom.map((p) => p.id)),
-  //       );
-  //     }
-  //
-  //     // Assign the current state to a variable to not depend on the state changes
-  //     // that may happen while we wait for loadCoValueCallback to complete
-  //     const currentState = this.state;
-  //
-  //     // If we entered successfully the loading state, we load the coValue from the peers
-  //     //
-  //     // We may not enter the loading state if the coValue has become available in between
-  //     // of the retries
-  //     if (currentState.type === "loading") {
-  //       await loadCoValueFromPeers(this, peersToLoadFrom);
-  //
-  //       const result = await currentState.result;
-  //       return result !== "unavailable";
-  //     }
-  //
-  //     return currentState.type === "available";
-  //   };
-  //
-  //   await doLoad(peers);
-  //
-  //   // Retry loading from peers that have the retry flag enabled
-  //   const peersWithRetry = peers.filter((p) =>
-  //     p.shouldRetryUnavailableCoValues(),
-  //   );
-  //
-  //   if (peersWithRetry.length > 0) {
-  //     // We want to exit early if the coValue becomes available in between the retries
-  //     await Promise.race([
-  //       this.getCoValue(),
-  //       runWithRetry(
-  //         () => doLoad(peersWithRetry),
-  //         CO_VALUE_LOADING_MAX_RETRIES,
-  //       ),
-  //     ]);
-  //   }
-  //
-  //   // If after the retries the coValue is still loading, we consider the load failed
-  //   if (this.state.type === "loading") {
-  //     this.moveToState(new CoValueUnavailableState());
-  //   }
-  // }
-
   async loadFromPeers(
     peers: PeerEntry[],
     loadCoValueCallback: (
@@ -388,63 +326,14 @@ export class CoValueEntry {
         break;
     }
   }
-}
 
-// async function loadCoValueFromPeers(
-//   coValueEntry: CoValueEntry,
-//   peers: PeerEntry[],
-// ) {
-//   for (const peer of peers) {
-//     if (peer.closed) {
-//       continue;
-//     }
-//
-//     if (coValueEntry.state.type === "available") {
-//       /**
-//        * We don't need to wait for the message to be delivered here.
-//        *
-//        * This way when the coValue becomes available because it's cached we don't wait for the server
-//        * peer to consume the messages queue before moving forward.
-//        */
-//       peer
-//         .pushOutgoingMessage({
-//           action: "pull",
-//           ...coValueEntry.state.coValue.knownState(),
-//         })
-//         .catch((err) => {
-//           console.error(`Failed to push load message to peer ${peer.id}`, err);
-//         });
-//     } else {
-//       /**
-//        * We only wait for the load state to be resolved.
-//        */
-//       peer
-//         .pushOutgoingMessage({
-//           action: "pull",
-//           id: coValueEntry.id,
-//           header: false,
-//           sessions: {},
-//         })
-//         .catch((err) => {
-//           console.error(`Failed to push load message to peer ${peer.id}`, err);
-//         });
-//     }
-//
-//     if (coValueEntry.state.type === "loading") {
-//       const timeout = setTimeout(() => {
-//         if (coValueEntry.state.type === "loading") {
-//           console.error("Failed to load coValue from peer", peer.id);
-//           coValueEntry.dispatch({
-//             type: "not-found-in-peer",
-//             peerId: peer.id,
-//           });
-//         }
-//       }, CO_VALUE_LOADING_TIMEOUT);
-//       await coValueEntry.state.waitForPeer(peer.id);
-//       clearTimeout(timeout);
-//     }
-//   }
-// }
+  markAsNotFoundInPeer(peerId: PeerID) {
+    this.dispatch({
+      type: "not-found-in-peer",
+      peerId,
+    });
+  }
+}
 
 async function runWithRetry<T>(fn: () => Promise<T>, maxRetries: number) {
   let retries = 1;

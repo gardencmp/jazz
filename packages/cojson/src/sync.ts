@@ -85,6 +85,15 @@ export type DisconnectedError = "Disconnected";
 
 export type PingTimeoutError = "PingTimeout";
 
+interface EntryManagerInterface {
+  handlePull(msg: DataMessage, peer: PeerEntry): Promise<void>;
+  // handleData(msg: DataMessage, peer: PeerEntry): Promise<void>;
+  // handlePush(msg: DataMessage, peer: PeerEntry): Promise<void>;
+  // handleAck(msg: DataMessage, peer: PeerEntry): Promise<void>;
+}
+
+export class AvailableEntryManager {}
+export class UnavailableEntryManager {}
 export class SyncManager {
   local: LocalNode;
   requestedSyncs: {
@@ -122,12 +131,8 @@ export class SyncManager {
     }
   }
 
-  async handlePull(msg: PullMessage, peer: PeerEntry) {
+  async handlePull(msg: PullMessage, peer: PeerEntry): Promise<unknown> {
     const entry = this.local.coValuesStore.get(msg.id);
-
-    const respondWithEmptyData = async () => {
-      void peer.send.emptyData(msg.id);
-    };
 
     if (entry.state.type === "available") {
       return peer.send.data({
@@ -137,31 +142,12 @@ export class SyncManager {
     }
 
     if (entry.state.type === "loading") {
-      // We need to return from handleLoad immediately and wait for the CoValue to be loaded
-      // in a new task, otherwise we might block further incoming content messages that would
-      // resolve the CoValue as available. This can happen when we receive fresh
-      // content from a client, but we are a server with our own upstream server(s)
-      return entry.getCoValue().then(async (value) => {
-        if (value === "unavailable") {
-          return respondWithEmptyData();
-        } else {
-          return peer.send.data({
-            peerKnownState: msg,
-            coValue: value,
-          });
-        }
-      });
+      // We need to return from handlePull immediately and wait for the CoValue to be loaded in a new task,
+      // otherwise we might block further incoming content messages that would resolve the CoValue as available.
+      return entry.getCoValue().then(() => this.handlePull(msg, peer));
     }
 
-    void respondWithEmptyData();
-
-    //
-    // peer.send
-    //   .dataResponse({
-    //     peerKnownState: msg,
-    //     entry,
-    //   })
-    //   .catch((e) => console.error("Error sending data response", e, msg));
+    void peer.send.data({ peerKnownState: msg, coValue: "unknown" });
 
     // Initiate a new PULL flow
     // TODO maybe to send a PULL req if we have less data?
@@ -177,10 +163,7 @@ export class SyncManager {
     const entry = this.local.coValuesStore.get(msg.id);
 
     if (!msg.known) {
-      entry.dispatch({
-        type: "not-found-in-peer",
-        peerId: peer.id,
-      });
+      entry.markAsNotFoundInPeer(peer.id);
       return;
     }
 
@@ -197,10 +180,7 @@ export class SyncManager {
     if (entry.state.type !== "available") {
       coValue = new CoValueCore(msg.header as CoValueHeader, this.local);
 
-      entry.dispatch({
-        type: "available",
-        coValue,
-      });
+      this.local.coValuesStore.setAsAvailable(msg.id, coValue);
     } else {
       coValue = entry.state.coValue;
     }
@@ -249,10 +229,7 @@ export class SyncManager {
 
       coValue = new CoValueCore(msg.header, this.local);
 
-      entry.dispatch({
-        type: "available",
-        coValue,
-      });
+      this.local.coValuesStore.setAsAvailable(msg.id, coValue);
     } else {
       coValue = entry.state.coValue;
     }
@@ -433,10 +410,7 @@ async function loadCoValueFromPeers(
       const timeout = setTimeout(() => {
         if (coValueEntry.state.type === "loading") {
           console.error("Failed to load coValue from peer", peer.id);
-          coValueEntry.dispatch({
-            type: "not-found-in-peer",
-            peerId: peer.id,
-          });
+          coValueEntry.markAsNotFoundInPeer(peer.id);
         }
       }, CO_VALUE_LOADING_TIMEOUT);
       await coValueEntry.state.waitForPeer(peer.id);

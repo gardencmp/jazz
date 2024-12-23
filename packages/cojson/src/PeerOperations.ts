@@ -75,8 +75,20 @@ export class PeerOperations {
   async data({
     peerKnownState,
     coValue,
-  }: { peerKnownState: CoValueKnownState; coValue: CoValueCore }) {
+  }: {
+    peerKnownState: CoValueKnownState;
+    coValue: CoValueCore | "empty" | "unknown";
+  }) {
     if (this.peer.closed) return;
+
+    if (coValue === "empty") {
+      return this.peer.pushOutgoingMessage(emptyDataMessage(peerKnownState.id));
+    }
+    if (coValue === "unknown") {
+      return this.peer.pushOutgoingMessage(
+        unknownDataMessage(peerKnownState.id),
+      );
+    }
 
     // Send new content pieces (possibly, in chunks) created after peerKnownState that passed in
     return this.sendContentIncludingDependencies({
@@ -87,7 +99,7 @@ export class PeerOperations {
       // We send an empty data message
       // if number of new content pieces is 0
       if (!newContentPiecesNumber) {
-        void this.emptyData(coValue.id);
+        void this.data({ peerKnownState, coValue: "empty" });
       }
     });
   }
@@ -131,14 +143,6 @@ export class PeerOperations {
   //     default:
   //       return this.sendUnknownData(entry.id);
   //   }
-  // }
-
-  async emptyData(id: RawCoID) {
-    return this.peer.pushOutgoingMessage(emptyDataMessage(id));
-  }
-
-  // async sendUnknownData(id: RawCoID) {
-  //   return this.peer.pushOutgoingMessage(unknownDataMessage(id));
   // }
 
   private async sendContentIncludingDependencies({
