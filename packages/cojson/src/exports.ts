@@ -43,6 +43,7 @@ import { accountOrAgentIDfromSessionID } from "./typeUtils/accountOrAgentIDfromS
 import { expectGroup } from "./typeUtils/expectGroup.js";
 import { isAccountID } from "./typeUtils/isAccountID.js";
 
+import { emptyDataMessage, unknownDataMessage } from "./PeerOperations.js";
 import type { AnyRawCoValue, CoID } from "./coValue.js";
 import type {
   AccountMeta,
@@ -62,7 +63,6 @@ import type { SyncMessage } from "./sync.js";
 import {
   DisconnectedError,
   PingTimeoutError,
-  emptyDataMessage,
   emptyKnownState,
 } from "./sync.js";
 
@@ -131,6 +131,7 @@ export {
   LSMStorage,
   emptyKnownState,
   emptyDataMessage,
+  unknownDataMessage,
 };
 
 export type {

@@ -1,5 +1,6 @@
+import { unknownDataMessage } from "./exports.js";
 import { SessionID } from "./ids.js";
-import { CoValueContent, SyncMessage, emptyDataMessage } from "./sync.js";
+import { CoValueContent, SyncMessage } from "./sync.js";
 
 export const transformOutgoingMessageToPeer = (
   msg: SyncMessage,
@@ -35,6 +36,8 @@ export const transformOutgoingMessageToPeer = (
         { ...msg, action: "content" },
       ];
     case "data":
+      if (msg.known === false)
+        return [{ action: "known", id: msg.id, header: false, sessions: {} }];
       // known + content => no response expected
       return [
         {
@@ -67,7 +70,8 @@ export const transformIncomingMessageFromPeer = (
     case "content":
       return { ...msg, action: "push" };
     case "known":
-      if (!msg.header) return emptyDataMessage(msg.id);
+      if (!msg.header) return unknownDataMessage(msg.id);
+
       if (msg.isCorrection) return { ...msg, action: "pull" };
       return { ...msg, action: "ack" };
     default:

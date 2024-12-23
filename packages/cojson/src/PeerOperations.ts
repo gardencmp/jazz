@@ -1,8 +1,43 @@
 import { PeerEntry } from "./PeerEntry.js";
 import { CoValueCore } from "./coValueCore.js";
 import { RawCoID } from "./ids.js";
-import { CoValueKnownState, SyncMessage, emptyDataMessage } from "./sync.js";
+import { CoValueKnownState, DataMessage, SyncMessage } from "./sync.js";
 
+export function emptyDataMessage(
+  id: RawCoID,
+  asDependencyOf?: RawCoID,
+): DataMessage {
+  const message: DataMessage = {
+    id,
+    known: true,
+    header: undefined,
+    action: "data",
+    priority: 0,
+    new: {},
+  };
+  return asDependencyOf ? { ...message, asDependencyOf } : message;
+}
+
+export function unknownDataMessage(
+  id: RawCoID,
+  asDependencyOf?: RawCoID,
+): DataMessage {
+  const message: DataMessage = {
+    id,
+    known: false,
+    header: undefined,
+    action: "data",
+    priority: 0,
+    new: {},
+  };
+
+  return asDependencyOf ? { ...message, asDependencyOf } : message;
+}
+
+/**
+ * The PeerOperations class centralizes the sending logic for the atomic synchronization operations:
+ * pull, push, ack, and data, implementing the protocol.
+ */
 export class PeerOperations {
   constructor(private readonly peer: PeerEntry) {}
 
@@ -57,9 +92,54 @@ export class PeerOperations {
     });
   }
 
+  /**
+   * "data" message response following the protocol:
+   * - Sends new content if it exists.
+   * - Sends an empty data message otherwise.
+   * - Sends an empty data message with `{ known: false }` in the message if the `coValue` is unknown by local node.
+   *
+   * @param peerKnownState - The state provided by the peer.
+   * Any content created after this state is considered new and to be sent.
+   * @param entry - The stored `coValue` data on the local node.
+   */
+  // async dataResponse({
+  //   peerKnownState,
+  //   entry,
+  // }: { peerKnownState: CoValueKnownState; entry: CoValueEntry }) {
+  //   if (this.peer.closed) return;
+  //
+  //   switch (entry.state.type) {
+  //     case "available":
+  //       return this.sendData({
+  //         peerKnownState,
+  //         coValue: entry.state.coValue,
+  //       });
+  //     case "loading":
+  //       // We need to return from handleLoad immediately and wait for the CoValue to be loaded
+  //       // in a new task, otherwise we might block further incoming content messages that would
+  //       // resolve the CoValue as available.
+  //       return entry.getCoValue().then(async (value) => {
+  //         if (value === "unavailable") {
+  //           return this.sendUnknownData(entry.id);
+  //         } else {
+  //           return this.sendData({
+  //             peerKnownState,
+  //             coValue: value,
+  //           });
+  //         }
+  //       });
+  //     default:
+  //       return this.sendUnknownData(entry.id);
+  //   }
+  // }
+
   async emptyData(id: RawCoID) {
     return this.peer.pushOutgoingMessage(emptyDataMessage(id));
   }
+
+  // async sendUnknownData(id: RawCoID) {
+  //   return this.peer.pushOutgoingMessage(unknownDataMessage(id));
+  // }
 
   private async sendContentIncludingDependencies({
     peerKnownState,

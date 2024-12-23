@@ -7,6 +7,7 @@ import {
   cojsonInternals,
   emptyDataMessage,
   emptyKnownState,
+  unknownDataMessage,
 } from "cojson";
 import { collectNewTxs, getDependedOnCoValues } from "./syncUtils.js";
 import {
@@ -102,7 +103,7 @@ export class SyncManager {
       // this.sendStateMessage(knownMessage);
       // temporary ugly patch to make it work with "data" and "pull" actions
       if (!knownMessage.header) {
-        this.sendStateMessage(emptyDataMessage(knownMessage.id));
+        this.sendStateMessage(unknownDataMessage(knownMessage.id));
 
         if (coValueKnownState.header) {
           this.sendStateMessage({ ...knownMessage, action: "pull" });

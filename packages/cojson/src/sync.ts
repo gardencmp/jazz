@@ -24,20 +24,6 @@ export function emptyKnownState(id: RawCoID): CoValueKnownState {
   };
 }
 
-export function emptyDataMessage(
-  id: RawCoID,
-  asDependencyOf?: RawCoID,
-): DataMessage {
-  const message: DataMessage = {
-    id,
-    known: false,
-    action: "data",
-    priority: 0,
-    new: {},
-  };
-  return asDependencyOf ? { ...message, asDependencyOf } : message;
-}
-
 export type SyncMessage =
   | LoadMessage
   | KnownStateMessage
@@ -80,7 +66,7 @@ export type NewContentMessage = {
 } & CoValueContent;
 
 export type DataMessage = {
-  known?: boolean;
+  known: boolean;
   action: "data";
   asDependencyOf?: RawCoID;
 } & CoValueContent;
@@ -169,6 +155,14 @@ export class SyncManager {
 
     void respondWithEmptyData();
 
+    //
+    // peer.send
+    //   .dataResponse({
+    //     peerKnownState: msg,
+    //     entry,
+    //   })
+    //   .catch((e) => console.error("Error sending data response", e, msg));
+
     // Initiate a new PULL flow
     // TODO maybe to send a PULL req if we have less data?
     // If the load request contains a header or any session data
@@ -182,7 +176,7 @@ export class SyncManager {
   async handleData(msg: DataMessage, peer: PeerEntry) {
     const entry = this.local.coValuesStore.get(msg.id);
 
-    if (msg.known === false) {
+    if (!msg.known) {
       entry.dispatch({
         type: "not-found-in-peer",
         peerId: peer.id,
@@ -367,6 +361,7 @@ export class SyncManager {
     }
     for (const peer of this.local.peers.getAll()) {
       const entry = this.local.coValuesStore.get(coValue.id);
+      // if (peer.erroredCoValues.has(coValue.id)) continue;
 
       // invoke the internal promise to be resolved once an ack message arrives from the peer
       entry.uploadState.setPendingForPeer(peer.id);
