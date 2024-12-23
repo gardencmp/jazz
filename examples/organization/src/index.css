@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  strong,
+  h1,
+  h2,
+  h3 {
+    @apply font-semibold text-stone-900 dark:text-white;
+  }
+
+  [type="text"],
+  select {
+    border-color: var(--gcmp-border-color);
+
+    @media (prefers-color-scheme: dark) {
+      border-color: var(--gcmp-invert-border-color);
+    }
+  }
+}

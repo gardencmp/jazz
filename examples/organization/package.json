@@ -1,7 +1,7 @@
 {
-  "name": "form",
+  "name": "organization",
   "private": true,
-  "version": "0.0.15",
+  "version": "0.0.13",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,23 +11,22 @@
     "format-and-lint:fix": "biome check . --write"
   },
   "dependencies": {
-    "hash-slash": "workspace:*",
-    "jazz-browser-media-images": "workspace:*",
     "jazz-react": "workspace:*",
     "jazz-tools": "workspace:*",
+    "lucide-react": "^0.274.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router": "^6.16.0",
+    "react-router-dom": "^6.16.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@playwright/test": "^1.46.1",
     "@tailwindcss/forms": "^0.5.9",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "globals": "^15.11.0",
-    "is-ci": "^3.0.1",
     "postcss": "^8.4.27",
     "tailwindcss": "^3.4.15",
     "typescript": "~5.6.2",
