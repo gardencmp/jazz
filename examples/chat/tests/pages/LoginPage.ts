@@ -25,7 +25,7 @@ export class LoginPage {
   async loginAs(value: string) {
     await this.page
       .getByRole("button", {
-        name: `Log in as "${value}"`,
+        name: value,
       })
       .click();
   }

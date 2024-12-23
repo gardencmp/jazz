@@ -39,13 +39,11 @@ test("chat between two users", async ({ page }) => {
   await chatPage.expectMessageRow(message2ByLuigi);
 
   // This breaks with (Error: Error reading from peer storage, handling msg)
-  // await chatPage.logout();
-  // await loginPage.loginAs(mario);
+  await chatPage.logout();
+  await loginPage.loginAs(mario);
 
-  // await chatPage.expectLoaded();
+  await page.goto(roomURL);
 
-  // await page.goto(roomURL);
-
-  // await chatPage.expectMessageRow(message1ByMario);
-  // await chatPage.expectMessageRow(message2ByLuigi);
+  await chatPage.expectMessageRow(message1ByMario);
+  await chatPage.expectMessageRow(message2ByLuigi);
 });
