@@ -1,5 +1,11 @@
 # jazz-browser
 
+## 0.8.46
+
+### Patch Changes
+
+- ab4ffbd: Demo Auth: fix the user credentials storage when the username contains non aplhanumeric characters
+
 ## 0.8.45
 
 ### Patch Changes
