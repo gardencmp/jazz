@@ -218,7 +218,9 @@ export function createInviteLink<C extends CoValue>(
     currentCoValue = currentCoValue.getGroup().core;
   }
 
-  if (currentCoValue.header.ruleset.type !== "group") {
+  const { ruleset, meta } = currentCoValue.header;
+
+  if (ruleset.type !== "group" || meta?.type === "account") {
     throw new Error("Can't create invite link for object without group");
   }
 
