@@ -623,9 +623,7 @@ export class RawGroup<
       .getCurrentContent() as M;
 
     if (init) {
-      for (const [key, value] of Object.entries(init)) {
-        map.set(key, value, initPrivacy);
-      }
+      map.assign(init, initPrivacy);
     }
 
     return map;
