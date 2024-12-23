@@ -1,15 +1,15 @@
 {
   "name": "jazz-react-auth-clerk",
-  "version": "0.8.44",
+  "version": "0.8.45",
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "license": "MIT",
   "dependencies": {
-    "cojson": "workspace:0.8.44",
-    "jazz-browser-auth-clerk": "workspace:0.8.44",
-    "jazz-react": "workspace:0.8.44",
-    "jazz-tools": "workspace:0.8.44"
+    "cojson": "workspace:0.8.45",
+    "jazz-browser-auth-clerk": "workspace:0.8.45",
+    "jazz-react": "workspace:0.8.45",
+    "jazz-tools": "workspace:0.8.45"
   },
   "peerDependencies": {
     "react": "^18.2.0"

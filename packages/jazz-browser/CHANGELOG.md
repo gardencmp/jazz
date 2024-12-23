@@ -1,5 +1,20 @@
 # jazz-browser
 
+## 0.8.45
+
+### Patch Changes
+
+- 6f0bd7f: Throw an error if an invite is created from an account owned coValue
+- Updated dependencies [6f0bd7f]
+- Updated dependencies [fca6a0b]
+- Updated dependencies [fa41f8e]
+- Updated dependencies [88d7d9a]
+- Updated dependencies [60e35ea]
+  - cojson@0.8.45
+  - jazz-tools@0.8.45
+  - cojson-storage-indexeddb@0.8.45
+  - cojson-transport-ws@0.8.45
+
 ## 0.8.44
 
 ### Patch Changes

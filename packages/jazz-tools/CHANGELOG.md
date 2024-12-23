@@ -1,5 +1,17 @@
 # jazz-tools
 
+## 0.8.45
+
+### Patch Changes
+
+- fa41f8e: Add a bundle step to not expose the circular deps to the lib consumers
+- 88d7d9a: Add Inbox a new experimental API to simplfy the initial handshake between accounts
+- 60e35ea: Reduce the amount of circular deps
+- Updated dependencies [6f0bd7f]
+- Updated dependencies [fca6a0b]
+- Updated dependencies [88d7d9a]
+  - cojson@0.8.45
+
 ## 0.8.44
 
 ### Patch Changes
