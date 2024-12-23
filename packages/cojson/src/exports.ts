@@ -151,9 +151,6 @@ export type {
 export namespace CojsonInternalTypes {
   export type CoValueKnownState = import("./sync.js").CoValueKnownState;
   export type CoValueContent = import("./sync.js").CoValueContent;
-  export type DoneMessage = import("./sync.js").DoneMessage;
-  export type KnownStateMessage = import("./sync.js").KnownStateMessage;
-  export type LoadMessage = import("./sync.js").LoadMessage;
   export type NewContentMessage = import("./sync.js").NewContentMessage;
   export type PullMessage = import("./sync.js").PullMessage;
   export type PushMessage = import("./sync.js").PushMessage;

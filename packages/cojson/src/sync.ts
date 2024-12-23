@@ -12,7 +12,9 @@ import { CoValuePriority } from "./priority.js";
 
 export type CoValueKnownState = {
   id: RawCoID;
+  // Is coValue known by peer
   header: boolean;
+  // Number of known sessions
   sessions: { [sessionID: SessionID]: number };
 };
 
@@ -28,7 +30,6 @@ export type SyncMessage =
   | LoadMessage
   | KnownStateMessage
   | NewContentMessage
-  | DoneMessage
   | PullMessage
   | PushMessage
   | AckMessage
@@ -76,24 +77,10 @@ export type PushMessage = {
   asDependencyOf?: RawCoID;
 } & CoValueContent;
 
-export type DoneMessage = {
-  action: "done";
-  id: RawCoID;
-};
-
 export type DisconnectedError = "Disconnected";
 
 export type PingTimeoutError = "PingTimeout";
 
-interface EntryManagerInterface {
-  handlePull(msg: DataMessage, peer: PeerEntry): Promise<void>;
-  // handleData(msg: DataMessage, peer: PeerEntry): Promise<void>;
-  // handlePush(msg: DataMessage, peer: PeerEntry): Promise<void>;
-  // handleAck(msg: DataMessage, peer: PeerEntry): Promise<void>;
-}
-
-export class AvailableEntryManager {}
-export class UnavailableEntryManager {}
 export class SyncManager {
   local: LocalNode;
   requestedSyncs: {
@@ -131,6 +118,18 @@ export class SyncManager {
     }
   }
 
+  /**
+   * "Pull" request must be followed by "data" message response according to the protocol:
+   * - Sends new content if it exists.
+   * - Sends an empty data message otherwise.
+   * - Sends an empty data message with `{ known: false }` in the message if the `coValue` is unknown by local node.
+   *
+   * Handler initiates a new "pull" requests to load the coValue from peers if it is not known by the node.
+   *
+   * @param msg - The state provided by the peer.
+   * Any content created after this state is considered new and to be sent.
+   * @param peer
+   */
   async handlePull(msg: PullMessage, peer: PeerEntry): Promise<unknown> {
     const entry = this.local.coValuesStore.get(msg.id);
 
@@ -148,17 +147,16 @@ export class SyncManager {
     }
 
     void peer.send.data({ peerKnownState: msg, coValue: "unknown" });
-
+    // If the coValue is known by peer then we try to load it from the sender as well
+    const peerToInclude = msg.header ? peer : null;
     // Initiate a new PULL flow
-    // TODO maybe to send a PULL req if we have less data?
-    // If the load request contains a header or any session data
-    // we try to load it from the sender as well
-    const peerToInclude =
-      msg.header || Object.keys(msg.sessions).length > 0 ? peer : null;
-
     return this.loadCoValue(msg.id, peerToInclude?.id);
   }
 
+  /**
+   * "Data" is a response to our "pull" message. It's a terminal message which must not be responded to.
+   * At this stage the coValue state is considered synced between the peer and the node.
+   */
   async handleData(msg: DataMessage, peer: PeerEntry) {
     const entry = this.local.coValuesStore.get(msg.id);
 
@@ -281,13 +279,18 @@ export class SyncManager {
   //   void peer.send.pull({ coValue });
   // }
   //
+
+  /**
+   * Sends "push" request to peers to broadcast all known coValues state
+   * and request to subscribe to those coValues updates (if have not)
+   */
   async initialSync(peerData: Peer, peer: PeerEntry) {
     for (const entry of this.local.coValuesStore.getValues()) {
       const coValue = this.local.expectCoValueLoaded(entry.id);
       // TODO does it make sense to additionally pull dependencies now that we're sending all that we know from here ?
       // await this.pullIncludingDependencies(coValue, peer);
 
-      // We send only push messages to be compatible  (load + content as previously), see transformOutgoingMessageToPeer()
+      // Previously we used to send load + content,  see transformOutgoingMessageToPeer()
       await peer.send.push({
         peerKnownState: emptyKnownState(entry.id),
         coValue,
@@ -322,12 +325,17 @@ export class SyncManager {
     }
   }
 
+  /**
+   * Sends "push" request to peers to broadcast the new known coValue state and request to subscribe to updates if have not
+   */
   async actuallySyncCoValue(
     coValue: CoValueCore,
     peerKnownState: CoValueKnownState,
     peers?: PeerEntry[],
   ) {
+    const entry = this.local.coValuesStore.get(coValue.id);
     const peersToSync = peers || this.local.peers.getInPriorityOrder();
+
     for (const peer of peersToSync) {
       if (peer.erroredCoValues.has(coValue.id)) continue;
 
@@ -335,12 +343,7 @@ export class SyncManager {
         peerKnownState,
         coValue,
       });
-    }
-    for (const peer of this.local.peers.getAll()) {
-      const entry = this.local.coValuesStore.get(coValue.id);
-      // if (peer.erroredCoValues.has(coValue.id)) continue;
 
-      // invoke the internal promise to be resolved once an ack message arrives from the peer
       entry.uploadState.setPendingForPeer(peer.id);
     }
   }
@@ -358,39 +361,33 @@ export class SyncManager {
     return entry.uploadState.waitForPeer(peerId);
   }
 
+  /**
+   * Sends "pull" request to peers to load/update the coValue state and request to subscribe to peer's updates if have not
+   *
+   * @param id
+   * @param peerIdToInclude - Required peer to send the request to
+   */
   async loadCoValue(
     id: RawCoID,
-    peerToIncludeId?: PeerID,
+    peerIdToInclude?: PeerID,
   ): Promise<CoValueCore | "unavailable"> {
     const entry = this.local.coValuesStore.get(id);
 
-    if (entry.state.type === "unknown" || entry.state.type === "unavailable") {
-      const peers = this.local.peers.getServerAndStorage({
-        includedId: peerToIncludeId,
-      });
+    const peers = this.local.peers.getServerAndStorage({
+      includedId: peerIdToInclude,
+    });
 
-      await entry
-        .loadFromPeers(getPeersWithoutErrors(peers, id), loadCoValueFromPeers)
-        .catch((e) => {
-          console.error("Error loading from peers", id, e);
-        });
+    try {
+      await entry.loadFromPeers(
+        getPeersWithoutErrors(peers, id),
+        loadCoValueFromPeers,
+      );
+    } catch (e) {
+      console.error("Error loading from peers", id, e);
     }
 
     return entry.getCoValue();
   }
-}
-
-function getPeersWithoutErrors(peers: PeerEntry[], coValueId: RawCoID) {
-  return peers.filter((p) => {
-    if (p.erroredCoValues.has(coValueId)) {
-      console.error(
-        `Skipping load on errored coValue ${coValueId} from peer ${p.id}`,
-      );
-      return false;
-    }
-
-    return true;
-  });
 }
 
 async function loadCoValueFromPeers(
@@ -417,4 +414,17 @@ async function loadCoValueFromPeers(
       clearTimeout(timeout);
     }
   }
+}
+
+function getPeersWithoutErrors(peers: PeerEntry[], coValueId: RawCoID) {
+  return peers.filter((p) => {
+    if (p.erroredCoValues.has(coValueId)) {
+      console.error(
+        `Skipping load on errored coValue ${coValueId} from peer ${p.id}`,
+      );
+      return false;
+    }
+
+    return true;
+  });
 }

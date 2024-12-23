@@ -69,9 +69,6 @@ export class LSMStorage<WH, RH, FS extends FileSystem<WH, RH>> {
           if (msg === "Disconnected" || msg === "PingTimeout") {
             throw new Error("Unexpected Disconnected message");
           }
-          if (msg.action === "done") {
-            return;
-          }
 
           if (msg.action === "content") {
             await this.handleNewContent(msg);

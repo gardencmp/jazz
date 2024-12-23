@@ -104,47 +104,6 @@ export class PeerOperations {
     });
   }
 
-  /**
-   * "data" message response following the protocol:
-   * - Sends new content if it exists.
-   * - Sends an empty data message otherwise.
-   * - Sends an empty data message with `{ known: false }` in the message if the `coValue` is unknown by local node.
-   *
-   * @param peerKnownState - The state provided by the peer.
-   * Any content created after this state is considered new and to be sent.
-   * @param entry - The stored `coValue` data on the local node.
-   */
-  // async dataResponse({
-  //   peerKnownState,
-  //   entry,
-  // }: { peerKnownState: CoValueKnownState; entry: CoValueEntry }) {
-  //   if (this.peer.closed) return;
-  //
-  //   switch (entry.state.type) {
-  //     case "available":
-  //       return this.sendData({
-  //         peerKnownState,
-  //         coValue: entry.state.coValue,
-  //       });
-  //     case "loading":
-  //       // We need to return from handleLoad immediately and wait for the CoValue to be loaded
-  //       // in a new task, otherwise we might block further incoming content messages that would
-  //       // resolve the CoValue as available.
-  //       return entry.getCoValue().then(async (value) => {
-  //         if (value === "unavailable") {
-  //           return this.sendUnknownData(entry.id);
-  //         } else {
-  //           return this.sendData({
-  //             peerKnownState,
-  //             coValue: value,
-  //           });
-  //         }
-  //       });
-  //     default:
-  //       return this.sendUnknownData(entry.id);
-  //   }
-  // }
-
   private async sendContentIncludingDependencies({
     peerKnownState,
     coValue,

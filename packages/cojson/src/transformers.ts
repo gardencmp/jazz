@@ -36,7 +36,7 @@ export const transformOutgoingMessageToPeer = (
         { ...msg, action: "content" },
       ];
     case "data":
-      if (msg.known === false)
+      if (!msg.known)
         return [{ action: "known", id: msg.id, header: false, sessions: {} }];
       // known + content => no response expected
       return [
