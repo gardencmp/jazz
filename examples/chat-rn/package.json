@@ -1,6 +1,6 @@
 {
   "name": "chat-rn",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "main": "index.js",
   "scripts": {
     "build": "expo export -p ios",
@@ -30,7 +30,7 @@
     "expo-web-browser": "~14.0.1",
     "jazz-react-native": "workspace:*",
     "jazz-tools": "workspace:*",
-    "nativewind": "^2.0.11",
+    "nativewind": "^4.1.21",
     "react": "^18.3.1",
     "react-native": "~0.76.3",
     "react-native-fetch-api": "^3.0.0",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/react": "^18.3.12",
-    "tailwindcss": "^3.4.9",
+    "tailwindcss": "^3.4.15",
     "typescript": "~5.6.2"
   },
   "private": true

@@ -5,7 +5,14 @@ import {
   consumeInviteLinkFromWindowLocation,
   createJazzBrowserContext,
 } from "jazz-browser";
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   Account,
@@ -17,17 +24,32 @@ import {
   DeeplyLoaded,
   DepthsIn,
   ID,
+  Inbox,
+  InboxSender,
   createCoValueObservable,
 } from "jazz-tools";
 
 /** @category Context & Hooks */
-export function createJazzReactApp<Acc extends Account>({
+export function createJazzReactApp<
+  Acc extends Account,
+  InboxMessage extends CoValue = CoValue,
+>({
   AccountSchema = Account as unknown as AccountClass<Acc>,
+  InboxMessageSchema,
 }: {
   AccountSchema?: AccountClass<Acc>;
-} = {}): JazzReactApp<Acc> {
+  InboxMessageSchema?: CoValueClass<InboxMessage>;
+} = {}): JazzReactApp<Acc, InboxMessage> {
   const JazzContext = React.createContext<
     BrowserContext<Acc> | BrowserGuestContext | undefined
+  >(undefined);
+  const InboxContext = React.createContext<
+    | {
+        subscribe: (
+          callback: (message: InboxMessage) => Promise<void>,
+        ) => () => void;
+      }
+    | undefined
   >(undefined);
 
   function Provider({
@@ -121,7 +143,80 @@ export function createJazzReactApp<Acc extends Account>({
     );
 
     return (
-      <JazzContext.Provider value={ctx}>{ctx && children}</JazzContext.Provider>
+      <JazzContext.Provider value={ctx}>
+        {ctx && <InboxProvider>{children}</InboxProvider>}
+      </JazzContext.Provider>
+    );
+  }
+
+  function InboxProvider({ children }: { children: React.ReactNode }) {
+    const me = useAccount().me;
+    const [subscribed, setSubscribed] = useState(false);
+    const subscribersRef = useRef(
+      new Set<(message: InboxMessage) => Promise<void>>(),
+    );
+
+    const handleSubscribe = useCallback(
+      (subscriber: (message: InboxMessage) => Promise<void>) => {
+        if (!InboxMessageSchema) {
+          throw new Error(
+            "To subscribe to inbox messages, you must provide an InboxMessageSchema when creating the Jazz context.",
+          );
+        }
+
+        subscribersRef.current.add(subscriber);
+        setSubscribed(true);
+
+        return () => {
+          subscribersRef.current.delete(subscriber);
+          if (subscribersRef.current.size === 0) {
+            setSubscribed(false);
+          }
+        };
+      },
+      [],
+    );
+
+    useEffect(() => {
+      if (!InboxMessageSchema) return;
+      if (!subscribed) return;
+
+      let unsubscribe = () => {};
+      let unsubscribed = false;
+
+      const load = async () => {
+        const inbox = await Inbox.load(me);
+
+        if (unsubscribed) return;
+
+        unsubscribe = inbox.subscribe(
+          InboxMessageSchema,
+          async (message: InboxMessage) => {
+            const promises = [];
+            for (const subscriber of subscribersRef.current) {
+              promises.push(subscriber(message));
+            }
+            await Promise.all(promises);
+          },
+          { retries: 0 },
+        );
+      };
+
+      load();
+
+      return () => {
+        unsubscribed = true;
+        unsubscribe();
+      };
+    }, [subscribed]);
+
+    const context = useMemo(
+      () => ({ subscribe: handleSubscribe }),
+      [handleSubscribe],
+    );
+
+    return (
+      <InboxContext.Provider value={context}>{children}</InboxContext.Provider>
     );
   }
 
@@ -262,17 +357,71 @@ export function createJazzReactApp<Acc extends Account>({
     }, [onAccept]);
   }
 
+  function useInboxSender<I extends CoValue, O extends CoValue | undefined>(
+    inboxOwnerID: ID<Acc> | undefined,
+  ) {
+    const me = useAccount().me;
+    const inboxRef = useRef<Promise<InboxSender<I, O>> | undefined>();
+
+    const sendMessage = useCallback(
+      async (message: I) => {
+        if (!inboxOwnerID) throw new Error("Inbox owner ID is required");
+
+        if (!inboxRef.current) {
+          const inbox = InboxSender.load<I, O>(inboxOwnerID, me);
+          inboxRef.current = inbox;
+        }
+
+        let inbox = await inboxRef.current;
+
+        // @ts-expect-error inbox.owner.id is typed as RawAccount id
+        if (inbox.owner.id !== inboxOwnerID) {
+          const req = InboxSender.load<I, O>(inboxOwnerID, me);
+          inboxRef.current = req;
+          inbox = await req;
+        }
+
+        return inbox.sendMessage(message);
+      },
+      [inboxOwnerID],
+    );
+
+    return sendMessage;
+  }
+
+  function useInboxListener(
+    onMessage: (message: InboxMessage) => Promise<void>,
+  ) {
+    const { subscribe } = useContext(InboxContext)!;
+
+    const onMessageRef = useRef(onMessage);
+    onMessageRef.current = onMessage;
+
+    useEffect(() => {
+      return subscribe((message) => {
+        return onMessageRef.current(message);
+      });
+    }, []);
+  }
+
   return {
     Provider,
     useAccount,
     useAccountOrGuest,
     useCoState,
     useAcceptInvite,
+    experimental: {
+      useInboxListener,
+      useInboxSender,
+    },
   };
 }
 
 /** @category Context & Hooks */
-export interface JazzReactApp<Acc extends Account> {
+export interface JazzReactApp<
+  Acc extends Account,
+  InboxMessage extends CoValue = CoValue,
+> {
   /** @category Provider Component */
   Provider: React.FC<{
     children: React.ReactNode;
@@ -321,6 +470,13 @@ export interface JazzReactApp<Acc extends Account> {
     onAccept: (projectID: ID<V>) => void;
     forValueHint?: string;
   }): void;
+
+  experimental: {
+    useInboxSender<I extends CoValue, O extends CoValue | undefined>(
+      inboxOwnerID: ID<Acc> | undefined,
+    ): (message: I) => Promise<O extends CoValue ? ID<O> : undefined>;
+    useInboxListener(onMessage: (message: InboxMessage) => Promise<void>): void;
+  };
 }
 
 export { createInviteLink, parseInviteLink } from "jazz-browser";

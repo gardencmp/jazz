@@ -52,12 +52,9 @@ test("Can create account with one node, and then load it on another", async () =
   expect(map.get("foo")).toEqual("bar");
 
   const [node1asPeer, node2asPeer] = connectedPeers("node1", "node2", {
-    trace: true,
     peer1role: "server",
     peer2role: "client",
   });
-
-  console.log("After connected peers");
 
   node.syncManager.addPeer(node2asPeer);
 
@@ -73,4 +70,18 @@ test("Can create account with one node, and then load it on another", async () =
   if (map2 === "unavailable") throw new Error("Map unavailable");
 
   expect(map2.get("foo")).toEqual("bar");
+});
+
+test("throws an error if the user tried to create an invite from an account", async () => {
+  const { node, accountID } = await LocalNode.withNewlyCreatedAccount({
+    creationProps: { name: "Hermes Puggington" },
+    crypto: Crypto,
+  });
+
+  const account = await node.load(accountID);
+  if (account === "unavailable") throw new Error("Account unavailable");
+
+  expect(() => account.createInvite("admin")).toThrow(
+    "Cannot create invite from an account",
+  );
 });

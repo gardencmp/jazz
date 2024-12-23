@@ -1,5 +1,6 @@
 import { connectedPeers } from "cojson/src/streamUtils.ts";
 import { describe, expect, expectTypeOf, test } from "vitest";
+import { Group, randomSessionProvider } from "../exports.js";
 import {
   Account,
   CoMap,
@@ -11,8 +12,7 @@ import {
   fixedCredentialsAuth,
   isControlledAccount,
 } from "../index.web.js";
-import { Group, randomSessionProvider } from "../internal.js";
-import { loadCoValueOrFail, setupTwoNodes } from "./utils.js";
+import { setupTwoNodes } from "./utils.js";
 
 const Crypto = await WasmCrypto.create();
 

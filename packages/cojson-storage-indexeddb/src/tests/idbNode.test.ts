@@ -15,11 +15,7 @@ test("Should be able to initialize and load from empty DB", async () => {
     Crypto,
   );
 
-  node.syncManager.addPeer(await IDBStorage.asPeer({ trace: true }));
-
-  console.log("yay!");
-
-  const _group = node.createGroup();
+  node.syncManager.addPeer(await IDBStorage.asPeer({}));
 
   await new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -36,10 +32,8 @@ test("Should be able to sync data to database and then load that from a new node
   );
 
   node1.syncManager.addPeer(
-    await IDBStorage.asPeer({ trace: true, localNodeName: "node1" }),
+    await IDBStorage.asPeer({ localNodeName: "node1" }),
   );
-
-  console.log("yay!");
 
   const group = node1.createGroup();
 
@@ -56,7 +50,7 @@ test("Should be able to sync data to database and then load that from a new node
   );
 
   node2.syncManager.addPeer(
-    await IDBStorage.asPeer({ trace: true, localNodeName: "node2" }),
+    await IDBStorage.asPeer({ localNodeName: "node2" }),
   );
 
   const map2 = await node2.load(map.id);

@@ -14,7 +14,11 @@ import {
 } from "./coValues/account.js";
 import { RawCoList } from "./coValues/coList.js";
 import { RawCoMap } from "./coValues/coMap.js";
-import { RawBinaryCoStream, RawCoStream } from "./coValues/coStream.js";
+import {
+  CoStreamItem,
+  RawBinaryCoStream,
+  RawCoStream,
+} from "./coValues/coStream.js";
 import { EVERYONE, RawGroup } from "./coValues/group.js";
 import type { Everyone } from "./coValues/group.js";
 import {
@@ -53,6 +57,7 @@ import type { AgentSecret } from "./crypto/crypto.js";
 import type { AgentID, RawCoID, SessionID } from "./ids.js";
 import type { JsonValue } from "./jsonValue.js";
 import type * as Media from "./media.js";
+import { disablePermissionErrors } from "./permissions.js";
 import type {
   IncomingSyncStream,
   OutgoingSyncQueue,
@@ -91,6 +96,7 @@ export const cojsonInternals = {
   getPriorityFromHeader,
   getGroupDependentKeyList,
   getGroupDependentKey,
+  disablePermissionErrors,
 };
 
 export {
@@ -143,6 +149,7 @@ export type {
   PingTimeoutError,
   CoValueUniqueness,
   Stringified,
+  CoStreamItem,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

@@ -28,7 +28,7 @@
     "autoprefixer": "^10.4.20",
     "globals": "^15.11.0",
     "postcss": "^8.4.27",
-    "tailwindcss": "^3.4.9",
+    "tailwindcss": "^3.4.15",
     "typescript": "~5.6.2",
     "vite": "^5.4.10"
   }

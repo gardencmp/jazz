@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { CoValueState } from "../coValueState.js";
 import { RawCoList } from "../coValues/coList.js";
 import { RawCoMap } from "../coValues/coMap.js";
 import { RawCoStream } from "../coValues/coStream.js";
@@ -491,5 +492,40 @@ describe("writeOnly", () => {
 
     // The writer role should be able to see the edits from the admin
     expect(mapOnNode2.get("test")).toEqual("Written from the admin");
+  });
+
+  test("upgrade to writer roles should work correctly", async () => {
+    const { node1, node2 } = await createTwoConnectedNodes("server", "server");
+
+    const group = node1.node.createGroup();
+    group.addMember(
+      await loadCoValueOrFail(node1.node, node2.accountID),
+      "writeOnly",
+    );
+
+    await group.core.waitForSync();
+
+    const groupOnNode2 = await loadCoValueOrFail(node2.node, group.id);
+    const map = groupOnNode2.createMap();
+    map.set("test", "Written from the writeOnly member");
+
+    await map.core.waitForSync();
+
+    group.addMember(
+      await loadCoValueOrFail(node1.node, node2.accountID),
+      "writer",
+    );
+
+    group.core.waitForSync();
+
+    node2.node.coValuesStore.coValues.delete(map.id);
+    expect(node2.node.coValuesStore.get(map.id)).toEqual(
+      CoValueState.Unknown(map.id),
+    );
+
+    const mapOnNode2 = await loadCoValueOrFail(node2.node, map.id);
+
+    // The writer role should be able to see the edits from the admin
+    expect(mapOnNode2.get("test")).toEqual("Written from the writeOnly member");
   });
 });

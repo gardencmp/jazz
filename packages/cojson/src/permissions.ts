@@ -35,6 +35,20 @@ export type Role =
 type ValidTransactionsResult = { txID: TransactionID; tx: Transaction };
 type MemberState = { [agent: RawAccountID | AgentID]: Role; [EVERYONE]?: Role };
 
+let logPermissionErrors = true;
+
+export function disablePermissionErrors() {
+  logPermissionErrors = false;
+}
+
+function logPermissionError(...args: unknown[]) {
+  if (logPermissionErrors === false) {
+    return;
+  }
+
+  console.warn(...args);
+}
+
 export function determineValidTransactions(
   coValue: CoValueCore,
 ): { txID: TransactionID; tx: Transaction }[] {
@@ -194,7 +208,9 @@ function determineValidTransactionsForGroup(
         });
         continue;
       } else {
-        console.warn("Only admins can make private transactions in groups");
+        logPermissionError(
+          "Only admins can make private transactions in groups",
+        );
         continue;
       }
     }
@@ -204,7 +220,7 @@ function determineValidTransactionsForGroup(
     try {
       changes = parseJSON(tx.changes);
     } catch (e) {
-      console.warn(
+      logPermissionError(
         coValue.id,
         "Invalid JSON in transaction",
         e,
@@ -226,18 +242,18 @@ function determineValidTransactionsForGroup(
       | MapOpPayload<`child_${CoID<RawGroup>}`, CoID<RawGroup>>;
 
     if (changes.length !== 1) {
-      console.warn("Group transaction must have exactly one change");
+      logPermissionError("Group transaction must have exactly one change");
       continue;
     }
 
     if (change.op !== "set") {
-      console.warn("Group transaction must set a role or readKey");
+      logPermissionError("Group transaction must set a role or readKey");
       continue;
     }
 
     if (change.key === "readKey") {
       if (memberState[transactor] !== "admin") {
-        console.warn("Only admins can set readKeys");
+        logPermissionError("Only admins can set readKeys");
         continue;
       }
 
@@ -245,7 +261,7 @@ function determineValidTransactionsForGroup(
       continue;
     } else if (change.key === "profile") {
       if (memberState[transactor] !== "admin") {
-        console.warn("Only admins can set profile");
+        logPermissionError("Only admins can set profile");
         continue;
       }
 
@@ -262,7 +278,7 @@ function determineValidTransactionsForGroup(
         memberState[transactor] !== "readerInvite" &&
         memberState[transactor] !== "writeOnlyInvite"
       ) {
-        console.warn("Only admins can reveal keys");
+        logPermissionError("Only admins can reveal keys");
         continue;
       }
 
@@ -275,7 +291,7 @@ function determineValidTransactionsForGroup(
         keyRevelations.has(change.key) &&
         memberState[transactor] !== "admin"
       ) {
-        console.warn(
+        logPermissionError(
           "Key revelation already exists and can't be overridden by invite",
         );
         continue;
@@ -288,7 +304,7 @@ function determineValidTransactionsForGroup(
       continue;
     } else if (isParentExtension(change.key)) {
       if (memberState[transactor] !== "admin") {
-        console.warn("Only admins can set parent extensions");
+        logPermissionError("Only admins can set parent extensions");
         continue;
       }
       resolveMemberStateFromParentReference(coValue, memberState, change.key);
@@ -296,7 +312,7 @@ function determineValidTransactionsForGroup(
       continue;
     } else if (isChildExtension(change.key)) {
       if (memberState[transactor] !== "admin") {
-        console.warn("Only admins can set child extensions");
+        logPermissionError("Only admins can set child extensions");
         continue;
       }
       validTransactions.push({ txID: { sessionID, txIndex }, tx });
@@ -306,7 +322,7 @@ function determineValidTransactionsForGroup(
         memberState[transactor] !== "admin" &&
         memberState[transactor] !== "writeOnlyInvite"
       ) {
-        console.warn("Only admins can set writeKeys");
+        logPermissionError("Only admins can set writeKeys");
         continue;
       }
 
@@ -319,7 +335,7 @@ function determineValidTransactionsForGroup(
        * blocking them from accessing the group.ß
        */
       if (writeKeys.has(change.key) && memberState[transactor] !== "admin") {
-        console.warn(
+        logPermissionError(
           "Write key already exists and can't be overridden by invite",
         );
         continue;
@@ -345,7 +361,7 @@ function determineValidTransactionsForGroup(
       change.value !== "readerInvite" &&
       change.value !== "writeOnlyInvite"
     ) {
-      console.warn("Group transaction must set a valid role");
+      logPermissionError("Group transaction must set a valid role");
       continue;
     }
 
@@ -357,7 +373,9 @@ function determineValidTransactionsForGroup(
         change.value === "revoked"
       )
     ) {
-      console.warn("Everyone can only be set to reader, writer or revoked");
+      logPermissionError(
+        "Everyone can only be set to reader, writer or revoked",
+      );
       continue;
     }
 
@@ -375,31 +393,31 @@ function determineValidTransactionsForGroup(
           affectedMember !== transactor &&
           assignedRole !== "admin"
         ) {
-          console.warn("Admins can only demote themselves.");
+          logPermissionError("Admins can only demote themselves.");
           continue;
         }
       } else if (memberState[transactor] === "adminInvite") {
         if (change.value !== "admin") {
-          console.warn("AdminInvites can only create admins.");
+          logPermissionError("AdminInvites can only create admins.");
           continue;
         }
       } else if (memberState[transactor] === "writerInvite") {
         if (change.value !== "writer") {
-          console.warn("WriterInvites can only create writers.");
+          logPermissionError("WriterInvites can only create writers.");
           continue;
         }
       } else if (memberState[transactor] === "readerInvite") {
         if (change.value !== "reader") {
-          console.warn("ReaderInvites can only create reader.");
+          logPermissionError("ReaderInvites can only create reader.");
           continue;
         }
       } else if (memberState[transactor] === "writeOnlyInvite") {
         if (change.value !== "writeOnly") {
-          console.warn("WriteOnlyInvites can only create writeOnly.");
+          logPermissionError("WriteOnlyInvites can only create writeOnly.");
           continue;
         }
       } else {
-        console.warn(
+        logPermissionError(
           "Group transaction must be made by current admin or invite",
         );
         continue;

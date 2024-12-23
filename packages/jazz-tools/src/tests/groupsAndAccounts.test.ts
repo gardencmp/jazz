@@ -1,7 +1,7 @@
 import { RawGroup } from "cojson";
 import { describe, expect, test } from "vitest";
 import { Account, CoMap, Group, WasmCrypto, co } from "../index.web.js";
-import { setupTwoNodes, waitFor } from "./utils.js";
+import { setupTwoNodes } from "./utils.js";
 
 const Crypto = await WasmCrypto.create();
 

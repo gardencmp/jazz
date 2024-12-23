@@ -115,6 +115,19 @@ async function scaffoldProject({
     try {
       execSync(`cd ${projectName} && npx expo prebuild`, { stdio: "pipe" });
       execSync(`cd ${projectName} && npx pod-install`, { stdio: "pipe" });
+
+      // Update metro.config.js
+      const metroConfigPath = `${projectName}/metro.config.js`;
+      const metroConfig = `
+const { getDefaultConfig } = require("expo/metro-config");
+const { withNativeWind } = require("nativewind/metro");
+
+const config = getDefaultConfig(__dirname);
+
+module.exports = withNativeWind(config, { input: "./src/global.css" });
+`;
+      fs.writeFileSync(metroConfigPath, metroConfig);
+
       rnSpinner.succeed(chalk.green("React Native setup completed"));
     } catch (error) {
       rnSpinner.fail(chalk.red("Failed to setup React Native"));

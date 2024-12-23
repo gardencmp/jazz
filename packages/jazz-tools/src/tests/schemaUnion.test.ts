@@ -7,7 +7,7 @@ import {
   co,
   loadCoValue,
   subscribeToCoValue,
-} from "../internal.js";
+} from "../exports.js";
 
 class BaseWidget extends CoMap {
   type = co.string;

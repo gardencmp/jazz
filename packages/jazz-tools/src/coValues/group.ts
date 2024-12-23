@@ -9,24 +9,19 @@ import type {
   Schema,
 } from "../internal.js";
 import {
-  Account,
-  AccountAndGroupProxyHandler,
-  CoMap,
   CoValueBase,
   MembersSym,
   Ref,
-  co,
   ensureCoValueLoaded,
-  isControlledAccount,
   loadCoValue,
   subscribeToCoValue,
   subscribeToExistingCoValue,
 } from "../internal.js";
-
-/** @category Identity & Permissions */
-export class Profile extends CoMap {
-  name = co.string;
-}
+import { AccountAndGroupProxyHandler, isControlledAccount } from "./account.js";
+import { type Account } from "./account.js";
+import { type CoMap } from "./coMap.js";
+import { type Profile } from "./profile.js";
+import { RegisteredSchemas } from "./registeredSchemas.js";
 
 /** @category Identity & Permissions */
 export class Group extends CoValueBase implements CoValue {
@@ -51,7 +46,7 @@ export class Group extends CoValueBase implements CoValue {
       profile: "json" satisfies Schema,
       root: "json" satisfies Schema,
       [MembersSym]: {
-        ref: () => Account,
+        ref: () => RegisteredSchemas["Account"],
         optional: false,
       } satisfies RefEncoded<Account>,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -229,3 +224,5 @@ export class Group extends CoValueBase implements CoValue {
     return this._raw.core.waitForSync(options);
   }
 }
+
+RegisteredSchemas["Group"] = Group;

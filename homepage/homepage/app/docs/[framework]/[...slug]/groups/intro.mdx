@@ -1,8 +1,32 @@
 import { CodeGroup } from "@/components/forMdx";
 
+# Groups as permission scopes
+
+Every CoValue has an owner, which can be a `Group` or an `Account`.
+
+You can use a `Group` to grant access to a CoValue to multiple users. These users can
+have different roles, such as "writer", "reader" or "admin".
+
 ...more docs coming soon
 
-## Adding Group Members by ID
+## Creating a Group
+
+Here's how you can create a `Group`.
+
+<CodeGroup>
+```tsx
+import { Group } from "jazz-tools";
+
+const group = Group.create({ owner: me });
+```
+</CodeGroup>
+
+The `Group` itself is a CoValue, and whoever owns it is the initial admin.
+
+You typically add members using [public sharing](/docs/groups/sharing#public-sharing) or [invites](/docs/groups/sharing#invites).
+But if you already know their ID, you can add them directly (see below).
+
+## Adding group members by ID
 
 You can add group members by ID by using `Account.load` and `Group.addMember`.
 

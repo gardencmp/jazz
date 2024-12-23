@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { Link, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AuthAndJazz } from "./jazz";
 import { FileStreamTest } from "./pages/FileStream";
+import { Inbox } from "./pages/Inbox";
 import { ResumeSyncState } from "./pages/ResumeSyncState";
 import { RetryUnavailable } from "./pages/RetryUnavailable";
 import { Sharing } from "./pages/Sharing";
@@ -29,6 +30,9 @@ function Index() {
       </li>
       <li>
         <Link to="/write-only">Write Only</Link>
+      </li>
+      <li>
+        <Link to="/inbox">Inbox</Link>
       </li>
     </ul>
   );
@@ -58,6 +62,10 @@ const router = createBrowserRouter([
   {
     path: "/write-only",
     element: <WriteOnlyRole />,
+  },
+  {
+    path: "/inbox",
+    element: <Inbox />,
   },
   {
     path: "/",
