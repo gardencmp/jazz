@@ -23,6 +23,69 @@ export namespace RNDemoAuth {
 
 const localStorageKey = "demo-auth-logged-in-secret";
 
+function getUserStorageKey(username: string) {
+  return `demo-auth-existing-users-${btoa(username)}`;
+}
+
+function getLegacyUserStorageKey(username: string) {
+  return `demo-auth-existing-users-${username}`;
+}
+
+async function getStorageVersion(kvStore: KvStore) {
+  try {
+    const version = await kvStore.get("demo-auth-storage-version");
+    return version ? parseInt(version) : 1;
+  } catch (error) {
+    return 1;
+  }
+}
+
+async function setStorageVersion(kvStore: KvStore, version: number) {
+  await kvStore.set("demo-auth-storage-version", version.toString());
+}
+
+async function getExistingUsers(kvStore: KvStore) {
+  const existingUsers = await kvStore.get("demo-auth-existing-users");
+  return existingUsers ? existingUsers.split(",") : [];
+}
+
+async function addUserToExistingUsers(username: string, kvStore: KvStore) {
+  const existingUsers = await getExistingUsers(kvStore);
+
+  if (existingUsers.includes(username)) {
+    return;
+  }
+
+  await kvStore.set(
+    "demo-auth-existing-users",
+    existingUsers.concat(username).join(","),
+  );
+}
+
+/**
+ * Migrates existing users keys to use a base64 encoded username.
+ *
+ * This is done to avoid issues with special characters in the username.
+ */
+async function migrateExistingUsersKeys(kvStore: KvStore) {
+  if ((await getStorageVersion(kvStore)) >= 2) {
+    return;
+  }
+
+  await setStorageVersion(kvStore, 2);
+
+  const existingUsers = await getExistingUsers(kvStore);
+
+  for (const existingUsername of existingUsers) {
+    const legacyKey = getLegacyUserStorageKey(existingUsername);
+    const storageData = await kvStore.get(legacyKey);
+    if (storageData) {
+      await kvStore.set(getUserStorageKey(existingUsername), storageData);
+      await kvStore.delete(legacyKey);
+    }
+  }
+}
+
 export class RNDemoAuth implements AuthMethod {
   private constructor(
     private driver: RNDemoAuth.Driver,
@@ -39,27 +102,16 @@ export class RNDemoAuth implements AuthMethod {
     },
   ) {
     const kvStore = KvStoreContext.getInstance().getStorage();
+
+    await migrateExistingUsersKeys(kvStore);
+
     for (const [name, credentials] of Object.entries(seedAccounts || {})) {
       const storageData = JSON.stringify(credentials satisfies StorageData);
-      if (
-        !(
-          (await kvStore.get("demo-auth-existing-users"))?.split(",") as
-            | string[]
-            | undefined
-        )?.includes(name)
-      ) {
-        const existingUsers = await kvStore.get("demo-auth-existing-users");
-        if (existingUsers) {
-          await kvStore.set(
-            "demo-auth-existing-users",
-            existingUsers + "," + name,
-          );
-        } else {
-          await kvStore.set("demo-auth-existing-users", name);
-        }
-      }
-      await kvStore.set("demo-auth-existing-users-" + name, storageData);
+
+      await addUserToExistingUsers(name, kvStore);
+      await kvStore.set(getUserStorageKey(name), storageData);
     }
+
     return new RNDemoAuth(driver, kvStore);
   }
 
@@ -103,13 +155,9 @@ export class RNDemoAuth implements AuthMethod {
                     accountSecret: credentials.secret,
                   } satisfies StorageData);
 
-                  // Retrieve the list of existing users
-                  const existingUsers = await this.kvStore.get(
-                    "demo-auth-existing-users",
+                  const existingUsernames = await getExistingUsers(
+                    this.kvStore,
                   );
-                  const existingUsernames = existingUsers
-                    ? existingUsers.split(",")
-                    : [];
 
                   // Determine if the username already exists and generate a unique username
                   let uniqueUsername = username;
@@ -122,18 +170,11 @@ export class RNDemoAuth implements AuthMethod {
                   // Save credentials using the unique username
                   await this.kvStore.set(localStorageKey, storageData);
                   await this.kvStore.set(
-                    "demo-auth-existing-users-" + uniqueUsername,
+                    getUserStorageKey(uniqueUsername),
                     storageData,
                   );
 
-                  // Update the list of existing users
-                  const updatedUsers = existingUsers
-                    ? `${existingUsers},${uniqueUsername}`
-                    : uniqueUsername;
-                  await this.kvStore.set(
-                    "demo-auth-existing-users",
-                    updatedUsers,
-                  );
+                  await addUserToExistingUsers(uniqueUsername, this.kvStore);
                 },
                 onSuccess: () => {
                   this.driver.onSignedIn({ logOut });
@@ -149,17 +190,12 @@ export class RNDemoAuth implements AuthMethod {
               });
             },
             getExistingUsers: async () => {
-              return (
-                (await this.kvStore.get("demo-auth-existing-users"))?.split(
-                  ",",
-                ) ?? []
-              );
+              return await getExistingUsers(this.kvStore);
             },
             logInAs: async (existingUser) => {
               const storageData = JSON.parse(
-                (await this.kvStore.get(
-                  "demo-auth-existing-users-" + existingUser,
-                )) ?? "{}",
+                (await this.kvStore.get(getUserStorageKey(existingUser))) ??
+                  "{}",
               ) as StorageData;
 
               await this.kvStore.set(
