@@ -19,7 +19,7 @@
   },
   "type": "module",
   "license": "MIT",
-  "version": "0.8.44",
+  "version": "0.8.45",
   "devDependencies": {
     "@opentelemetry/sdk-metrics": "^1.29.0",
     "@types/jest": "^29.5.3",

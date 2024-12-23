@@ -1,5 +1,13 @@
 # cojson
 
+## 0.8.45
+
+### Patch Changes
+
+- 6f0bd7f: Throw an error if an invite is created from an account owned coValue
+- fca6a0b: skip verify step when creating a new local transaction
+- 88d7d9a: Add Inbox a new experimental API to simplfy the initial handshake between accounts
+
 ## 0.8.44
 
 ### Patch Changes
