@@ -383,6 +383,26 @@ export class RawCoMap<
     this.processNewTransactions();
   }
 
+  assign(
+    entries: Partial<Shape>,
+    privacy: "private" | "trusting" = "private",
+  ): void {
+    if (this.isTimeTravelEntity()) {
+      throw new Error("Cannot set value on a time travel entity");
+    }
+
+    this.core.makeTransaction(
+      Object.entries(entries).map(([key, value]) => ({
+        op: "set",
+        key,
+        value: isCoValue(value) ? value.id : value,
+      })),
+      privacy,
+    );
+
+    this.processNewTransactions();
+  }
+
   /** Delete the given key (setting it to undefined).
    *
    * If `privacy` is `"private"` **(default)**, `key` is encrypted in the transaction, only readable by other members of the group this `CoMap` belongs to. Not even sync servers can see the content in plaintext.
