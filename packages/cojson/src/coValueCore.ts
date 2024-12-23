@@ -202,6 +202,7 @@ export class CoValueCore {
     newTransactions: Transaction[],
     givenExpectedNewHash: Hash | undefined,
     newSignature: Signature,
+    skipVerify: boolean = false,
   ): Result<true, TryAddTransactionsError> {
     return this.node
       .resolveAccountAgent(
@@ -231,8 +232,10 @@ export class CoValueCore {
           } satisfies InvalidHashError);
         }
 
-        // const beforeVerify = performance.now();
-        if (!this.crypto.verify(newSignature, expectedNewHash, signerID)) {
+        if (
+          skipVerify !== true &&
+          !this.crypto.verify(newSignature, expectedNewHash, signerID)
+        ) {
           return err({
             type: "InvalidSignature",
             id: this.id,
@@ -600,6 +603,7 @@ export class CoValueCore {
       [transaction],
       expectedNewHash,
       signature,
+      true,
     )._unsafeUnwrap({ withStackTrace: true });
 
     if (success) {
