@@ -1729,6 +1729,9 @@ importers:
 
   packages/jazz-react-native:
     dependencies:
+      '@scure/base':
+        specifier: 1.2.1
+        version: 1.2.1
       '@scure/bip39':
         specifier: ^1.3.0
         version: 1.5.0
@@ -1741,6 +1744,9 @@ importers:
       jazz-tools:
         specifier: workspace:*
         version: link:../jazz-tools
+      react-native-quick-crypto:
+        specifier: 1.0.0-beta.9
+        version: 1.0.0-beta.9(react-native-nitro-modules@0.20.1(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1))(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@react-native-community/netinfo':
         specifier: ^11.4.1
@@ -3045,6 +3051,9 @@ packages:
 
   '@coinbase/wallet-sdk@4.0.4':
     resolution: {integrity: sha512-74c040CRnGhfRjr3ArnkAgud86erIqdkPHNt5HR1k9u97uTIZCJww9eGYT67Qf7gHPpGS/xW8Be1D4dvRm63FA==}
+
+  '@craftzdog/react-native-buffer@6.0.5':
+    resolution: {integrity: sha512-Av+YqfwA9e7jhgI9GFE/gTpwl/H+dRRLmZyJPOpKTy107j9Oj7oXlm3/YiMNz+C/CEGqcKAOqnXDLs4OL6AAFw==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -9470,6 +9479,12 @@ packages:
       react: 18.3.1
       react-native: '>=0.73.0'
 
+  react-native-nitro-modules@0.20.1:
+    resolution: {integrity: sha512-ffa8GbnLBs7irEx1ZCl7WdHzzA5uj4ngh7hIWbeUfBs8m2iAn+byowOJWHKmO+RA2hp9dVwTxHYSBOqIvTVvHA==}
+    peerDependencies:
+      react: 18.3.1
+      react-native: '*'
+
   react-native-polyfill-globals@3.1.0:
     resolution: {integrity: sha512-6ACmV1SjXvZP2LN6J2yK58yNACKddcvoiKLrSQdISx32IdYStfdmGXrbAfpd+TANrTlIaZ2SLoFXohNwhnqm/w==}
     peerDependencies:
@@ -9485,6 +9500,13 @@ packages:
     peerDependencies:
       react: 18.3.1
       react-native: '*'
+
+  react-native-quick-crypto@1.0.0-beta.9:
+    resolution: {integrity: sha512-P3WZRuBebFlmK716a2PdgG3Pw+ExPN6vBypa2iLSldc+LShiwL9WWtIk+5DmEPCsiI4od7RiivNgpy3pfQEb+w==}
+    peerDependencies:
+      react: 18.3.1
+      react-native: '*'
+      react-native-nitro-modules: '*'
 
   react-native-reanimated@3.16.5:
     resolution: {integrity: sha512-mq/5k14pimkhCeP9XwFJkEr8XufaHqIekum8fqpsn0fcBzbLvyiqfM2LEuBvi0+DTv5Bd2dHmUHkYqGYfkj3Jw==}
@@ -9630,6 +9652,10 @@ packages:
   readable-stream@3.6.2:
     resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
     engines: {node: '>= 6'}
+
+  readable-stream@4.5.2:
+    resolution: {integrity: sha512-yjavECdqeZ3GLXNgRXgeQEdz9fvDDkNKyHnbHRFtOr7/LcfgBcmct7t/ET+HaCTqfh06OzoAxrkN/IfjJBVe+g==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   readable-stream@4.6.0:
     resolution: {integrity: sha512-cbAdYt0VcnpN2Bekq7PU+k363ZRsPwJoEEJOEtSJQlJXzwaxt3FIo/uL+KeDSGIjJqtkwyge4KQgD2S2kd+CQw==}
@@ -12499,6 +12525,14 @@ snapshots:
       keccak: 3.0.4
       preact: 10.25.3
       sha.js: 2.4.11
+
+  '@craftzdog/react-native-buffer@6.0.5(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      ieee754: 1.2.1
+      react-native-quick-base64: 2.1.2(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)
+    transitivePeerDependencies:
+      - react
+      - react-native
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -19769,6 +19803,11 @@ snapshots:
       react: 18.3.1
       react-native: 0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1)
 
+  react-native-nitro-modules@0.20.1(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      react-native: 0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1)
+
   react-native-polyfill-globals@3.1.0(base-64@1.0.0)(react-native-fetch-api@3.0.0)(react-native-get-random-values@1.11.0(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1)))(react-native-url-polyfill@2.0.0(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1)))(text-encoding@0.7.0)(web-streams-polyfill@3.3.3):
     dependencies:
       base-64: 1.0.0
@@ -19783,6 +19822,18 @@ snapshots:
       base64-js: 1.5.1
       react: 18.3.1
       react-native: 0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1)
+
+  react-native-quick-crypto@1.0.0-beta.9(react-native-nitro-modules@0.20.1(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1))(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1):
+    dependencies:
+      '@craftzdog/react-native-buffer': 6.0.5(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)
+      events: 3.3.0
+      react: 18.3.1
+      react-native: 0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1)
+      react-native-nitro-modules: 0.20.1(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)
+      react-native-quick-base64: 2.1.2(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1)
+      readable-stream: 4.5.2
+      string_decoder: 1.3.0
+      util: 0.12.5
 
   react-native-reanimated@3.16.5(@babel/core@7.26.0)(react-native@0.76.5(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@18.3.18)(react@18.3.1))(react@18.3.1):
     dependencies:
@@ -20015,6 +20066,14 @@ snapshots:
       inherits: 2.0.4
       string_decoder: 1.3.0
       util-deprecate: 1.0.2
+
+  readable-stream@4.5.2:
+    dependencies:
+      abort-controller: 3.0.0
+      buffer: 6.0.3
+      events: 3.3.0
+      process: 0.11.10
+      string_decoder: 1.3.0
 
   readable-stream@4.6.0:
     dependencies:
