@@ -14,6 +14,7 @@ import {
 } from "jazz-tools";
 import { Linking } from "react-native";
 import {
+  BaseReactNativeContextOptions,
   KvStore,
   KvStoreContext,
   ReactNativeContext,
@@ -27,6 +28,11 @@ import { ExpoSecureStoreAdapter } from "./storage/expo-secure-store-adapter.js";
 export function createJazzRNApp<Acc extends Account>({
   kvStore = new ExpoSecureStoreAdapter(),
   AccountSchema = Account as unknown as AccountClass<Acc>,
+  CryptoProvider,
+}: {
+  kvStore?: KvStore;
+  AccountSchema?: AccountClass<Acc>;
+  CryptoProvider?: BaseReactNativeContextOptions["CryptoProvider"];
 } = {}): JazzReactApp<Acc> {
   const JazzContext = React.createContext<
     ReactNativeContext<Acc> | ReactNativeGuestContext | undefined
@@ -61,12 +67,14 @@ export function createJazzRNApp<Acc extends Account>({
           ? {
               peer,
               storage,
+              CryptoProvider,
             }
           : {
               AccountSchema,
               auth: auth,
               peer,
               storage,
+              CryptoProvider,
             },
       ).then((context) => {
         setCtx({

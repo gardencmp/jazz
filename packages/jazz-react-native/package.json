@@ -11,6 +11,11 @@
       "react-native": "./dist/index.js",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./crypto": {
+      "react-native": "./dist/crypto/index.js",
+      "types": "./dist/crypto/index.d.ts",
+      "default": "./dist/crypto/index.js"
     }
   },
   "license": "MIT",
@@ -24,13 +29,11 @@
   },
   "peerDependencies": {
     "@react-native-community/netinfo": "*",
-    "expo-linking": "*",
     "expo-secure-store": "*",
     "react-native": "*"
   },
   "devDependencies": {
     "@react-native-community/netinfo": "^11.4.1",
-    "expo-linking": "~7.0.3",
     "expo-secure-store": "~14.0.0",
     "react-native": "~0.76.3",
     "typescript": "~5.6.2"
