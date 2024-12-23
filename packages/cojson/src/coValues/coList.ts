@@ -288,6 +288,7 @@ export class RawCoListView<
   ) {
     const entry =
       this.insertions[opID.sessionID]?.[opID.txIndex]?.[opID.changeIdx];
+
     if (!entry) {
       throw new Error("Missing op " + opID);
     }
@@ -413,6 +414,14 @@ export class RawCoList<
     after?: number,
     privacy: "private" | "trusting" = "private",
   ) {
+    this.appendItems([item], after, privacy);
+  }
+
+  appendItems(
+    items: Item[],
+    after?: number,
+    privacy: "private" | "trusting" = "private",
+  ) {
     const entries = this.entries();
     after =
       after === undefined
@@ -420,7 +429,7 @@ export class RawCoList<
           ? entries.length - 1
           : 0
         : after;
-    let opIDBefore;
+    let opIDBefore: OpID | "start";
     if (entries.length > 0) {
       const entryBefore = entries[after];
       if (!entryBefore) {
@@ -433,16 +442,20 @@ export class RawCoList<
       }
       opIDBefore = "start";
     }
-    this.core.makeTransaction(
-      [
-        {
-          op: "app",
-          value: isCoValue(item) ? item.id : item,
-          after: opIDBefore,
-        },
-      ],
-      privacy,
-    );
+
+    const changes = items.map((item) => ({
+      op: "app",
+      value: isCoValue(item) ? item.id : item,
+      after: opIDBefore,
+    }));
+
+    if (opIDBefore !== "start") {
+      // When added as successors we need to reverse the items
+      // to keep the same insertion order
+      changes.reverse();
+    }
+
+    this.core.makeTransaction(changes, privacy);
 
     const listAfter = new RawCoList(this.core) as this;
 
