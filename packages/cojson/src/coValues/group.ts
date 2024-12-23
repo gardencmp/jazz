@@ -653,10 +653,8 @@ export class RawGroup<
       })
       .getCurrentContent() as L;
 
-    if (init) {
-      for (const item of init) {
-        list.append(item, undefined, initPrivacy);
-      }
+    if (init?.length) {
+      list.appendItems(init, undefined, initPrivacy);
     }
 
     return list;

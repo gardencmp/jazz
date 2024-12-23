@@ -75,6 +75,26 @@ test("Push is equivalent to append after last item", () => {
   expect(content.toJSON()).toEqual(["hello", "world", "hooray"]);
 });
 
+test("appendItems add an array of items at the end of the list", () => {
+  const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
+
+  const coValue = node.createCoValue({
+    type: "colist",
+    ruleset: { type: "unsafeAllowAll" },
+    meta: null,
+    ...Crypto.createdNowUnique(),
+  });
+
+  const content = expectList(coValue.getCurrentContent());
+
+  expect(content.type).toEqual("colist");
+
+  content.append("hello", 0, "trusting");
+  expect(content.toJSON()).toEqual(["hello"]);
+  content.appendItems(["world", "hooray", "universe"], undefined, "trusting");
+  expect(content.toJSON()).toEqual(["hello", "world", "hooray", "universe"]);
+});
+
 test("Can push into empty list", () => {
   const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
 
@@ -91,4 +111,24 @@ test("Can push into empty list", () => {
 
   content.append("hello", undefined, "trusting");
   expect(content.toJSON()).toEqual(["hello"]);
+});
+
+test("init the list correctly", () => {
+  const node = new LocalNode(...randomAnonymousAccountAndSessionID(), Crypto);
+
+  const group = node.createGroup();
+
+  const content = group.createList(["hello", "world", "hooray", "universe"]);
+
+  expect(content.type).toEqual("colist");
+  expect(content.toJSON()).toEqual(["hello", "world", "hooray", "universe"]);
+
+  content.append("hello", content.toJSON().length - 1, "trusting");
+  expect(content.toJSON()).toEqual([
+    "hello",
+    "world",
+    "hooray",
+    "universe",
+    "hello",
+  ]);
 });
