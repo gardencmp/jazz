@@ -15,15 +15,13 @@ import {
   createJazzContext,
 } from "jazz-tools";
 
-import NetInfo from "@react-native-community/netinfo";
 import { RawAccountID } from "cojson";
-import { createWebSocketPeer } from "cojson-transport-ws";
-// import * as Linking from "expo-linking";
-import { RNQuickCrypto } from "./crypto/RNQuickCrypto.js";
 
 export { RNDemoAuth } from "./auth/DemoAuthMethod.js";
 
+import { PureJSCrypto } from "cojson/native";
 import { createWebSocketPeerWithReconnection } from "./createWebSocketPeerWithReconnection.js";
+import type { RNQuickCrypto } from "./crypto/RNQuickCrypto.js";
 import { KvStoreContext } from "./storage/kv-store-context.js";
 
 /** @category Context Creation */
@@ -51,7 +49,7 @@ export type BaseReactNativeContextOptions = {
   peer: `wss://${string}` | `ws://${string}`;
   reconnectionTimeout?: number;
   storage?: "indexedDB" | "singleTabOPFS";
-  crypto?: CryptoProvider;
+  CryptoProvider?: typeof PureJSCrypto | typeof RNQuickCrypto;
 };
 
 /** @category Context Creation */
@@ -75,17 +73,19 @@ export async function createJazzRNContext<Acc extends Account>(
     },
   );
 
+  const CryptoProvider = options.CryptoProvider || PureJSCrypto;
+
   const context =
     "auth" in options
       ? await createJazzContext({
           AccountSchema: options.AccountSchema,
           auth: options.auth,
-          crypto: await RNQuickCrypto.create(),
+          crypto: await CryptoProvider.create(),
           peersToLoadFrom: [websocketPeer.peer],
           sessionProvider: provideLockSession,
         })
       : await createJazzContext({
-          crypto: await RNQuickCrypto.create(),
+          crypto: await CryptoProvider.create(),
           peersToLoadFrom: [websocketPeer.peer],
         });
 
@@ -241,4 +241,3 @@ export function parseInviteLink<C extends CoValue>(
 export * from "./provider.js";
 export * from "./auth/auth.js";
 export * from "./storage/kv-store-context.js";
-export * from "./crypto/RNQuickCrypto.js";
