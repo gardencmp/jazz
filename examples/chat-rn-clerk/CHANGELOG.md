@@ -1,5 +1,13 @@
 # chat-rn-clerk
 
+## 1.0.36
+
+### Patch Changes
+
+- Updated dependencies [ab4ffbd]
+  - jazz-react-native@0.8.46
+  - jazz-react-native-auth-clerk@0.8.46
+
 ## 1.0.35
 
 ### Patch Changes
