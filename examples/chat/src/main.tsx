@@ -1,3 +1,4 @@
+import { ThemeProvider } from "@/themeProvider.tsx";
 import { DemoAuthBasicUI, createJazzReactApp, useDemoAuth } from "jazz-react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -25,9 +26,11 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <JazzAndAuth>
-      <App />
-    </JazzAndAuth>
-  </StrictMode>,
+  <ThemeProvider>
+    <StrictMode>
+      <JazzAndAuth>
+        <App />
+      </JazzAndAuth>
+    </StrictMode>
+  </ThemeProvider>,
 );
