@@ -29,7 +29,7 @@ export function NavigationDrawer({
     <div
       className={clsx(
         "fixed top-0 w-screen h-screen z-50 overflow-y-auto",
-        "p-4 bg-white shadow-lg",
+        "p-4 pb-20 bg-white dark:bg-stone-925 shadow-lg",
         "transition-all duration-500",
         isOpen ? positionClasses.active : positionClasses.inactive,
       )}

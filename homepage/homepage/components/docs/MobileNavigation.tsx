@@ -11,7 +11,7 @@ export function MobileNavigation({
   const [active, setActive] = useState<"main" | "toc" | null>(null);
 
   return (
-    <div className="md:hidden w-full border-b sticky top-0 z-10 bg-white">
+    <div className="md:hidden w-full border-b sticky top-0 z-10 bg-white dark:bg-stone-950">
       <div className="container px-0 flex justify-between text-stone-900 dark:text-white">
         <button
           type="button"
