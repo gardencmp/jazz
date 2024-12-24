@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import fs from "fs";
+import { lookup } from "mime-types";
 import WebSocket from "ws";
 import * as uWS from "uWebSockets.js";
 import { ServerResponse } from 'http';
@@ -419,13 +420,17 @@ export class BenchmarkStore {
         this.aggregateRequestLogs();
 
         // Write performance data to CSV
-        const csvHeaders = 'RequestID,Method,Path,StatusCode,Timestamp,Duration,Duration (milliseconds)';
+        const csvHeaders = 'RequestID,Method,Path,StatusCode,Timestamp,Duration (milliseconds)';
         const csvContent = this.entries
-        .map(entry => `${entry.requestId},${entry.method},${entry.path},${entry.status},${entry.timestamp},${entry.duration},${entry.durationInMillis}`)
+        .map(entry => `${entry.requestId},${entry.method},${entry.path},${entry.status},${entry.timestamp},${entry.durationInMillis}`)
         .join(os.EOL);
 
-        fs.writeFileSync(outputPath, csvHeaders + os.EOL + csvContent);
-        logger.debug(`Performance data written to CSV: ${outputPath}`);
+        if (!fs.existsSync(outputPath)) {
+            fs.writeFileSync(outputPath, csvHeaders + os.EOL + csvContent);
+        } else {
+            fs.appendFileSync(outputPath, csvContent + os.EOL);
+        }
+        logger.info(`Performance data written to CSV: ${outputPath}`);
 
         // Clear the store after writing to disk
         this.entries = [];
@@ -461,12 +466,58 @@ export class uWebSocketResponseWrapper {
     }
 }
 
-export function shutdown(res: Response | WebSocketResponseWrapper | uWebSocketResponseWrapper, benchmarkStore: BenchmarkStore, callback?: () => void) {
-    benchmarkStore.exportToCSVFile();
+export function shutdown(res: Response | WebSocketResponseWrapper | uWebSocketResponseWrapper, benchmarkStore: BenchmarkStore, exportFileName: string, callback?: () => void) {
+    benchmarkStore.exportToCSVFile(exportFileName);
     res.status(200).json({ m: `Performance data written to CSV. Server shutting down.` });
 
     callback?.();
 
-    logger.debug("Server shutdown");
-    process.exit(0);
+    logger.info("Server shutdown");
+    setTimeout(() => {
+        process.exit(0);
+    }, 1000);
 }
+
+export const handleStaticRoutes = (
+    res: uWS.HttpResponse,
+    req: uWS.HttpRequest,
+    staticDir: string,
+    benchmarkStore: BenchmarkStore,
+    clientType = "ws", // or "http"
+    exportFileName: string
+) => {
+    const url = req.getUrl();
+    const prefix = "/faker";
+
+    try {
+        if (url === "/") {
+            const filePath = path.join(staticDir, "client", clientType, "index.html");
+            const fileContents = fs.readFileSync(filePath);
+
+            res.writeHeader('Content-Type', 'text/html')
+               .end(fileContents);
+
+        } else if (url.startsWith(prefix)) {
+            const file = url.substring(prefix.length, url.length);
+            const filePath = path.join(
+                __dirname,
+                `../../node_modules/@faker-js/faker/dist/esm/${file}`,
+            );
+
+            const fileContents = fs.readFileSync(filePath);
+            const fileStat = fs.statSync(filePath);
+
+            res.writeHeader("Content-Length", `${fileStat.size}`);
+            res.writeHeader("Content-Type", lookup(filePath) || "application/octet-stream");
+            res.end(fileContents);
+        } else if (url.startsWith("/stop")) {
+            shutdown(new uWebSocketResponseWrapper(res), benchmarkStore, exportFileName);
+        } else {
+            res.writeStatus('404').end('Not found');
+        }
+    } catch (error) {
+        logger.debug(`URL 404ing: ${url}`);
+        logger.error(error);
+        res.writeStatus('404').end('File not found');
+    }
+};

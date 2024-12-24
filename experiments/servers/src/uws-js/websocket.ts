@@ -1,7 +1,5 @@
 import uWS from "uWebSockets.js";
 import path from "path";
-import fs from "fs";
-import { lookup } from "mime-types";
 import {
     CoValue,
     uWebSocketResponse,
@@ -15,8 +13,7 @@ import {
     parseUUIDAndUAFromCookie,
     formatClientNumber,
     BenchmarkStore,
-    shutdown,
-    uWebSocketResponseWrapper,
+    handleStaticRoutes,
     PORT,
 } from "../util";
 import logger from "../util/logger";
@@ -57,41 +54,7 @@ const app = uWS.SSLApp({
             .writeHeader('Set-Cookie', `ua=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly; Secure; SameSite=Strict`);
     }
 
-    const url = req.getUrl();
-    const prefix = "/faker";
-
-    try {
-        if (url === "/") {
-            const filePath = path.join(staticDir, "client", "ws", "index.html");
-            const fileContents = fs.readFileSync(filePath);
-            
-            res.writeHeader('Content-Type', 'text/html')
-            .end(fileContents);
-            
-        } else if (url.startsWith(prefix)) {
-            const file = url.substring(prefix.length, url.length);
-            const filePath = path.join(
-                __dirname,
-                `../../node_modules/@faker-js/faker/dist/esm/${file}`,
-            );
-
-            const fileContents = fs.readFileSync(filePath);
-            const fileStat = fs.statSync(filePath);
-            
-            res.writeHeader("Content-Length", `${fileStat.size}`);
-            res.writeHeader("Content-Type", lookup(filePath) || "application/octet-stream");
-            res.end(fileContents);
-        } else if (url.startsWith("/stop")) {
-            shutdown(new uWebSocketResponseWrapper(res), benchmarkStore);
-
-        } else {
-            res.writeStatus('404').end('Not found');
-        }
-    } catch (err) {
-        logger.error(err);
-        res.writeStatus('404').end('File not found');
-    }
-
+    handleStaticRoutes(res, req, staticDir, benchmarkStore, "ws", "B1_uWebSocketServer-WSS.csv");
 }).ws("/*", {
     /* Options */
     compression: uWS.DISABLED, /* uWS.SHARED_COMPRESSOR, */
@@ -208,7 +171,7 @@ const app = uWS.SSLApp({
                         } else {
                             updateCoValue(existingCovalue, partialCovalue);
                         }
-                        res.status(204).json({ m: "OK" });
+                        res.status(200).json({ m: "OK" });
 
                         // broadcast the mutation to clients
                         const event = events.get(uuid) as MutationEvent;
@@ -284,5 +247,3 @@ app.listen(+PORT, (token) => {
         logger.error(`Failed to start server on port: ${PORT}`);
     }
 });
-
-    

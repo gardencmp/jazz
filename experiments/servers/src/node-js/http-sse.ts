@@ -133,7 +133,7 @@ app.patch("/covalue/:uuid", (req: Request, res: Response) => {
 
     // broadcast the mutation to subscribers
     broadcast(uuid);
-    res.status(204).send();
+    res.status(200).send();
 });
 
 app.patch("/covalue/:uuid/binary", (req: Request, res: Response) => {
@@ -149,7 +149,7 @@ app.patch("/covalue/:uuid/binary", (req: Request, res: Response) => {
 
     // broadcast the mutation to subscribers
     broadcast(uuid);
-    res.status(204).send();
+    res.status(200).send();
 });
 
 interface Client {
@@ -157,6 +157,7 @@ interface Client {
     res: Response;
 }
 let clients: Client[] = [];
+let exportFileName: string;
 
 function broadcast(uuid: string): void {
     const event = events.get(uuid) as MutationEvent;
@@ -193,7 +194,7 @@ app.get("/covalue/:uuid/subscribe/:ua", (req: Request, res: Response) => {
 });
 
 app.post("/stop", async (req: Request, res: Response) => {
-    shutdown(res, benchmarkStore, async () => {
+    shutdown(res, benchmarkStore, exportFileName, async () => {
         if (PORT === "3001") {
             // also shutdown Caddy on TLS port 3000 via the `/stop` endpoint of the admin URL
             const caddyAdminUrl = "http://localhost:2019/stop";
@@ -210,6 +211,7 @@ app.post("/stop", async (req: Request, res: Response) => {
 export function createWebServer(isHttp2: boolean, useTLS: boolean = true) {
     if (isHttp2) {
         // Start a HTTPS server using HTTP/2
+        exportFileName = "A3_NodeServer-HTTP2-SSE.csv";
         const server = spdy.createServer(tlsCert, app);
         server.listen(PORT, () => {
             logger.info(
@@ -219,6 +221,7 @@ export function createWebServer(isHttp2: boolean, useTLS: boolean = true) {
     } else {
         if (useTLS) {
             // Start a HTTPS server using HTTP/1.1
+            exportFileName = "A2_NodeServer-HTTP1-SSE.csv";
             const server = https.createServer(tlsCert, app);
             server.listen(PORT, () => {
                 logger.info(
@@ -227,6 +230,7 @@ export function createWebServer(isHttp2: boolean, useTLS: boolean = true) {
             });
         } else {
             // Start a HTTP-only server using HTTP/1.1
+            exportFileName = "C1_Node+CaddyServer-HTTP3-SSE.csv";
             const server = http.createServer(app);
             server.listen(PORT, () => {
                 logger.info(

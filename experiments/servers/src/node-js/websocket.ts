@@ -73,12 +73,9 @@ const server = https.createServer(
                 __dirname,
                 `../../node_modules/@faker-js/faker/dist/esm/${file}`,
             );
-
-            // logger.info(`File ${file} fetching from path: ${filePath}`);
             sendFile(res, filePath);
         } else if (req.url?.startsWith("/stop")) {
-            shutdown(new WebSocketResponseWrapper(res), benchmarkStore);
-
+            shutdown(new WebSocketResponseWrapper(res), benchmarkStore, "A1_NodeServer-WSS.csv");
         } else {
             // Serve other static content or handle other routes
             serveIndex(req, res, finalhandler(req, res));
@@ -172,7 +169,7 @@ wss.on("connection", (ws: WebSocket) => {
                         } else {
                             updateCoValue(existingCovalue, partialCovalue);
                         }
-                        res.status(204).json({ m: "OK" });
+                        res.status(200).json({ m: "OK" });
 
                         // broadcast the mutation to clients
                         const event = events.get(uuid) as MutationEvent;

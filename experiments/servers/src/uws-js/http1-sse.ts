@@ -1,7 +1,5 @@
 import uWS from "uWebSockets.js";
 import path from "path";
-import fs from "fs";
-import { lookup } from "mime-types";
 import {
     MutationEvent,
     covalues,
@@ -9,6 +7,9 @@ import {
     addCoValue,
     updateCoValue,
     updateCoValueBinary,
+    BenchmarkStore,
+    handleStaticRoutes,
+    RequestTimer,
     PORT,
 } from "../util";
 import logger from "../util/logger";
@@ -16,6 +17,7 @@ import { tlsCertPath } from "../util/tls";
 import { FileStreamManager, UploadBody } from "../node-js/filestream-manager";
 
 const fileManager = new FileStreamManager();
+const benchmarkStore = new BenchmarkStore();
 
 const app = uWS.SSLApp({
     key_file_name: tlsCertPath.tlsKeyName,
@@ -28,6 +30,39 @@ const staticDir =
     process.env.NODE_ENV === "production"
         ? path.join(rootDir, "dist", "public")
         : path.join(rootDir, "public");
+
+function trackRequest(method: string, path: string, handler: (res: uWS.HttpResponse, req: uWS.HttpRequest) => void) {
+    return (res: uWS.HttpResponse, req: uWS.HttpRequest) => {
+        if (path.indexOf(":uuid") != -1) {
+            const uuid = req.getParameter(0) as string;
+            path = path.replace(":uuid", uuid);
+
+        }
+        const timer = new RequestTimer(benchmarkStore.requestId());
+        timer.method(method).path(path);
+
+        const originalWriteStatus = res.writeStatus;
+        res.writeStatus = (status: string) => {
+            res.statusCode = parseInt(status, 10);
+            return originalWriteStatus.call(res, status);
+        };
+
+        const originalEnd = res.end.bind(res);
+        res.end = function(data?: any) {
+            const result = originalEnd(data);
+            timer.status(this.statusCode).end();
+            benchmarkStore.addRequestLog(timer.toRequestLog());
+            return result;
+        };
+
+        res.onAborted(() => {
+            timer.status(499).end();
+            benchmarkStore.addRequestLog(timer.toRequestLog());
+        });
+
+        handler(res, req);
+    };
+}
 
 app.get("/covalue", (res, req) => {
     const query = req.getQuery();
@@ -42,7 +77,7 @@ app.get("/covalue", (res, req) => {
     }
 });
 
-app.get("/covalue/:uuid", (res, req) => {
+app.get("/covalue/:uuid", trackRequest("GET", "/covalue/:uuid", (res, req) => {
     const uuid = req.getParameter(0);
     if (!uuid) {
         res.writeStatus('404').end(JSON.stringify({ m: "CoValue not found" }));
@@ -51,9 +86,9 @@ app.get("/covalue/:uuid", (res, req) => {
     const covalue = covalues[uuid];
     res.writeHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(covalue));
-});
+}));
 
-app.get("/covalue/:uuid/binary", (res, req) => {
+app.get("/covalue/:uuid/binary", trackRequest("GET", "/covalue/:uuid/binary", (res, req) => {
     const uuid = req.getParameter(0);
     if (!uuid) {
         res.writeStatus('404').end(JSON.stringify({ m: "CoValue not found" }));
@@ -120,9 +155,9 @@ app.get("/covalue/:uuid/binary", (res, req) => {
         logger.debug(`Binary CoValue file download aborted`);
     });
 
-});
+}));
 
-app.post("/covalue", (res) => {
+app.post("/covalue", trackRequest("POST", "/covalue", (res, req) => {
     let buffer = Buffer.alloc(0);
 
     res.onData((chunk: ArrayBuffer, isLast: boolean) => {
@@ -150,9 +185,9 @@ app.post("/covalue", (res) => {
     res.onAborted(() => {
         logger.debug(`Text-based CoValue creation aborted`);
     });
-});
+}));
 
-app.post("/covalue/binary", (res, req) => {
+app.post("/covalue/binary", trackRequest("POST", "/covalue/binary", (res, req) => {
     let body = '';
     res.onData((chunk, isLast) => {
         body += Buffer.from(chunk).toString();
@@ -180,33 +215,32 @@ app.post("/covalue/binary", (res, req) => {
         logger.debug(`Binary CoValue creation aborted`);
     });
 
-});
+}));
 
-app.patch("/covalue/:uuid", (res, req) => {
+app.patch("/covalue/:uuid", trackRequest("PATCH", "/covalue/:uuid", (res, req) => {
     const uuid = req.getParameter(0);
     if (!uuid) {
         res.writeStatus('404').end(JSON.stringify({ m: "CoValue not found" }));
         return;
     }
-    
+
     res.onData((chunk) => {
         const body = Buffer.from(chunk).toString();
         const partialCovalue = JSON.parse(body);
         const covalue = covalues[uuid];
 
         updateCoValue(covalue, partialCovalue);
-        res.writeStatus('204').end();
-
         // Broadcast the mutation to subscribers
         broadcast(uuid);
+        res.writeStatus('200').end();
     });
 
     res.onAborted(() => {
         logger.debug(`Text-based CoValue mutation aborted`);
     });
-});
+}));
 
-app.patch("/covalue/:uuid/binary", (res, req) => {
+app.patch("/covalue/:uuid/binary", trackRequest("PATCH", "/covalue/:uuid/binary", (res, req) => {
     const uuid = req.getParameter(0);
     if (!uuid) {
         res.writeStatus('404').end(JSON.stringify({ m: "CoValue not found" }));
@@ -220,18 +254,18 @@ app.patch("/covalue/:uuid/binary", (res, req) => {
         if (isLast) {
             const partialCovalue = JSON.parse(body);
             const covalue = covalues[uuid];
+
             updateCoValueBinary(covalue, partialCovalue);
-            res.writeStatus('204').end();
-    
             // Broadcast the mutation to subscribers
             broadcast(uuid);
+            res.writeStatus('200').end();
         }
     });
     
     res.onAborted(() => {
         logger.debug(`Binary CoValue mutation aborted`);
     });
-});
+}));
 
 // SSE-like subscription handling
 interface Client {
@@ -272,7 +306,6 @@ app.get("/covalue/:uuid/subscribe/:ua", (res, req) => {
     };
     clients.push(client);
 
-    // Keep the connection open
     res.onAborted(() => {
         logger.debug(`[Client-#${ua}] Closed the event stream for: ${uuid}.`);
         clients = clients.filter((client) => client.userAgentId !== ua);
@@ -280,39 +313,8 @@ app.get("/covalue/:uuid/subscribe/:ua", (res, req) => {
 });
 
 // Serve static files
-app.get("/*", (res, req) => {
-    const url = req.getUrl();
-    const prefix = "/faker";
-
-    try {
-        if (url === "/") {
-            const filePath = path.join(staticDir, "client", "http", "index.html");
-            const fileContents = fs.readFileSync(filePath);
-            
-            res.writeHeader('Content-Type', 'text/html')
-            .end(fileContents);
-            
-        } else if (url.startsWith(prefix)) {
-            const file = url.substring(prefix.length, url.length);
-            const filePath = path.join(
-                __dirname,
-                `../../node_modules/@faker-js/faker/dist/esm/${file}`,
-            );
-
-            const fileContents = fs.readFileSync(filePath);
-            const fileStat = fs.statSync(filePath);
-            
-            res.writeHeader("Content-Length", `${fileStat.size}`);
-            res.writeHeader("Content-Type", lookup(filePath) || "application/octet-stream");
-            res.end(fileContents);
-            
-        } else {
-            res.writeStatus('404').end('Not found');
-        }
-    } catch (err) {
-        logger.error(err);
-        res.writeStatus('404').end('File not found');
-    }
+app.any("/*", (res, req) => {
+    handleStaticRoutes(res, req, staticDir, benchmarkStore, "http", "B2_uWebSocketServer-HTTP1-SSE.csv");
 });
 
 
