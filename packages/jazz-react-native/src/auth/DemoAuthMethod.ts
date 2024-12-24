@@ -100,8 +100,9 @@ export class RNDemoAuth implements AuthMethod {
         accountSecret: AgentSecret;
       };
     },
+    store?: KvStore | undefined,
   ) {
-    const kvStore = KvStoreContext.getInstance().getStorage();
+    const kvStore = store ? store : KvStoreContext.getInstance().getStorage();
 
     await migrateExistingUsersKeys(kvStore);
 

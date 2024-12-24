@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { KvStore } from "../storage/kv-store-context.js";
 import { RNDemoAuth } from "./DemoAuthMethod.js";
 
 type DemoAuthState = (
@@ -34,10 +35,12 @@ type DemoAuthState = (
 /** @category Auth Providers */
 export function useDemoAuth({
   seedAccounts,
+  store,
 }: {
   seedAccounts?: {
     [name: string]: { accountID: ID<Account>; accountSecret: AgentSecret };
   };
+  store?: KvStore;
 } = {}) {
   const [state, setState] = useState<DemoAuthState>({
     state: "loading",
@@ -70,13 +73,22 @@ export function useDemoAuth({
         },
       },
       seedAccounts,
+      store,
     );
   }, [seedAccounts]);
 
   useEffect(() => {
     async function init() {
-      const auth = await authMethodPromise;
-      setAuthMethod(auth);
+      try {
+        const auth = await authMethodPromise;
+        setAuthMethod(auth);
+      } catch (e: unknown) {
+        const err = e as Error;
+        setState((current) => ({
+          ...current,
+          errors: [...current.errors, err.toString()],
+        }));
+      }
     }
     if (authMethod) return;
     void init();
