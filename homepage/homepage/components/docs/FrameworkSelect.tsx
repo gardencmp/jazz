@@ -28,7 +28,7 @@ export function FrameworkSelect({ className }: { className?: string }) {
       label="Framework"
       value={framework}
       onChange={onChange}
-      className={clsx("label:sr-only", className)}
+      className={clsx("max-w-64 label:sr-only", className)}
     >
       {frameworks.map((framework) => (
         <option key={framework} value={framework}>

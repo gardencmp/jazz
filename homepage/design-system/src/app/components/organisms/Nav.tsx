@@ -174,7 +174,7 @@ export function MobileNav({
       ></div>
       <nav
         className={clsx(
-          "md:hidden fixed flex flex-col bottom-4 right-4 z-50",
+          "md:hidden fixed flex flex-col bottom-4 right-4 z-40",
           "bg-stone-50 dark:bg-stone-925 border rounded-lg shadow-lg",
           menuOpen || searchOpen ? "left-4" : "",
         )}

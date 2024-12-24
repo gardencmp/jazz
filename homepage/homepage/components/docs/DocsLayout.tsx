@@ -1,44 +1,12 @@
 "use client";
 
+import { MobileNavigation } from "@/components/docs/MobileNavigation";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { DocNav } from "@/components/docs/nav";
 import { Toc } from "@stefanprobst/rehype-extract-toc";
 import { clsx } from "clsx";
 import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import { useState } from "react";
-
-function MobileNavigation() {
-  const [active, setActive] = useState<"main" | "toc" | null>(null);
-
-  const toggleMainMenu = () => {
-    setActive(active === "main" ? null : "main");
-  };
-
-  const toggleToc = () => {
-    setActive(active === "toc" ? null : "toc");
-  };
-
-  return (
-    <div className="md:hidden w-full border-y sticky top-0 z-10 bg-white">
-      <div className="container pl-0 pr-4 flex justify-between">
-        <button
-          type="button"
-          className="p-3 inline-flex items-center gap-1"
-          onClick={toggleMainMenu}
-        >
-          Menu <Icon size="sm" name="chevronRight" />
-        </button>
-
-        <button type="button" className="p-3" onClick={toggleToc}>
-          <span className="sr-only">On this page</span>
-          <Icon name="tableOfContents" />
-        </button>
-      </div>
-
-      {active && <div className="border-t">open menu {active}</div>}
-    </div>
-  );
-}
 
 export function DocsLayout({
   children,
