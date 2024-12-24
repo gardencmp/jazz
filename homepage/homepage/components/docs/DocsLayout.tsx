@@ -33,15 +33,17 @@ export function DocsLayout({
           {nav}
         </div>
         <div className="col-span-12 md:col-span-8 lg:col-span-9">
-          <div className="flex justify-center gap-5">
-            {children}
-            {tableOfContents && (
+          {tableOfContents ? (
+            <div className="flex justify-center gap-5">
+              {children}
               <TableOfContents
                 className="text-sm pl-3 py-6 sticky align-start top-[65px] w-[16rem] h-[calc(100vh-65px)] overflow-y-auto overflow-x-hidden hidden lg:block"
                 items={tableOfContents}
               />
-            )}
-          </div>
+            </div>
+          ) : (
+            children
+          )}
         </div>
       </div>
     </>
