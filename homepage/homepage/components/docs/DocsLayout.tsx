@@ -37,7 +37,7 @@ export function DocsLayout({
             {children}
             {tableOfContents && (
               <TableOfContents
-                className="pl-3 py-6 sticky align-start top-[65px] w-[16rem] h-[calc(100vh-65px)] overflow-y-auto overflow-x-hidden hidden lg:block"
+                className="text-sm pl-3 py-6 sticky align-start top-[65px] w-[16rem] h-[calc(100vh-65px)] overflow-y-auto overflow-x-hidden hidden lg:block"
                 items={tableOfContents}
               />
             )}

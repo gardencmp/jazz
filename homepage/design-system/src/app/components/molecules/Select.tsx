@@ -15,7 +15,7 @@ export function Select(
 
   const selectClassName = clsx(
     "g-select",
-    "w-full rounded-md border shadow-sm px-2 py-1.5 text-sm",
+    "w-full rounded-md border shadow-sm px-2 py-1.5",
     "font-medium text-stone-900",
     "dark:text-white",
     "appearance-none",

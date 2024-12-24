@@ -24,10 +24,8 @@ export function TableOfContents({
 }) {
   if (!items.length) return null;
 
-  console.log({ items });
-
   return (
-    <div className={clsx("text-sm", className)}>
+    <div className={className}>
       <p className="mb-3">On this page:</p>
       <TocList items={items} />
     </div>

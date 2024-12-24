@@ -8,7 +8,7 @@ export default function Layout({
   children: React.ReactNode;
 }) {
   return (
-    <DocsLayout nav={<DocNav />}>
+    <DocsLayout nav={<DocNav className="text-sm" />}>
       <Prose className="overflow-x-hidden lg:flex-1 py-8">{children}</Prose>
     </DocsLayout>
   );

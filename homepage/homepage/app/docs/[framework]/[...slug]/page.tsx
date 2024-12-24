@@ -25,7 +25,7 @@ export default async function Page({
 
     return (
       <DocsLayoutWithToc
-        nav={<DocNav />}
+        nav={<DocNav className="text-sm" />}
         tableOfContents={tableOfContents as Toc}
       >
         <Prose className="overflow-x-hidden lg:flex-1  py-8">

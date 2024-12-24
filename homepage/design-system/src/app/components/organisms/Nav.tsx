@@ -140,7 +140,7 @@ function MobileNavItem({
 
   return (
     <NavLink
-      className="p-1 text-sm"
+      className="py-2 px-1"
       href={item.href}
       onClick={onClick}
       newTab={item.newTab}
@@ -205,7 +205,7 @@ export function MobileNav({
           menuOpen || searchOpen ? "left-4" : "",
         )}
       >
-        <div className={clsx(menuOpen ? "block" : "hidden", " px-2 pb-2")}>
+        <div className={clsx(menuOpen ? "block" : "hidden", "px-3 pb-2")}>
           <div className="flex items-center w-full border-b">
             <NavLinkLogo
               prominent
@@ -219,7 +219,7 @@ export function MobileNav({
             <SocialLinks className="px-2 gap-2" {...socials} />
           </div>
 
-          <div className="flex flex-wrap justify-end py-2 gap-x-3 gap-y-1 border-b">
+          <div className="flex flex-col py-3 border-b">
             {[{ title: "Home", href: "/" }, ...items]
               .filter((item) => !("icon" in item))
               .map((item, i) => (
