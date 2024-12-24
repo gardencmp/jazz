@@ -1,11 +1,16 @@
 import { MobileNavigationDrawer } from "@/components/docs/MobileNavigationDrawer";
 import { TableOfContents } from "@/components/docs/TableOfContents";
 import { DocNav } from "@/components/docs/nav";
+import { Toc } from "@stefanprobst/rehype-extract-toc";
 import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
 import { useState } from "react";
 
-export function MobileNavigation() {
+export function MobileNavigation({
+  tableOfContents,
+}: { tableOfContents?: Toc }) {
   const [active, setActive] = useState<"main" | "toc" | null>(null);
+
+  console.log(tableOfContents);
 
   return (
     <div className="md:hidden w-full border-y sticky top-0 z-10 bg-white">
@@ -18,10 +23,16 @@ export function MobileNavigation() {
           Menu <Icon size="sm" name="chevronRight" />
         </button>
 
-        <button type="button" className="p-3" onClick={() => setActive("toc")}>
-          <span className="sr-only">On this page</span>
-          <Icon name="tableOfContents" />
-        </button>
+        {tableOfContents && (
+          <button
+            type="button"
+            className="p-3"
+            onClick={() => setActive("toc")}
+          >
+            <span className="sr-only">On this page</span>
+            <Icon name="tableOfContents" />
+          </button>
+        )}
       </div>
 
       <MobileNavigationDrawer
@@ -37,7 +48,7 @@ export function MobileNavigation() {
         isOpen={active === "toc"}
         onClose={() => setActive(null)}
       >
-        table of contents
+        {tableOfContents && <TableOfContents items={tableOfContents} />}
       </MobileNavigationDrawer>
     </div>
   );

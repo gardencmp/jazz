@@ -24,13 +24,10 @@ export function TableOfContents({
 }) {
   if (!items.length) return null;
 
+  console.log({ items });
+
   return (
-    <div
-      className={clsx(
-        "pl-3 py-6 text-sm sticky align-start top-[65px] w-[16rem] h-[calc(100vh-65px)] overflow-y-auto overflow-x-hidden hidden lg:block",
-        className,
-      )}
-    >
+    <div className={clsx("text-sm", className)}>
       <p className="mb-3">On this page:</p>
       <TocList items={items} />
     </div>

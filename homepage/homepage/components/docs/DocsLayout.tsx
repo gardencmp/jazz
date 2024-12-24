@@ -19,7 +19,7 @@ export function DocsLayout({
 }) {
   return (
     <>
-      <MobileNavigation />
+      <MobileNavigation tableOfContents={tableOfContents} />
 
       <div className="container relative grid grid-cols-12 gap-5">
         <div
@@ -35,7 +35,12 @@ export function DocsLayout({
         <div className="col-span-12 md:col-span-8 lg:col-span-9">
           <div className=" flex justify-center gap-5">
             {children}
-            {tableOfContents && <TableOfContents items={tableOfContents} />}
+            {tableOfContents && (
+              <TableOfContents
+                className="pl-3 py-6 sticky align-start top-[65px] w-[16rem] h-[calc(100vh-65px)] overflow-y-auto overflow-x-hidden hidden lg:block"
+                items={tableOfContents}
+              />
+            )}
           </div>
         </div>
       </div>
