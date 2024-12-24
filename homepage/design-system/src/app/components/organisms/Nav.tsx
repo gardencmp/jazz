@@ -172,24 +172,25 @@ export function MobileNav({
 
   return (
     <>
-      <div className="md:hidden px-4 flex items-center self-stretch dark:text-white">
+      <div className="md:hidden px-4 flex items-center self-stretch dark:text-white border-b">
         <NavLinkLogo prominent href="/" className="mr-auto">
           {mainLogo}
         </NavLinkLogo>
         <button
-          className="flex gap-2 p-3 rounded-xl items-center"
+          className="flex gap-2 p-3 -mr-3 rounded-xl items-center text-stone-900 dark:text-white"
           onMouseDown={() => {
             setMenuOpen((o) => !o);
             setSearchOpen(false);
           }}
           aria-label="Open menu"
         >
-          <Icon name="menu" />
+          <Icon name="menu" size="lg" />
           <BreadCrumb items={items} />
         </button>
       </div>
       <div
         onClick={() => {
+          ``;
           setMenuOpen(false);
           setSearchOpen(false);
         }}

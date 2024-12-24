@@ -33,7 +33,7 @@ export function DocsLayout({
           {nav}
         </div>
         <div className="col-span-12 md:col-span-8 lg:col-span-9">
-          <div className=" flex justify-center gap-5">
+          <div className="flex justify-center gap-5">
             {children}
             {tableOfContents && (
               <TableOfContents
