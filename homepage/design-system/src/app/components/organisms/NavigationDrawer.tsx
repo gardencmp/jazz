@@ -1,7 +1,7 @@
 import { clsx } from "clsx";
-import { Icon } from "gcmp-design-system/src/app/components/atoms/Icon";
+import { Icon } from "../atoms/Icon";
 
-export function MobileNavigationDrawer({
+export function NavigationDrawer({
   children,
   from,
   isOpen,
@@ -28,7 +28,7 @@ export function MobileNavigationDrawer({
   return (
     <div
       className={clsx(
-        "fixed top-0 w-screen h-screen z-60 overflow-y-auto",
+        "fixed top-0 w-screen h-screen z-50 overflow-y-auto",
         "p-4 bg-white shadow-lg",
         "transition-all duration-500",
         isOpen ? positionClasses.active : positionClasses.inactive,
