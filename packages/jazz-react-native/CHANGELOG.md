@@ -1,5 +1,11 @@
 # jazz-browser
 
+## 0.8.47
+
+### Patch Changes
+
+- 33ef9c4: Bring Your Own Store to demo auth
+
 ## 0.8.46
 
 ### Patch Changes
