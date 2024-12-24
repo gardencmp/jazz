@@ -10,17 +10,19 @@ export const metadata = {
 
 export default function NewsPage() {
   return (
-    <div className="container">
+    <div className="container flex flex-col gap-10">
       <HeroHeader title="Blog" slogan="" />
-      <Prose>
-        <p>Wow! You caught us a bit early.</p>
 
-        <p>You can subscribe to our newsletter below.</p>
+      <Posts />
+
+      <Prose>
+        <p>Stay up to date with our latest news.</p>
 
         <NewsletterForm />
 
         <p>
-          Follow us on <Link href="https://x.com/gcmp_io">@garden.co</Link> or{" "}
+          Follow us on{" "}
+          <Link href="https://x.com/gardendotco">@gardendotco</Link> or{" "}
           <Link href="https://x.com/jazz_tools">@jazz_tools</Link>.
         </p>
 
@@ -32,8 +34,6 @@ export default function NewsPage() {
           !
         </p>
       </Prose>
-
-      <Posts />
     </div>
   );
 }

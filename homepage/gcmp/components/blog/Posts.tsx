@@ -16,9 +16,14 @@ export function Posts() {
           />
           <Link
             href={`/news/${post.meta.slug}`}
-            className="text-lg font-medium text-display text-stone-900 dark:text-white"
+            className="text-stone-900 dark:text-white"
           >
-            {post.meta.title}
+            <h1 className="text-2xl font-display font-semibold tracking-tight">
+              {post.meta.title}
+            </h1>
+            <h2 className="text-base text-stone-600 dark:text-stone-400">
+              {post.meta.subtitle}
+            </h2>
           </Link>
           <p className="line-clamp-3 leading-relaxed text-ellipsis text-sm text-stone-900 dark:text-stone-400">
             {post.meta.excerpt}

@@ -1,0 +1,96 @@
+export const meta = {
+  slug: "hello-world",
+  title: "Hello World!",
+  subtitle: "(A love letter to computers)",
+  date: "2024-12-23",
+  coverImage: "/posts/post1.svg",
+  author: {
+    name: "Anselm Eickhoff",
+    picture: "/team/anselm.jpg",
+  },
+  excerpt:
+    "Jazz is a framework for local-first data/permissions. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut gravida vel urna sit amet lacinia. Morbi euismod mi ac lacus feugiat, vel sollicitudin urna faucibus. ",
+};
+
+Doing anything successfully consists of two parts: *doing it,* and *talking about doing it.* This is true whether you do something by yourself, or as an organisation (such as a company).
+
+I’m very used to talking about what I personally am doing. You should try it! Let’s [normalise sharing scrappy fiddles](https://www.todepond.com/sky/normalise-dont-share-lol/).
+
+But this is the first time I am really talking *as my company,* Garden Computing.
+
+I thought speaking *as my company* would be hard, until I realised that I’m simply creating Garden Computing in my own image. Or, more humbly, I am trying to make it the company I’d love to exist. One that I’d love working for.
+
+So what do we do?
+
+- Computer research
+- Devtools & infrastructure
+- End-user products
+- Art
+
+If you pause for a second, you’ll realise this covers pretty much everything you can do with computers. And that’s important.
+
+Computers are special not in any one narrow sense but in the very fact that you can do so much with them. They are the most “you can just do stuff” object since paper.
+
+But over their short history, computers have grown extremely complex. Hardware is somewhat unavoidably complex — making stuff tiny is *hard.* Software, however, doesn’t really have an excuse. The success of computers is *despite* our haphazard attempts at organising ourselves around them. [The computer revolution still hasn’t happened yet.](https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.youtube.com/watch%3Fv%3DoKg1hTOQXoY&ved=2ahUKEwiYh7XA-v-JAxVuRvEDHTBbGagQwqsBegQIDxAG&usg=AOvVaw1EWUQISqL3Fpi6dLOnvj5y)
+
+We came up with a way *to bring abstractions to life and make them useful just by typing* and we still managed to make things ever more complicated. Granted, the problem domains we apply  abstractions to can be inherently complex, but that is far overshadowed by the gigantic incidental complexity in software.
+
+It’s a skill issue on a societal level. Already early on, systems programmers were rightfully called the [“high priests of a low cult”](https://en.wikipedia.org/wiki/Robert_S._Barton#cite_note-6). The problem is that this has been a [vicious cycle](https://x.com/anselm_io/status/1297151607541506048) — incidental complexity leads to ~~nerds~~ specialists who lead to more incidental complexity and isolation of niches. Their whole identity relies on it. If you’re reading this there’s a high chance you are calling yourself a “React frontend developer” or something equally narrow.
+
+But, again, what’s special about the computer and the abstractions of software is their *universality.* Any time things get needlessly complex, we’ve lost sight of that.
+
+And the only way to fix it is *to take responsibility for everything you can do with computers*.
+
+That’s what I started Garden Computing for.
+
+This sounds like an impossible task, but the good news is that the situation is so dire that there are very low-hanging fruits if you take a step back. And you only need to start in one place to see dramatic improvements.
+
+Of course, this means that you need to change how some things are done. Whenever you do that it’s important to really embrace that [everyone will not just](https://www.tumblr.com/squareallworthy/163790039847/everyone-will-not-just) [sic].
+
+You can’t fix computers just by thinking about computers. You have to think about psychology, incentives, academia, business and the everyday person. The past, the current and the future. Accidents and influencers. And you have to be extremely pragmatic.
+
+Pragmatic doesn’t have to mean mediocre. You can do bold things, but you need to be in touch with the mainstream as much as you are with your favourite fringes.
+
+That’s where I’ve always found myself situated and where I’m trying to embed Garden Computing in this world: a vertical slab that integrates humans and computers everywhere.
+
+The other ingredient you need to change how things are done is something *actually new.* I’m particularly fond of new *tall abstractions* that let you reach the same (or greater) heights while using much less material — like a beautiful arched bridge. For computers, the material you want to spend as little as possible of is complexity. And whenever you can replace dense stacks of shallow abstractions with a single tall abstraction, you know you’ve got a winner.
+
+I found (or at least assembled) my first *tall abstraction* four years ago: local-first state (CRDTs) combined with local-first auth & permissions (public-key cryptography).
+
+Over the years, this rough idea has solidified into three things:
+
+- CoJSON (a soon-to-be-open protocol for local-first state & permissions, sync & persistence)
+- Jazz (an open-source framework for building apps and server workers based on CoJSON)
+- Jazz Cloud (hosted realtime sync & storage infrastructure for apps based on Jazz/CoJSON)
+
+Together, they can completely replace *what traditional backends and databases do* with something simpler, more powerful and better suited to our beloved internet, which is a lot more distributed than we’d like to admit.
+
+They form a *tall abstraction* because you can use it for everything, it makes everything it touches easier and you can suddenly focus on a lot more not-computer problems than you could before. And even more excitingly, it makes building apps *more accessible*
+
+We’ll cover CoJSON, Jazz and Jazz Cloud, as well as endeavours *building on them* in more detail in future blog posts, so stay tuned.
+
+While I would consider myself very lucky if Garden Computing became successful just based on Jazz and CoJSON, my main concern is how to foster a spirit that lets us *keep finding new things* and be the ones to make them useful.
+
+And to understand how to foster that, I’d like to reflect on the journey so far: The only reason I got as far as I have and was able to connect some unusual dots is my unique *broad* home in the computer world.
+
+I am…
+
+- a designer (by nurture — mom is a graphic designer)
+- a mainstream web developer (by trade — the first thing that ever made me feel useful)
+- a hacker (at heart — my parents are both serious tinkerers)
+- an entrepreneur (against my upbringing — everyone around me was very risk-averse)
+- and a failed “computer scientist” (who still reads papers — both attracted to and repelled by the rigour of academia)
+
+There are very few people like me, and I don’t mean that in a boasting way, I mean it in a sad way.
+
+I know many people that are much better at any one thing than I am. And I know many generalists whose genius is severely under-appreciated by a world of niches.
+
+What we need is generalists with *agency* — surrounded by a couple specialists who can tough out the hardest point problems, but still have enough broad context.
+
+And guess what, I think I managed to create that in a small way.
+
+After four years of intense bootstrapped research and product development, I recently have found *generalists with agency* as investors and supporters, who believed in me and saw what I saw. And I have found an extra special handful of such people to make Garden Computing an actual *company,* not just a hollow corporate vessel for my hopes and dreams. And I couldn’t be more proud of [our little team](https://garden.co/team), even though we still have so much to prove.
+
+But give us a chance and we’ll keep making computers everything they *can be*, by shipping software that is delightful, bold and new — and yet strangely familiar, humble and immediately *useful*.
+
+Meet Garden Computing.

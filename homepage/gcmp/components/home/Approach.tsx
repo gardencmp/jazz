@@ -9,6 +9,14 @@ export default function Approach() {
       <H2>Approach</H2>
       <GappedGrid>
         <GridCard>
+          <H3>Find tall abstractions</H3>
+
+          <P>
+            In a world drowning in complexity, we need to invent tools that let
+            us do more with less.
+          </P>
+        </GridCard>
+        <GridCard>
           <H3>Grow open ecosystems</H3>
 
           <P>
