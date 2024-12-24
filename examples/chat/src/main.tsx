@@ -32,6 +32,5 @@ createRoot(document.getElementById("root")!).render(
         <App />
       </JazzAndAuth>
     </StrictMode>
-    ,
   </ThemeProvider>,
 );
