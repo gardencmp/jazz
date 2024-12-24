@@ -230,23 +230,21 @@ export function MobileNav({
               ))}
           </div>
         </div>
-        <div className="flex items-center self-stretch justify-between">
-          {(menuOpen || searchOpen) && <ThemeToggle className="p-3" />}
-          <button
-            className="flex gap-2 p-3 rounded-xl items-center"
-            onMouseDown={() => {
-              setMenuOpen((o) => !o);
-              setSearchOpen(false);
-            }}
-            aria-label="Close menu"
-          >
-            {menuOpen || searchOpen ? (
+        {(menuOpen || searchOpen) && (
+          <div className="flex items-center self-stretch justify-between">
+            {(menuOpen || searchOpen) && <ThemeToggle className="p-3" />}
+            <button
+              className="flex gap-2 p-3 rounded-xl items-center"
+              onMouseDown={() => {
+                setMenuOpen((o) => !o);
+                setSearchOpen(false);
+              }}
+              aria-label="Close menu"
+            >
               <Icon name="close" />
-            ) : (
-              <Icon name="menu" />
-            )}
-          </button>
-        </div>
+            </button>
+          </div>
+        )}
       </nav>
     </>
   );
