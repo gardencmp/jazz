@@ -19,7 +19,6 @@ import {
   useState,
 } from "react";
 import { Icon } from "../atoms/Icon";
-import { BreadCrumb } from "../molecules/Breadcrumb";
 import { SocialLinks, SocialLinksProps } from "./SocialLinks";
 
 type NavItemProps = {
@@ -185,7 +184,6 @@ export function MobileNav({
           aria-label="Open menu"
         >
           <Icon name="menu" size="lg" />
-          <BreadCrumb items={items} />
         </button>
       </div>
       <div
@@ -245,10 +243,7 @@ export function MobileNav({
             {menuOpen || searchOpen ? (
               <Icon name="close" />
             ) : (
-              <>
-                <Icon name="menu" />
-                <BreadCrumb items={items} />
-              </>
+              <Icon name="menu" />
             )}
           </button>
         </div>
