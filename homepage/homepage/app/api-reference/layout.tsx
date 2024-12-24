@@ -1,5 +1,5 @@
 import { ApiNav } from "@/components/docs/ApiNav";
-import DocsLayout from "@/components/docs/DocsLayout";
+import { DocsLayout } from "@/components/docs/DocsLayout";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
 export const metadata = {

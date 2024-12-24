@@ -19,7 +19,6 @@ import {
   useState,
 } from "react";
 import { Icon } from "../atoms/Icon";
-import { BreadCrumb } from "../molecules/Breadcrumb";
 import { SocialLinks, SocialLinksProps } from "./SocialLinks";
 
 type NavItemProps = {
@@ -35,7 +34,6 @@ type NavItemProps = {
 type NavProps = {
   mainLogo: ReactNode;
   items: NavItemProps[];
-  docNav?: ReactNode;
   cta?: ReactNode;
   socials?: SocialLinksProps;
   themeToggle: ComponentType<{ className?: string }>;
@@ -125,21 +123,39 @@ function NavItem({
   );
 }
 
+function MobileNavItem({
+  item,
+  onClick,
+}: { item: NavItemProps; onClick?: () => void }) {
+  if (item.items) {
+    return (
+      <>
+        {item.items.map((child) => (
+          <MobileNavItem key={child.href} item={child} onClick={onClick} />
+        ))}
+      </>
+    );
+  }
+
+  return (
+    <NavLink
+      className="py-2 px-1 text-stone-900 dark:text-white"
+      href={item.href}
+      onClick={onClick}
+      newTab={item.newTab}
+    >
+      {item.title}
+    </NavLink>
+  );
+}
+
 export function MobileNav({
   mainLogo,
   items,
-  docNav,
-  cta,
   socials,
   themeToggle: ThemeToggle,
 }: NavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const searchRef = useRef<HTMLInputElement>(null);
-
-  useLayoutEffect(() => {
-    searchOpen && searchRef.current?.focus();
-  }, [searchOpen]);
 
   const pathname = usePathname();
 
@@ -149,94 +165,40 @@ export function MobileNav({
 
   return (
     <>
-      <div className="md:hidden px-4 flex items-center self-stretch dark:text-white">
+      <div className="md:hidden  px-4 flex items-center self-stretch dark:text-white border-b">
         <NavLinkLogo prominent href="/" className="mr-auto">
           {mainLogo}
         </NavLinkLogo>
         <button
-          className="flex gap-2 p-3 rounded-xl items-center"
+          className="flex gap-2 p-3 -mr-3 rounded-xl items-center text-stone-900 dark:text-white"
           onMouseDown={() => {
             setMenuOpen((o) => !o);
-            setSearchOpen(false);
           }}
           aria-label="Open menu"
         >
-          <Icon name="menu" />
-          <BreadCrumb items={items} />
+          <Icon name="menu" size="lg" />
         </button>
       </div>
-      <div
-        onClick={() => {
-          setMenuOpen(false);
-          setSearchOpen(false);
-        }}
-        className={clsx(
-          menuOpen || searchOpen ? "block" : "hidden",
-          "fixed top-0 bottom-0 left-0 right-0 bg-stone-200/80 dark:bg-black/80 w-full h-full z-20",
-        )}
-      ></div>
       <nav
         className={clsx(
-          "md:hidden fixed flex flex-col bottom-4 right-4 z-50",
-          "bg-stone-50 dark:bg-stone-925 border rounded-lg shadow-lg",
-          menuOpen || searchOpen ? "left-4" : "",
+          "md:hidden border-b -mt-px transition-all overflow-hidden",
+          menuOpen ? "max-h-screen duration-1000" : "max-h-0 duration-500",
         )}
       >
-        <div className={clsx(menuOpen ? "block" : "hidden", " px-2 pb-2")}>
-          <div className="flex items-center w-full border-b">
-            <NavLinkLogo
-              prominent
-              href="/"
-              className="mr-auto"
-              onClick={() => setMenuOpen(false)}
-            >
-              {mainLogo}
-            </NavLinkLogo>
-
-            <SocialLinks className="px-2 gap-2" {...socials} />
-          </div>
-
-          {pathname.startsWith("/docs") && docNav && (
-            <div className="max-h-[calc(100dvh-15rem)] p-4 border-b overflow-x-auto">
-              {docNav}
-            </div>
-          )}
-
-          <div className="flex flex-wrap justify-end py-2 gap-x-3 gap-y-1 border-b">
-            {[{ title: "Home", href: "/" }, ...items]
-              .filter((item) => !("icon" in item))
-              .map((item, i) => (
-                <NavLink
-                  className="p-1 text-sm"
-                  key={i}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  newTab={item.newTab}
-                >
-                  {item.title}
-                </NavLink>
-              ))}
-          </div>
+        <div className="flex flex-col p-3">
+          {items
+            .filter((item) => !("icon" in item))
+            .map((item, i) => (
+              <MobileNavItem
+                key={i}
+                onClick={() => setMenuOpen(false)}
+                item={item}
+              />
+            ))}
         </div>
-        <div className="flex items-center self-stretch justify-between">
-          {(menuOpen || searchOpen) && <ThemeToggle className="p-3" />}
-          <button
-            className="flex gap-2 p-3 rounded-xl items-center"
-            onMouseDown={() => {
-              setMenuOpen((o) => !o);
-              setSearchOpen(false);
-            }}
-            aria-label="Close menu"
-          >
-            {menuOpen || searchOpen ? (
-              <Icon name="close" />
-            ) : (
-              <>
-                <Icon name="menu" />
-                <BreadCrumb items={items} />
-              </>
-            )}
-          </button>
+        <div className="flex items-center justify-between px-5 pb-5">
+          <SocialLinks className="gap-2" {...socials} />
+          <ThemeToggle />
         </div>
       </nav>
     </>
@@ -310,7 +272,7 @@ function NavLinkLogo({
 }
 
 export function Nav(props: NavProps) {
-  const { mainLogo, items, docNav, cta } = props;
+  const { mainLogo, items, cta } = props;
   return (
     <>
       <div className="w-full border-b py-2 sticky top-0 z-50 bg-white dark:bg-stone-950 hidden md:block">

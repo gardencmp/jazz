@@ -1,9 +1,15 @@
+import { DocsLayout } from "@/components/docs/DocsLayout";
+import { DocNav } from "@/components/docs/nav";
 import { Prose } from "gcmp-design-system/src/app/components/molecules/Prose";
 
-export default function DocsLayout({
+export default function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <Prose className="overflow-x-hidden lg:flex-1 py-8">{children}</Prose>;
+  return (
+    <DocsLayout nav={<DocNav className="text-sm" />}>
+      <Prose className="overflow-x-hidden lg:flex-1 py-8">{children}</Prose>
+    </DocsLayout>
+  );
 }

@@ -7,7 +7,7 @@ import { DocNav } from "./docs/nav";
 export function JazzNav() {
   return (
     <Nav
-      mainLogo={<JazzLogo className="w-24" />}
+      mainLogo={<JazzLogo className="w-20 md:w-24" />}
       themeToggle={ThemeToggle}
       items={[
         { title: "Jazz Cloud", href: "/cloud" },
@@ -55,7 +55,6 @@ export function JazzNav() {
         },
       ]}
       socials={socials}
-      docNav={<DocNav className="block h-auto" />}
     />
   );
 }
